@@ -1,0 +1,75 @@
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import emailLogo from '../assets/emailLogo.png';
+import passwordLogo from '../assets/passwordLogo.png';
+
+function CafeLoginForm() {
+    const navigate = useNavigate();
+
+    const [formData, setFormData] = useState({
+        email: '',
+        password: '',
+    });
+
+    const handleChange = (e) => {
+        setFormData({
+            ...formData,
+            [e.target.id]: e.target.value,
+        });
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+
+        try {
+            const res = await fetch(`/server/cafeDetails/cafeLogin`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    email: formData.email,
+                    password: formData.password,
+                }),
+            });
+            const data = await res.json();
+            if (res.ok) {
+                // Store the JWT token
+                localStorage.setItem('token', data.token);
+                navigate(`/menu/${data.cafeId}`);
+            } else {
+                alert(`Error: ${data.message}`);
+            }
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    }
+
+    return (
+        <div className='w-full h-screen flex justify-center items-center pt-6 pb-2'>
+            <div className='flex w-1/2 h-full flex-col justify-center items-center border-r-2 border-black scale-90'>
+                <h1 className='text-6xl font-montsarret font-montserrat-700 uppercase font-bold pb-4'>Welcome</h1>
+                <form onSubmit={handleSubmit} className='flex flex-col w-[70%] justify-between items-center gap-7 px-10 pt-10'>
+                    <div className='flex gap-1 items-center w-[85%] border-2 border-[#C6C6C6] rounded-xl pr-4 py-1'>
+                        <img src={emailLogo} alt="Email Logo" className='h-[42px] w-[42px] ml-1'  />
+                        <input onChange={handleChange} type="email" id="email" placeholder='email' className='outline-none text-sm px-1 py-2 w-full border-l-2' autoComplete='off' />
+                    </div>
+                    <div className='flex gap-1 items-center w-[85%] border-2 border-[#C6C6C6] rounded-xl pr-4 py-1'>
+                        <img src={passwordLogo} alt="Password Logo" className='h-[42px] w-[42px] ml-1'  />
+                        <input onChange={handleChange} type="password" id='password' placeholder='password' className='outline-none text-sm px-1 py-2 w-full border-l-2' autoComplete='off' />
+                    </div>
+                    <button className='text-black text-xl rounded-xl w-full font-montsarret font-semibold px-1 py-3 border-blue border-2 shadow-[0_0_7.6px_0_#0158A133]'>LogIn</button>
+                </form>
+                <div className='text-sm px-10 py-2 mt-2 flex gap-1 font-montsarret font-montserrat-300 italic'>
+                    <div>Don't have an account?</div>
+                    <Link to="/register" className="text-blue font-montserrat-500">Sign-up</Link>
+                </div>
+            </div>
+            <div className='w-1/2 flex justify-center items-center font-montsarret font-montserrat-700'>
+                IMAGE
+            </div>
+        </div>
+    )
+}
+
+export default CafeLoginForm;
