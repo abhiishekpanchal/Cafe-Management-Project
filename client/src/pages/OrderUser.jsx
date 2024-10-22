@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { FaShoppingBag } from 'react-icons/fa';
+import SearchLogo from '../assets/searchLogo.png';
 import { useNavigate, useParams } from 'react-router-dom';
 import OrderItemCard from '../components/OrderItemCard';
+import CategoryCard from '../components/CategoryCard';
 
 function OrderUser() {
     const { cafeId, tableId } = useParams();
@@ -97,41 +99,48 @@ function OrderUser() {
         }
     };
 
-    // Go to Cart Page with the orderList
-    const goToCart = () => {
-        navigate(`/order/cart/${cafeId}/${tableId}`, { state: { orderList } });
-    };
-
     return (
-        <div className='flex flex-col w-full h-full'>
-            <div className='flex justify-between p-3 uppercase text-2xl font-bold text-base3 bg-base1'>
-                <div>{`${cafeName}`}</div>
-                <button className='hover:text-base4' onClick={goToCart}><FaShoppingBag /></button>
+        <div className='flex flex-col w-full h-full mb-3'>
+            {/* HEADER */}
+            <div className='flex justify-between items-center py-3 pl-3 capitalize'>
+                <div className='flex flex-col'>
+                    <div className='font-montsarret font-montserrat-700 text-xl'>{`${cafeName}`}</div>
+                    <div className='font-montsarret font-montserrat-400 text-xs'>Table : {`${tableId}`}</div>
+                </div>
+                <button className='rounded-full scale-50 border-2 border-gray'>
+                    <img src={SearchLogo} alt="Search Logo" className='scale-75' />
+                </button>
             </div>
-            <div className='flex flex-col'>
-                <div className='flex flex-col gap-3 flex-wrap p-2 mt-2'>
-                    <div className='font-semibold uppercase text-xl text-base3'>Welcome to {cafeName}!</div>
-                    <div className='text-md'>We’re delighted to serve you! Explore our wide variety of delicious dishes.</div>
-                    <div className='text-lg'>What would you like to order today?</div>
+
+            {/* MAIN SECTION */}
+            <div className='flex flex-col items-center'>
+                
+                <div className='flex justify-center items-center p-2 mb-6 rounded-xl border-2 border-gray w-[90%] h-[140px]'>
+                    IMAGE
                 </div>
-                <div className='bg-base3 flex flex-col justify-center items-center p-3 gap-3'>
-                    <h1 className='text-base4'>We have a variety of categories. What would you like to try?</h1>
-                    <label className='uppercase font-semibold' htmlFor="category">Select a category</label>
-                    <select 
-                        className='w-full rounded-full p-1 px-2 uppercase' 
-                        name="category" 
-                        id="category" 
-                        onChange={(e) => setSelectedCategory(e.target.value)}
-                    >
-                        <option value="">-- Select a category --</option>
-                        {categories.map(category => (
-                            <option key={category} value={category}>{category}</option>
-                        ))}      
-                    </select>
+                
+                <div className='flex flex-col justify-evenly py-2 w-full border-y-2 border-gray'>
+                    <div className='font-montsarret font-montserrat-700 uppercase pl-3 pb-2 mb-[-2px]'>Explore Now</div>
+                    <div className='h-[160px] flex justify-start items-center gap-2 px-3 overflow-x-scroll scrollbar-hide'>
+                        {categories.length === 0 ? (
+                            <div>No categories</div>
+                        ) : (
+                            categories.map((category, index) => (
+                                <CategoryCard 
+                                    key={index}
+                                    dishCategory={category}
+                                />
+                            ))
+                        )}
+                    </div>    
                 </div>
-                <div className='flex flex-wrap justify-center py-3 px-4 gap-3'>
-                    {filteredDishes.length > 0 ? (
-                        filteredDishes.map(dish => (
+
+
+                <div className='flex flex-col justify-evenly py-2 w-full'>
+                    <div className='font-montsarret font-montserrat-700 uppercase pl-3 mb-[-2px]'>For You</div>
+                    <div className='h-[160px] w-full flex flex-col justify-start items-start gap-2 pl-3 pt-3'>
+                    {dishes.length > 0 ? (
+                        dishes.map(dish => (
                             <div key={dish._id}>
                                 <OrderItemCard 
                                     dish={dish}
@@ -140,8 +149,9 @@ function OrderUser() {
                             </div>
                         ))
                     ) : (
-                        <div>No dishes available for this category</div>
+                        <div>No dishes available</div>
                     )}
+                    </div>
                 </div>
             </div>
         </div>

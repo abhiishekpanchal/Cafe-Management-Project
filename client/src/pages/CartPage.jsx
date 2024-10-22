@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import CartItemCard from '../components/CartItemCard';
+import { FaArrowLeft } from 'react-icons/fa';
 
 function CartPage() {
   const {cafeId, tableId} = useParams();
@@ -80,8 +81,12 @@ function CartPage() {
     <div>
       {/* MAIN-SECTION */}
       <div>
-        <h2 className="bg-base1 text-base3 text-center text-2xl font-bold p-2 mb-2">Order Summary</h2>
-
+        {/* Header */}
+        <div className='flex gap-3 shadow-xl'>
+          <div><FaArrowLeft /></div>
+          <div className="bg-base1 text-base3 text-center text-2xl font-bold p-2 mb-2">Cart</div>
+        </div>
+        
         {/* Conditionally render success message or cart items */}
         {orderPlaced ? (
           <div className="text-center text-green-600 font-semibold">

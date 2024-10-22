@@ -38,7 +38,10 @@ const orderSchema = new mongoose.Schema({
     totalPrice: {
         type: Number,
         required: true,
-    }
+    },
+    note: {
+        type: String,
+    },
 }, {timestamps:true});
 
 const Order = mongoose.model('Order', orderSchema);

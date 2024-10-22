@@ -57,16 +57,25 @@ function MenuUpload() {
     fetchCategories();
   }, [cafeId]);
 
-  const fetchCategoryDishes = async () => {
+  const fetchCategoryDishes = async (category) => {
     try {
       const res = await fetch(`/server/menuDetails/getMenu/${cafeId}`, {
         headers: {
-          'Authorization': `Bearer ${getToken()}`, 
+          Authorization: `Bearer ${getToken()}`,
         },
       });
       const data = await res.json();
-      if (res.ok) {
-        setDishes(data.dishes);
+      
+      if (res.status === 404) {
+        // If no dishes are found, clear dishes and show message
+        setFilteredDishes([]);
+        setError(`No dishes found in this category`);
+      } else if (res.ok) {
+        // If dishes are found, filter them based on category
+        const filtered = data.dishes.filter((dish) => dish.dishCategory === category);
+        setDishes(data.dishes); 
+        setFilteredDishes(filtered); 
+        setError(null); 
       } else {
         setError(`Error: ${data.message}`);
       }
@@ -74,26 +83,15 @@ function MenuUpload() {
       setError('Failed to fetch dishes');
     }
   };
+  
 
-  useEffect(() => {
-    fetchCategoryDishes();
-  }, [cafeId, dishes]);
-
-  useEffect(() => {
-    if (selectedCategory) {
-      const filtered = dishes.filter((dish) => dish.dishCategory === selectedCategory);
-      setFilteredDishes(filtered);
-    } else {
-      setFilteredDishes([]);
-    }
-  }, [selectedCategory, dishes]);
-
-  const handleDeleteDish = (dishname, dishCategory) => {
-    setDishes(prevDishes => 
-      prevDishes.filter(dish => dish.dishName !== dishname || dish.dishCategory !== dishCategory)
-    );
+  // Handle category selection and trigger fetch for dishes
+  const handleCategorySelection = (category) => {
+    setSelectedCategory(category);
+    fetchCategoryDishes(category); 
   };
-
+  
+  // Handle addition of category
   const handleAddCategory = async () => {
     if (newCategory.trim()) {
       try {
@@ -119,6 +117,7 @@ function MenuUpload() {
     }
   };
 
+  // Handle deletion of the category
   const handleDeleteCategory = async (category) => {
     try {
       const res = await fetch(`/server/cafeDetails/deleteCategory/${cafeId}`, {
@@ -129,7 +128,9 @@ function MenuUpload() {
         },
         body: JSON.stringify({ category }),
       });
+
       const data = await res.json();
+      
       if (res.ok) {
         setCategories((prevCategories) =>
           prevCategories.filter((cat) => cat !== category)
@@ -146,6 +147,7 @@ function MenuUpload() {
     }
   };
 
+  // Handle addition of the dish
   const handleAddDish = async (e) => {
     e.preventDefault();
     if (selectedCategory) {
@@ -172,6 +174,34 @@ function MenuUpload() {
       } catch (err) {
         setError('Failed to add dish');
       }
+    }
+  };
+
+  // Handle deletion of a dish
+  const handleDeleteDish = async (dishName, dishCategory) => {
+    try {
+      const res = await fetch(`/server/menuDetails/deleteDish/${cafeId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${getToken()}`,
+        },
+        body: JSON.stringify({ dishName, dishCategory }),
+      });
+  
+      const data = await res.json();
+  
+      if (res.ok) {
+        // Update filteredDishes state
+        setFilteredDishes((prevDishes) => 
+           prevDishes.filter((dish) => dish.dishName !== dishName && dish.dishCategory !== dishCategory)
+        );
+        console.log("Dish deleted:", dishName, dishCategory);
+      } else {
+        setError(`Error: ${data.message}`);
+      }
+    } catch (err) {
+      setError('Failed to delete dish');
     }
   };
 
@@ -238,7 +268,7 @@ function MenuUpload() {
                     type="radio" 
                     name="categories" 
                     id={category} 
-                    onChange={() => setSelectedCategory(category)} 
+                    onChange={() => handleCategorySelection(category)} 
                     checked={selectedCategory === category} 
                     hidden
                   />

@@ -15,16 +15,17 @@ export const addDish = async (req, res, next) => {
 export const getMenu = async (req, res, next) => {
     const { cafeId } = req.params;
     try {
-      const dishes = await Menu.find({ cafeId }); 
+      const dishes = await Menu.find({ cafeId });
       if (!dishes || dishes.length === 0) {
         return res.status(404).json({ message: "No dishes found for this cafe" });
       }
       return res.status(200).json({ dishes });
     } catch (error) {
-      console.error(error);
+      console.error("Error fetching dishes:", error);
       return res.status(500).json({ message: "Error fetching dishes", error });
     }
   };
+  
 
 export const deleteDish = async (req, res) => {
     const { cafeId } = req.params; 

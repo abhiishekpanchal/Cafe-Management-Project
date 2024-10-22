@@ -24,5 +24,17 @@ export default {
       'montserrat-700': 700,
     },
   },
-  plugins: [],
+  plugins: [
+    function ({ addUtilities }) {
+      addUtilities({
+        '.scrollbar-hide': {
+          '-ms-overflow-style': 'none', /* Internet Explorer 10+ */
+          'scrollbar-width': 'none', /* Firefox */
+          '&::-webkit-scrollbar': {
+            display: 'none', /* Safari and Chrome */
+          },
+        },
+      });
+    },
+  ],
 }

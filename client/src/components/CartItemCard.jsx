@@ -15,7 +15,7 @@ function CartItemCard({ item, onQuantityChange }) {
   };
 
   return (
-    <div className="flex flex-col p-4 border-2 border-base3 bg-base4 shadow-lg">
+    <div className="flex justify-between p-1 shadow-[0_0_10px_rgba(0,0,0,0.5)]">
       <div className="flex justify-between items-center">
         <div className="font-bold">{dishName}</div>
         <div className="flex items-center">
@@ -25,8 +25,7 @@ function CartItemCard({ item, onQuantityChange }) {
         </div>
       </div>
       <div className="flex justify-between items-center">
-        <div>Price: ₹{dishPrice}</div>
-        <div>Total: ₹{dishPrice * quantity}</div>
+        <div>₹{dishPrice*quantity}</div>
       </div>
     </div>
   );
