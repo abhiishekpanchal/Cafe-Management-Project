@@ -1,12 +1,17 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import AdminItemCard from '../components/AdminItemCard';
 import OrderList from '../components/OrderList';
+import { FaArrowLeft, FaCheck } from 'react-icons/fa';
+import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
+import { AppSidebar2 } from '@/components/app-sidebar2';
+import AddImages from '@/components/AddImages';
 
 function OrderPanelAdmin() {
     const { cafeId } = useParams(); 
     const [cafeName, setCafeName] = useState('');
     const [categories, setCategories] = useState([]);
+    const [addons, setAddons] = useState([]);
     const [selectedCategory, setSelectedCategory] = useState(null);
     const [dishes, setDishes] = useState([]);
     const [filteredDishes, setFilteredDishes] = useState([]);
@@ -14,6 +19,9 @@ function OrderPanelAdmin() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [selectedPanel, setSelectedPanel] = useState('orders');
+    const [showImagePopup, setShowImagePopup] = useState(false);
+
+    const navigate = useNavigate();
 
     const getToken = () => localStorage.getItem('token');
 
@@ -29,6 +37,7 @@ function OrderPanelAdmin() {
                 if (res.ok) {
                     setCafeName(data.name);
                     setCategories(data.categories);
+                    setAddons(data.addons);
                 } else {
                     setError(`Error: ${data.message}`);
                 }
@@ -50,10 +59,8 @@ function OrderPanelAdmin() {
                     },
                 });
                 const data = await res.json();
-                console.log(data);
                 if(res.ok) {
                     setOrdersList(data);
-                    console.log(ordersList);
                 }
                 else {
                     setError(`Error: ${data.message}`);
@@ -102,104 +109,142 @@ function OrderPanelAdmin() {
         }
     }, [selectedCategory, dishes]);
 
+
+    const updateAddonStatus = async (addonName, addonPrice, newStatus) => {
+        const token = getToken();
+        if (!token) {
+            console.error('No token found');
+            return;
+        }
+
+        try {
+            const response = await fetch(`/server/cafeDetails/updateAddonStatus/${cafeId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+                body: JSON.stringify({ addon_name: addonName, addon_price: addonPrice, addon_status: newStatus })
+            });
+
+            if (response.ok) {
+                console.log('Addon status updated successfully');
+                setAddons((prevAddons) =>
+                    prevAddons.map((addon) =>
+                        addon.addon_name === addonName && addon.addon_price === addonPrice
+                            ? { ...addon, addon_status: newStatus }
+                            : addon
+                    )
+                );
+            } else {
+                console.error('Failed to update addon status');
+            }
+        } catch (error) {
+            console.error('Error updating addon status:', error);
+        }
+    };
+
+    const handleAddonStatusToggle = (addonName, addonPrice, currentStatus) => {
+        const newStatus = !currentStatus;
+        updateAddonStatus(addonName, addonPrice, newStatus);
+    };
+
+    const openImagePopup = () => setShowImagePopup(true);
+    const closeImagePopup = () => setShowImagePopup(false);
+
+    const handleContentView = (content) => {
+        setSelectedPanel(content);
+      };
+
     return (
-        <div className='h-screen flex flex-col overflow-y-hidden'>
-            {/* HEADER */}
-            <div className='pt-8 px-4 text-2xl flex justify-between items-center'>
-                <div className='text-4xl font-montsarret font-montserrat-700 uppercase'>{cafeName} - Admin Panel</div>
-                <div className='bg-blue text-white font-montsarret font-montserrat-300 text-lg rounded-full px-6 py-1'>Add Images</div>
-            </div>
+        <div className='w-full flex overflow-hidden'>
+            
+            {/* SIDEBAR */}
+            <SidebarProvider>
+              <AppSidebar2 Categories={categories} Addons={addons} 
+                onCategoryChange={handleCategoryChange} CafeName={cafeName}
+                handleContentView={handleContentView} />
+              <SidebarTrigger />
+            </SidebarProvider>
 
-            <div className='flex h-full overflow-hidden'>
-                {/* LEFT COLUMN */}
-                <div className='flex flex-col justify-start items-center scale-95 gap-3 pt-6 pb-2 h-[580px] w-1/3 border-r-2 border-gray'>
-                    {/* Orders Radio */}
-                    <div className={`flex gap-3 rounded-full py-2 pl-6 font-montsarret font-montserrat-500 text-lg w-[70%] items-center ${selectedPanel === 'orders' ? 'shadow-[0_0_5.4px_2px_#3295E8]' : 'border-2 border-[#C6C6C6]'} overflow-hidden`}>
-                        <input
-                            type='radio'
-                            name='admin'
-                            id='orders'
-                            checked={selectedPanel === 'orders'}
-                            onChange={() => setSelectedPanel('orders')}
-                            hidden
-                        />
-                        <label htmlFor='orders'>ORDERS</label>
+            {/* CONTENT SECTION */}
+            <div className="flex flex-col justify-start items-start w-[2000vw] p-4 gap-3 overflow-hidden">
+            
+                <div className='pt-6 pb-3 px-4 self-end flex justify-between items-center'>
+                    <div className='flex items-center gap-4'>
+                        <div onClick={openImagePopup} className='bg-blue text-white font-montsarret font-montserrat-400 text-lg rounded-full px-6 py-1 cursor-pointer'>Add Images</div>
+                        <div className='rounded-full border-2 p-1.5'><FaArrowLeft /></div>
                     </div>
-
-                    {/* Availability Radio */}
-                    <div className={`flex gap-3 rounded-full py-2 pl-6 font-montsarret font-montserrat-500 text-lg w-[70%] items-center ${selectedPanel === 'availability' ? 'shadow-[0_0_5.4px_2px_#3295E8]' : 'border-2 border-[#C6C6C6]'} overflow-hidden`}>
-                        <input
-                            type='radio'
-                            name='admin'
-                            id='availability'
-                            checked={selectedPanel === 'availability'}
-                            onChange={() => setSelectedPanel('availability')}
-                            hidden
-                        />
-                        <label htmlFor='availability'>AVAILABILITY</label>
-                    </div>
-
-                    {/* Conditional rendering for categories */}
-                    {selectedPanel === 'availability' && (
-                        <div className='h-[400px] flex flex-col items-start gap-2 border-2 border-blue rounded-3xl w-[60%] overflow-y-auto'>
-                            {loading && <div>Loading categories...</div>}
-                            {error && <div>{error}</div>}
-                            {!loading && !error && categories.length > 0 && (
-                                <div className='flex flex-col w-full p-2 pt-4 gap-2'>
-                                    {categories.map((category) => (
-                                        <div key={category} className='flex gap-2 p-1 pl-3 rounded-3xl bg-blue text-white uppercase text-md'>
-                                            <input
-                                                type='radio'
-                                                name='category'
-                                                id={category}
-                                                value={category}
-                                                checked={selectedCategory === category}
-                                                onChange={() => handleCategoryChange(category)}
-                                            />
-                                            <label htmlFor={category}>{category}</label>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-                    )}
                 </div>
 
-                {/* RIGHT COLUMN */}
-                <div className='flex flex-wrap w-full sm:w-2/3 p-4 pt-9 pb-2 gap-3'>
-                    <div className="flex flex-wrap w-full gap-4 justify-center sm:justify-start items-start max-h-[620px] overflow-y-auto pb-5">
-                        {selectedPanel==='availability' ? (
-                        <>
-                            {filteredDishes.length > 0 ? (
-                            filteredDishes.map((dish, index) => (
-                                <AdminItemCard
-                                key={index} 
-                                dishName={dish.dishName}
-                                dishDescription={dish.dishDescription}
-                                dishPrice={dish.dishPrice}
-                                dishCategory={dish.dishCategory} 
-                                dishType={dish.dishType}
-                                dishStatus={dish.dishStatus}
-                                />
-                            ))
+                {/* Pop-up overlay and content */}
+                {showImagePopup && (
+                    <div className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-50 z-50">
+                        <AddImages categories={categories} handleAddImagesPopup={closeImagePopup} cafeId={cafeId} />
+                    </div>
+                )}
+
+                <div className='flex overflow-hidden w-full'>
+                    <div className='flex justify-start self-start w-full px-4 gap-3'>
+                        <div className="flex flex-wrap justify-center gap-4 sm:justify-start w-full items-start max-h-[78vh] overflow-y-auto pb-5">
+                            {selectedPanel === 'orders' ? (
+                                <>
+                                    {ordersList.length > 0 ? (
+                                        ordersList.map((order, index) => (
+                                            <OrderList 
+                                                key={index}
+                                                order={order}
+                                            />
+                                        ))
+                                    ) : (
+                                        <div>No orders available.</div>
+                                    )}
+                                </>
+                            ) : selectedPanel === 'category' ? (
+                                <>
+                                    {filteredDishes.length > 0 ? (
+                                        filteredDishes.map((dish, index) => (
+                                            <AdminItemCard
+                                                key={index} 
+                                                dishName={dish.dishName}
+                                                dishDescription={dish.dishDescription}
+                                                dishPrice={dish.dishPrice}
+                                                dishCategory={dish.dishCategory} 
+                                                dishType={dish.dishType}
+                                                dishStatus={dish.dishStatus}
+                                            />
+                                        ))
+                                    ) : (
+                                        <div>No dishes available in this category.</div>
+                                    )}
+                                </>
                             ) : (
-                            <div>No dishes available in this category.</div>
+                                <>
+                                    {addons.length > 0 ? (
+                                        addons.map((addon, index) => (
+                                            <div key={index} className="flex justify-between items-center py-3 px-5 bg-[#0158A11A] rounded-2xl w-full">
+                                                <div className="text-lg font-montserrat-600 uppercase">{addon.addon_name}</div>
+                                                <div className='flex gap-5 items-center'>
+                                                    <div className="text-sm">Price: Rs {addon.addon_price}</div>
+                                                    <div className='w-5 h-5 flex justify-center items-center rounded-full cursor-pointer border-2 border-black overflow-hidden'
+                                                    onClick={() => handleAddonStatusToggle(addon.addon_name, addon.addon_price, addon.addon_status)}>
+                                                        {addon.addon_status ? (
+                                                        <div className='text-black scale-75'>
+                                                            <FaCheck />
+                                                        </div>
+                                                        ) : (
+                                                        <></>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <div>No addons available.</div>
+                                    )}
+                                </>
                             )}
-                        </>
-                        ) : (
-                        <>
-                            {ordersList.length > 0 ? (
-                                ordersList.map((order, index) => (
-                                    <OrderList 
-                                    key={index}
-                                    tableId = {order.tableId}
-                                     />
-                                ))
-                            ) : (
-                                <div>No orders available.</div>
-                            )}
-                        </>
-                        )}
+                        </div>
                     </div>
                 </div>
             </div>

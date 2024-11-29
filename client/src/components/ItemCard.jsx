@@ -3,8 +3,9 @@ import { useParams } from 'react-router-dom';
 import VegLogo from '../assets/vegLogo.png';
 import NonVegLogo from '../assets/nonvegLogo.png';
 import RemoveLogo from '../assets/removeLogo.png';
+import DropDown from './DropDown';
 
-function ItemCard({ dishname, dishdescription, dishprice, dishType, dishCategory, onDelete }) {
+function ItemCard({ dishname, dishdescription, dishprice, dishType, dishCategory, dishVariants, dishAddOns, onDelete }) {
   const { cafeId } = useParams();
 
   const handleDeleteDish = async () => {
@@ -37,9 +38,9 @@ function ItemCard({ dishname, dishdescription, dishprice, dishType, dishCategory
   };
 
   return (
-    <div className='relative flex flex-col justify-start items-center w-full sm:w-1/2 md:w-1/3 lg:w-1/4 p-3 pt-7 border-blue rounded-3xl border-2'>
+    <div className='relative flex flex-col justify-start items-center w-full md:w-[27%] max-h-[55%] py-3 pt-7 bg-[#0158A12A] rounded-3xl'>
       {/* Dish type icon */}
-      <div className='absolute top-1 left-1 scale-150'>
+      <div className='absolute top-1 left-1 scale-110'>
         {dishType === 'VEG' ? (
           <div className='text-green'>
             <img src={VegLogo} alt="Veg Logo" className='h-[42px] w-[42px] scale-50' />
@@ -52,25 +53,29 @@ function ItemCard({ dishname, dishdescription, dishprice, dishType, dishCategory
       </div>
 
       {/* Delete icon */}
-      <div className='absolute top-1 right-1 scale-125'>
+      <div className='absolute top-1 right-1 scale-110'>
         <button onClick={handleDeleteDish} className='text-base4 scale-75'>
           <img src={RemoveLogo} alt="Remove Logo" className='h-[42px] w-[42px] scale-75' />
         </button>
       </div>
 
       {/* Dish name */}
-      <div className='capitalize text-lg font-montsarret font-montserrat-700 mt-4 w-full p-1 rounded-md'>
-        {dishname}
+      <div className='flex justify-between items-center w-full px-3 mt-4 mb-2'>
+        <div className='capitalize text-sm font-montserrat-700 w-full rounded-md'>{dishname}</div>
+        <div className='text-xs capitalize font-montserrat-500 font-montsarret whitespace-nowrap'>{`Price - Rs ${dishprice}`}</div>
       </div>
 
+      <div className='w-full h-1 bg-white'></div>
+
       {/* Dish description and price */}
-      <div className='flex flex-col justify-center items-start p-1 font-semibold bg-base4 rounded-md w-full overflow-hidden'>
-        <div className='text-sm capitalize font-montserrat-500 font-montsarret'>{`Price - Rs ${dishprice}`}</div>
-        <div
-          className='text-xs font-montsarret font-montserrat-400 capitalize break-words max-h-20 overflow-hidden text-ellipsis w-full my-2'
-          style={{ wordWrap: 'break-word', wordBreak: 'break-word' }}
-        >
+      <div className='flex flex-col justify-between h-full items-start gap-1 px-3 font-semibold bg-base4 rounded-md w-full'>
+        <div className='text-xs font-montsarret font-montserrat-500 capitalize break-words max-h-20 text-ellipsis w-full my-2'
+        style={{ wordWrap: 'break-word', wordBreak: 'break-word' }}>
           {dishdescription}
+        </div>
+        <div className='w-full flex flex-col gap-2'>
+          <DropDown title='Variants' listItems={dishVariants} />
+          <DropDown title='Add-ons' listItems={dishAddOns} />
         </div>
       </div>
     </div>

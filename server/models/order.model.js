@@ -10,6 +10,10 @@ const orderSchema = new mongoose.Schema({
         type: Number,
         required: true,
     },
+    customer: {
+        type: String,
+        required: true,
+    },
     orderList: [
         {
             dishName: {
@@ -20,6 +24,18 @@ const orderSchema = new mongoose.Schema({
                 type: String,
                 required: true,
             },
+            dishVariant: {
+                type: String,
+                required: true,
+            },
+            dishAddons: [{
+                addonName: {
+                    type: String,
+                },
+                addonPrice: {
+                    type: Number,
+                },
+            }],
             quantity: {
                 type: Number,
                 required: true,

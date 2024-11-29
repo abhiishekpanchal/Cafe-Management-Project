@@ -4,23 +4,35 @@ import CartItemCard from '../components/CartItemCard';
 import { FaArrowLeft } from 'react-icons/fa';
 
 function CartPage() {
-  const {cafeId, tableId} = useParams();
+  const { cafeId, tableId, customer } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
   const initialOrderList = JSON.parse(localStorage.getItem(`orderList_${cafeId}_${tableId}`)) || location.state?.orderList || [];
   
   const [orderList, setOrderList] = useState(initialOrderList);
-  const [orderPlaced, setOrderPlaced] = useState(false); 
+  const [orderPlaced, setOrderPlaced] = useState(false);
 
   useEffect(() => {
     localStorage.setItem(`orderList_${cafeId}_${tableId}`, JSON.stringify(orderList));
   }, [orderList]);
 
-  const totalAmount = orderList.reduce((acc, item) => acc + item.dishPrice * item.quantity, 0);
+  // const totalAmount = orderList.reduce((acc, item) => {
+  //   const variantPrice = item.variant ? item.variant.variantPrice : 0;
+  //   const addonPrice = item.addons ? item.addons.reduce((sum, addon) => sum + addon.addOnPrice, 0) : 0;
+  //   const itemTotal = (item.dishPrice + variantPrice + addonPrice) * item.quantity;
+  //   return acc + itemTotal;
+  // }, 0);
 
-  // Handle updating the quantity of an item in the cart
+  const totalAmount = orderList.reduce((acc, item) => {
+      return acc + (item.dishPrice * item.quantity);
+  }, 0);
+
+
+  const finalAmount = (totalAmount * 1.075).toFixed(2);
+  const tax = (totalAmount * 0.075).toFixed(2);
+
   const handleQuantityChange = (dishId, newQuantity) => {
-    setOrderList((prevOrderList) => {
+    setOrderList(prevOrderList => {
       if (newQuantity === 0) {
         return prevOrderList.filter(item => item._id !== dishId);
       } else {
@@ -31,25 +43,27 @@ function CartPage() {
     });
   };
 
-  // Handle placing the order
   const handlePlaceOrder = async () => {
     try {
       if (orderList.length === 0) {
         setError("Your cart is empty.");
         return;
       }
-  
+
       const orderData = {
         cafeId,
-        tableId,  
+        tableId,
+        customer,
         orderList: orderList.map(item => ({
           dishName: item.dishName,
           dishCategory: item.dishCategory,
           quantity: item.quantity,
-          dishPrice: item.dishPrice,  
+          dishPrice: item.dishPrice,
+          variant: item.variant ? { variantName: item.variant.variantName, variantPrice: item.variant.variantPrice } : null,
+          addons: item.addons ? item.addons.map(addon => ({ addOnName: addon.addOnName, addOnPrice: addon.addOnPrice })) : [],
         })),
       };
-  
+
       const response = await fetch(`/server/orderDetails/placeOrder/${cafeId}/${tableId}`, {
         method: 'POST',
         headers: {
@@ -57,11 +71,11 @@ function CartPage() {
         },
         body: JSON.stringify(orderData),
       });
-  
+
       const result = await response.json();
-  
+
       if (result.success) {
-        localStorage.removeItem('orderList');
+        localStorage.removeItem(`orderList_${cafeId}_${tableId}`);
         setOrderList([]);
         setOrderPlaced(true);
       } else {
@@ -71,67 +85,66 @@ function CartPage() {
       console.error("Error placing order:", error);
     }
   };
-  
-  // Navigate to OrderUser page
+
   const handleGoToHomePage = () => {
-    navigate(`/order/${cafeId}/${tableId}`);
+    navigate(`/order/${cafeId}/${tableId}/${customer}`);
   };
 
   return (
     <div>
-      {/* MAIN-SECTION */}
-      <div>
-        {/* Header */}
-        <div className='flex gap-3 shadow-xl'>
-          <div><FaArrowLeft /></div>
-          <div className="bg-base1 text-base3 text-center text-2xl font-bold p-2 mb-2">Cart</div>
+      <div className='relative h-[100vh]'>
+        <div className='flex gap-5 shadow-2xl items-center p-2 px-3 mb-6'>
+          <div onClick={() => navigate(`/order/${cafeId}/${tableId}/${customer}`)} className='opacity-60 scale-90'><FaArrowLeft /></div>
+          <div className="text-lg font-montserrat-600">Cart</div>
         </div>
+
+        <div className='font-montserrat-600 px-3 mb-4'>Your Order</div>
         
-        {/* Conditionally render success message or cart items */}
         {orderPlaced ? (
           <div className="text-center text-green-600 font-semibold">
             <p>Order placed successfully!</p>
-            
-            {/* Button to navigate to OrderUser page */}
             <button
               onClick={handleGoToHomePage}
-              className="bg-base3 text-base4 px-6 py-2 mt-4 rounded-lg font-semibold hover:bg-opacity-90    "
+              className="bg-blue text-white px-6 py-2 mt-3 rounded-2xl font-montserrat-600 hover:bg-opacity-90"
             >
               Order More
             </button>
           </div>
         ) : (
           <>
-            {/* Render the orderList items as CartItemCard components */}
-            <div className="flex flex-col gap-2 px-2">
+            <div className="flex flex-col font-montserrat-500 gap-2 px-3">
               {orderList.length === 0 ? (
                 <p>Your cart is empty</p>
               ) : (
-                orderList.map((item) => (
-                  <CartItemCard 
-                    key={item._id} 
-                    item={item} 
-                    onQuantityChange={handleQuantityChange} 
-                  />
-                ))
+                <div className='flex flex-col'>
+                  <div className='flex flex-col gap-2'>
+                    {orderList.map(item => (
+                      <div key={item._id}>
+                        <CartItemCard item={item} variant={item.variant} 
+                          addons={item.addons} onQuantityChange={handleQuantityChange} />
+                      </div>
+                    ))}
+                  </div>
+                  <div className='mt-2 px-3 rounded-2xl text-sm shadow-[0_0_18px_rgba(0,0,0,0.15)]'>
+                    <input type="text" placeholder='Add cooking requests...' className='py-2 outline-none w-full' />
+                  </div>
+                  <div className='font-montserrat-600 my-4'>Additional Details</div>
+                  <div className='mt-2 px-3 py-1 flex justify-between items-center rounded-2xl text-sm shadow-[0_0_18px_rgba(0,0,0,0.15)]'>
+                    <div>Tax</div>
+                    <div>₹{tax}</div>
+                  </div>
+                </div>
               )}
             </div>
 
-            {/* Total Amount Section */}
             {orderList.length > 0 && (
-              <div className="mt-4 p-4 bg-gray-100 text-right text-lg font-semibold">
-                <p>Total Amount: ₹{totalAmount}</p>
-              </div>
-            )}
-
-            {/* Place Order Button */}
-            {orderList.length > 0 && (
-              <div className="mt-4 flex justify-center">
+              <div className="absolute flex justify-between items-center bottom-0 z-50 pt-3 pb-8 w-full px-3 font-montserrat-500 shadow-[0_0_18px_rgba(0,0,0,0.3)]">
+                <p>Total : ₹{finalAmount}</p>
                 <button 
                   onClick={handlePlaceOrder} 
-                  className="bg-base3 text-base4 px-6 py-2 rounded-lg font-semibold hover:bg-opacity-90"
+                  className="uppercase bg-blue text-white rounded-xl py-1 px-3 hover:bg-opacity-90"
                 >
-                  Place Order
+                  Proceed to Pay
                 </button>
               </div>
             )}

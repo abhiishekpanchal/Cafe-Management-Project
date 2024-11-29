@@ -31,7 +31,23 @@ const menuSchema = new mongoose.Schema({
         type: Boolean,
         require: true,
         default: true,
-    }
+    },
+    dishVariants: [{
+        variantName: {
+            type: String,
+        },
+        variantPrice: {
+            type: Number,
+        },
+    }],
+    dishAddOns: [{
+        addOnName: {
+            type: String,
+        },
+        addOnPrice: {
+            type: Number,
+        },
+    }],
 }, {timestamps: true});
 
 const Menu = mongoose.model('Menu', menuSchema);

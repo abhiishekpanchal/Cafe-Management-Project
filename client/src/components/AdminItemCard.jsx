@@ -1,15 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { FaSquare, FaTrash } from 'react-icons/fa';
 import NonVegLogo from '../assets/nonvegLogo.png';
 import VegLogo from '../assets/vegLogo.png';
+import { FaCheck } from 'react-icons/fa'
 import { useParams } from 'react-router-dom';
 
-function AdminItemCard({ dishName, dishDescription, dishPrice, dishType, dishCategory }) {
+function AdminItemCard({ dishName, dishPrice, dishType, dishCategory }) {
   const { cafeId } = useParams();
   
   const [isChecked, setIsChecked] = useState(true);  
 
-  // Fetch the stored value of dishStatus on component mount
   useEffect(() => {
     const fetchDishStatus = async () => {
       const token = localStorage.getItem('token');
@@ -20,7 +19,6 @@ function AdminItemCard({ dishName, dishDescription, dishPrice, dishType, dishCat
       }
   
       try {
-        // Encode dishName and dishCategory to handle spaces and special characters
         const encodedDishName = encodeURIComponent(dishName);
         const encodedDishCategory = encodeURIComponent(dishCategory);
   
@@ -30,7 +28,6 @@ function AdminItemCard({ dishName, dishDescription, dishPrice, dishType, dishCat
           },
         });
   
-        console.log(res.ok);
         if (res.ok) {
           const { dishStatus } = await res.json(); 
           setIsChecked(dishStatus); 
@@ -47,7 +44,6 @@ function AdminItemCard({ dishName, dishDescription, dishPrice, dishType, dishCat
   }, [cafeId, dishName, dishCategory]);
   
 
-  // Function to handle updating dish availability status
   const onToggleStatus = async (dishName, newStatus) => {
     const token = localStorage.getItem('token'); 
   
@@ -75,41 +71,44 @@ function AdminItemCard({ dishName, dishDescription, dishPrice, dishType, dishCat
       console.error('Error updating dish status:', error);
     }
   };
-  
 
-
-  // Handle checkbox toggle
-  const handleCheckboxChange = () => {
+  const handleStatusToggle = () => {
     const newStatus = !isChecked; 
     setIsChecked(newStatus); 
     onToggleStatus(dishName, newStatus); 
   };
 
   return (
-    <div className='relative flex flex-col justify-start items-center w-full sm:w-1/2 md:w-1/3 lg:w-1/4 p-3 pt-7 border-blue rounded-3xl border-2'>
+    <div className='flex flex-col justify-start items-center w-1/4 py-3 px-3 bg-[#0158A11A] rounded-3xl'>
       {/* Dish type icon */}
-      <div className='absolute top-1 left-1'>
-        {dishType === 'VEG' ? (
-          <img src={VegLogo} alt="Veg Logo" className='h-[30px] w-[30px] m-1' />
-        ) : (
-          <img src={NonVegLogo} alt="Non Veg Logo" className='h-[42px] w-[42px]' />
-        )}
+      <div className='flex justify-between items-center w-full'>
+        <div>
+          {dishType === 'VEG' ? (
+            <img src={VegLogo} alt="Veg Logo" className='h-6 w-6' />
+          ) : (
+            <img src={NonVegLogo} alt="Non Veg Logo" className='h-6 w-6' />
+          )}
+        </div>
+        <div className='flex items-center gap-2'>
+          <div 
+            onClick={handleStatusToggle}
+            className='w-5 h-5 flex justify-center items-center rounded-full cursor-pointer border-2 border-black overflow-hidden'
+          >
+            {isChecked ? (
+              <div className='text-black scale-75'>
+                <FaCheck />
+              </div>
+            ) : (
+              <></>
+            )}
+          </div>
+        </div>
       </div>
 
       {/* Dish name */}
-      <div className='text-lg font-montsarret font-montserrat-700 w-full p-1 pt-3'>
-        {dishName}
-      </div>
-
-      <div className='flex w-full justify-start pl-1 gap-2 text-sm font-montsarret font-montserrat-400'>
-        <input
-          type="checkbox"
-          name="status"
-          id="status"
-          checked={isChecked}
-          onChange={handleCheckboxChange} 
-        />
-        <label htmlFor="status">Available</label>
+      <div className='flex justify-between items-center text-lg font-montsarret font-montserrat-700 w-full p-1 pt-1'>
+        <div>{dishName}</div>
+        <div className='font-montserrat-500 text-sm'>Rs {dishPrice}</div>
       </div>
     </div>
   );

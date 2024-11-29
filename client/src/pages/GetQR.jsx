@@ -40,7 +40,7 @@ function GetQR() {
         setLoading(true);
         const generatedQRs = [];
         for (let i = 1; i <= numTables; i++) {
-            const qrData = `/order/${cafeId}/${i}`;
+            const qrData = `/userInfo/${cafeId}/${i}`;
             generatedQRs.push(qrData);
         }
         setQrCodes(generatedQRs);

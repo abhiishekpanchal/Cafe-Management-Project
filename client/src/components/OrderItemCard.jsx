@@ -5,7 +5,8 @@ import NonVegLogo from '../assets/nonvegLogo.png';
 
 function OrderItemCard({ dish, onAddToOrder }) {
   const [showAddButton, setShowAddButton] = useState(true);
-  const [quantity, setQuantity] = useState(0); 
+  const [quantity, setQuantity] = useState(0);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   useEffect(() => {
     if (quantity > 0) {
@@ -17,7 +18,7 @@ function OrderItemCard({ dish, onAddToOrder }) {
 
   const decrementQuantity = () => {
     if (quantity === 1) {
-      setShowAddButton(true); 
+      setShowAddButton(true);
       setQuantity(0);
     } else {
       setQuantity(prev => prev - 1);
@@ -29,40 +30,57 @@ function OrderItemCard({ dish, onAddToOrder }) {
     setQuantity(1);
   };
 
-  return (
-    <div className='flex justify-between items-center w-[93vw] h-[120px] px-2 pb-3 rounded-2xl border-2 border-gray'>
+  const toggleDescription = () => setIsExpanded(!isExpanded);
 
-      {/* Dish name, price and description */}
-      <div className='flex flex-col justify-between gap-1'>
-        <div className='flex flex-col justify-start items-start mb-2'>
+  return (
+    <div className='relative flex justify-between items-center w-[92vw] px-2 py-3 rounded-2xl border-2 border-gray'>
+
+      {/* Dish name, price, and description */}
+      <div className='flex flex-col justify-between gap-1 h-full w-[73%]'>
+        <div className='flex flex-col justify-between items-start mb-2 h-full'>
           <div className='capitalize text-md font-montsarret font-montserrat-600 w-full rounded-xl'>
             {dish.dishName}
           </div>
           <div className='font-montsarret font-montserrat-500 text-sm mt-auto w-full'>{`Rs.${dish.dishPrice}`}</div>
         </div>
-    
-        <div
-          className='text-xs font-montsarret font-montserrat-400 break-words max-h-16 overflow-hidden text-ellipsis w-full'
-          style={{ wordWrap: 'break-word', wordBreak: 'break-word' }}
-        >
-          {dish.dishDescription}
+        
+        <div className='text-xs font-montsarret font-montserrat-400 w-full' style={{ wordWrap: 'break-word', wordBreak: 'break-word' }}>
+          <span
+            className={`${isExpanded ? '' : 'truncate'} inline-block`}
+            style={{
+              display: '-webkit-box',
+              WebkitLineClamp: isExpanded ? 'none' : 1,
+              WebkitBoxOrient: 'vertical',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+            }}
+          >
+            {dish.dishDescription}
+          </span>
+          {dish.dishDescription.length > 50 && (
+            <button
+              onClick={toggleDescription}
+              className='text-blue text-xs'
+            >
+              {isExpanded ? 'Read less' : 'Read more'}...
+            </button>
+          )}
         </div>
       </div>
 
       {/* Add button and type */}
-      <div className='flex flex-col justify-between h-full items-end pb-1'>
+
+        {/* Veg/Non-Veg Logo */}
+        <div className='absolute top-2 right-2'>
           {dish.dishType === 'VEG' ? (
-            <div className='scale-[65%]'>
-              <img src={VegLogo} alt="Veg Logo" className='h-[42px] w-[42px]' />
-            </div>
+            <img src={VegLogo} alt="Veg Logo" className='h-5 w-5' />
           ) : (
-            <div className='scale-[65%]'>
-              <img src={NonVegLogo} alt="Non Veg Logo" className='h-[42px] w-[42px]' />
-            </div>
+            <img src={NonVegLogo} alt="Non Veg Logo" className='h-5 w-5' />
           )}
+        </div>
 
         {/* Conditional rendering for Add button or Quantity input */}
-        <div>
+        <div className='absolute bottom-3 right-2'>
           {showAddButton ? (
             <div className='flex justify-center items-center bg-blue hover:opacity-90 px-2 rounded-full'>
               <button 
@@ -84,8 +102,6 @@ function OrderItemCard({ dish, onAddToOrder }) {
             </div>
           )}
         </div>
-      </div>
-      
     </div>
   );
 }

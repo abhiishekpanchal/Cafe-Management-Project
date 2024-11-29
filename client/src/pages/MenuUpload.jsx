@@ -1,39 +1,67 @@
 import React, { useState, useEffect } from 'react';
-import { FaCheck } from 'react-icons/fa';
 import SignOutLogo from '../assets/signOutLogo.png';
-import RemoveLogo from '../assets/removeLogo.png';
 import AddRingLogo from '../assets/addRingLogo.png';
 import PizzaLogo from '../assets/pizzaLogo.png';
 import CurrencyLogo from '../assets/currencyLogo.png';
 import DescriptionLogo from '../assets/descriptionLogo.png';
 import CrossLogo from '../assets/crossLogo.png';
+import { FaAngleDown, FaCheck, FaCross, FaPlus } from 'react-icons/fa'
 import { useParams, useNavigate } from 'react-router-dom';
 import ItemCard from '../components/ItemCard';
+import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
+import { AppSidebar } from '@/components/app-sidebar';
+import Dashboard from './Dashboard';
+import MonthlyEarnings from '@/components/MonthlyEarnings';
 
 function MenuUpload() {
   const { cafeId } = useParams();
   const navigate = useNavigate();
   
   const [cafeName, setCafeName] = useState('');
+  const [cafePhone, setCafePhone] = useState(0);
+  const [cafeEmail, setCafeEmail] = useState('');
+  const [cafeTables, setCafeTables] = useState(0);
+  const [cafeInstagram, setCafeInstagram] = useState('');
+  const [cafeAddress, setCafeAddress] = useState('');
+  const [cafeLogo, setCafeLogo] = useState('');
+  const [complains, setComplains] = useState([]);
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(null);
+  const [addons, setAddons] = useState([]);
+  const [selectedAddons, setSelectedAddons] = useState([]);
   const [dishes, setDishes] = useState([]);
   const [filteredDishes, setFilteredDishes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [newCategory, setNewCategory] = useState('');
-  const [showInput, setShowInput] = useState(false);
   const [showDishForm, setShowDishForm] = useState(false);
+  const [showOrderPanelCard, setShowOrderPanelCard] = useState(false);
   const [dishName, setDishName] = useState('');
   const [dishDescription, setDishDescription] = useState('');
   const [dishPrice, setDishPrice] = useState('');
   const [dishType, setDishType] = useState('VEG');
+  const [variantsEnabled, setVariantsEnabled] = useState(false);
+  const [variants, setVariants] = useState([]);
+  const [variantName, setVariantName] = useState('');
+  const [variantPrice, setVariantPrice] = useState('');
+  const [showDashboard, setShowDashboard] = useState('dashboard');
+  const [earnings, setEarnings] = useState([]);
+  const [isOpen, setIsOpen] = useState(false);
+  const orderPanelUrl = `/admin/${cafeId}`;
 
   // Function to get the token from localStorage
   const getToken = () => localStorage.getItem('token');
 
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(window.location.origin + orderPanelUrl);
+    alert("URL copied to clipboard!");
+  };
+
+  const toggleDropdown = () => {
+    setIsOpen(!isOpen);
+  };
+
   useEffect(() => {
-    const fetchCategories = async () => {
+    const fetchCategoriesAndAddons = async () => {
       try {
         const res = await fetch(`/server/cafeDetails/getCafeDetails/${cafeId}`, {
           headers: {
@@ -43,7 +71,16 @@ function MenuUpload() {
         const data = await res.json();
         if (res.ok) {
           setCafeName(data.name);
+          setCafePhone(data.phone);
+          setCafeEmail(data.email);
+          setCafeTables(data.tables);
+          setCafeInstagram(data.instagram);
+          setCafeAddress(data.address);
+          setCafeLogo(data.logoImg.url);
+          setComplains(data.complains);
+          setEarnings(data.earnings);
           setCategories(data.categories);
+          setAddons(data.addons);     
         } else {
           setError(`Error: ${data.message}`);
         }
@@ -54,8 +91,9 @@ function MenuUpload() {
       }
     };
 
-    fetchCategories();
+    fetchCategoriesAndAddons();
   }, [cafeId]);
+
 
   const fetchCategoryDishes = async (category) => {
     try {
@@ -86,64 +124,19 @@ function MenuUpload() {
   
 
   // Handle category selection and trigger fetch for dishes
-  const handleCategorySelection = (category) => {
+  const handleCategoryChange = (category) => {
     setSelectedCategory(category);
     fetchCategoryDishes(category); 
   };
-  
-  // Handle addition of category
-  const handleAddCategory = async () => {
-    if (newCategory.trim()) {
-      try {
-        const res = await fetch(`/server/cafeDetails/postCategory/${cafeId}`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${getToken()}`, 
-          },
-          body: JSON.stringify({ category: newCategory }),
-        });
-        const data = await res.json();
-        if (res.ok) {
-          setCategories((prevCategories) => [...prevCategories, newCategory]);
-          setNewCategory('');
-          setShowInput(false);
-        } else {
-          alert(`Error: ${data.message}`);
-        }
-      } catch (error) {
-        console.error('Error:', error);
-      }
-    }
-  };
 
-  // Handle deletion of the category
-  const handleDeleteCategory = async (category) => {
-    try {
-      const res = await fetch(`/server/cafeDetails/deleteCategory/${cafeId}`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${getToken()}`, 
-        },
-        body: JSON.stringify({ category }),
-      });
-
-      const data = await res.json();
-      
-      if (res.ok) {
-        setCategories((prevCategories) =>
-          prevCategories.filter((cat) => cat !== category)
-        );
-        if (category === selectedCategory) {
-          setSelectedCategory(null);
-          setFilteredDishes([]);
-        }
-      } else {
-        setError(`Error: ${data.message}`);
-      }
-    } catch (err) {
-      setError('Failed to delete category');
+  // Handle Dashboard and category content toggling
+  const handleShowDashboard = (content) => {
+    if (content === 'dashboard') {
+      setShowDashboard('dashboard');
+    } else if (content === 'categories') {
+      setShowDashboard('category');
+    } else if (content === 'monthlyEarnings') {
+      setShowDashboard('monthlyEarnings');
     }
   };
 
@@ -158,16 +151,45 @@ function MenuUpload() {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${getToken()}`,
           },
-          body: JSON.stringify({ dishName, dishDescription, dishPrice, dishCategory: selectedCategory, dishType }),
+          body: JSON.stringify({
+            dishName,
+            dishDescription,
+            dishPrice,
+            dishCategory: selectedCategory,
+            dishType,
+            variants: variants.map(variant => ({
+              variantName: variant.name,
+              variantPrice: variant.price
+            })),
+            addons: selectedAddons.map(addon => ({
+              addOnName: addon.addon_name,
+              addOnPrice: addon.addon_price,
+            }))
+          }),
         });
+
         const data = await res.json();
         if (res.ok) {
-          setFilteredDishes((prevDishes) => [...prevDishes, { dishName, dishDescription, dishPrice, dishCategory: selectedCategory, dishType }]);
+          setFilteredDishes((prevDishes) => [
+            ...prevDishes,
+            {
+              dishName,
+              dishDescription,
+              dishPrice,
+              dishCategory: selectedCategory,
+              dishType,
+              variants,
+              addons
+            }
+          ]);
           setShowDishForm(false);
           setDishName('');
           setDishDescription('');
           setDishPrice('');
-          setDishType('VEG'); 
+          setDishType('VEG');
+          setVariants([]);  
+          setAddons([]);
+          setSelectedAddons([]);    
         } else {
           setError(`Error: ${data.message}`);
         }
@@ -176,6 +198,8 @@ function MenuUpload() {
       }
     }
   };
+
+  
 
   // Handle deletion of a dish
   const handleDeleteDish = async (dishName, dishCategory) => {
@@ -205,6 +229,14 @@ function MenuUpload() {
     }
   };
 
+  const addVariant = () => {
+    if (variantName && variantPrice) {
+      setVariants([...variants, { name: variantName, price: variantPrice }]);
+      setVariantName('');  
+      setVariantPrice('');
+    }
+  };
+
   const handleLogOut = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('cafeId');
@@ -212,187 +244,297 @@ function MenuUpload() {
   };
 
   return (
-    <div className="w-full flex flex-col">
+    <div className="w-full flex">
 
-      <div className="flex justify-between items-cente bg-base1 pt-8 px-4">
-        <div className='uppercase font-montsarret font-montserrat-700 text-4xl text-black'>{cafeName}</div>
-        <div className='flex items-center gap-4'>
-          <button onClick={() => navigate(`/admin/${cafeId}`)} className='border-blue border-2 shadow-[0_0_8.7px_5px_#0158A124] rounded-full py-1 px-6 font-montsarret font-montserrat-700'>Order Panel</button>
-          <button onClick={() => navigate(`/menu/${cafeId}/getQR`)} className='bg-blue rounded-full py-1 px-12 font-montsarret font-montserrat-700 text-white shadow-[0_0_8.7px_5px_#0158A124]'>Get QR</button>
-          <div onClick={handleLogOut} className='text-2xl rounded-full border-2 border-[#C6C6C6] scale-90'>
-            <img src={SignOutLogo} alt="Sign Out Logo" className='h-[42px] w-[42px] scale-75' />
-          </div>
-        </div>
-      </div>
+        {/* SIDEBAR */}    
+            <SidebarProvider>
+              <AppSidebar Categories={[...categories]} Addons={[...addons]} 
+                onCategoryChange={handleCategoryChange} CafeName={cafeName}
+                handleContentView={handleShowDashboard} />
+              <SidebarTrigger />
+            </SidebarProvider>
 
-      <div className="flex flex-col sm:flex-row justify-center items-start">
-        {/* CATEGORY SECTION */}
-        <div className="flex flex-col pt-6 scale-95 pb-2 w-full sm:w-1/3 sm:h-[580px] overflow-y-auto border-[#C6C6C6] border-b-4 sm:border-r-2 sm:border-b-0 border-base1">
-          <div className="w-[70%] flex flex-col justify-start gap-4 mx-auto">
-            
-            {/* Add Category Button */}
-            <button 
-              className="p-2 text-lg rounded-full border-2 text-white bg-blue shadow-[0_0_4px_2px_#0158A124] hover:opacity-95" 
-              onClick={() => setShowInput(true)}
-            >
-              Add a category
-            </button>
+        {/* CONTENT SECTION */}
+        <div className="flex flex-col justify-start items-start flex-wrap w-[2000vw] p-4 gap-3 overflow-hidden">
 
-            {/* New Category Input Area */}
-            {showInput && (
-              <div className="flex items-center justify-between rounded-full border-2 border-[#C6C6C6]">
-                <input
-                  type="text"
-                  value={newCategory}
-                  onChange={(e) => setNewCategory(e.target.value)}
-                  placeholder="New Category"
-                  className="ml-6 w-[75%] outline-none"
-                />
-                <button 
-                  className="py-3 px-0 w-[20%] flex justify-center items-center bg-blue rounded-full text-white hover:opacity-90"
-                  onClick={handleAddCategory}
-                >
-                  <FaCheck />
-                </button>
-              </div>
-            )}
-
-            {loading ? (
-              <div>Loading categories...</div>
-            ) : error ? (
-              <div>{error}</div>
-            ) : categories.length > 0 ? (
-              categories.map((category) => (
-                <div key={category} className={`flex relative gap-3 rounded-full py-2 pl-6 items-center ${selectedCategory === `${category}` ? 'shadow-[0_0_5.4px_2px_#3295E8]' : 'border-2 border-[#C6C6C6]'} overflow-hidden`}>
-                  <input 
-                    type="radio" 
-                    name="categories" 
-                    id={category} 
-                    onChange={() => handleCategorySelection(category)} 
-                    checked={selectedCategory === category} 
-                    hidden
-                  />
-                  <label htmlFor={category} className="text-lg font-montsarret font-montserrat-500 uppercase">
-                    {category}
-                  </label>
-                  <button
-                    className="absolute right-0 top-1/2 transform -translate-y-1/2 p-2 hover:bg-base3 text-white scale-90"
-                    onClick={() => handleDeleteCategory(category)}
-                  >
-                    <img src={RemoveLogo} alt="Remove Logo" className='w-[42px] h-[42px]'/>
-                  </button>
-                </div>
-              ))
-            ) : (
-              <div className="text-lg text-center text-base1">Please add your first category</div>
-            )}
-          </div>
-        </div> 
-
-        {/* ITEMS SECTION */}
-        <div className="flex flex-wrap pt-10 w-full sm:w-2/3 p-4 pb-0 gap-3">
-          <div className="flex flex-wrap w-full gap-4 justify-center sm:justify-start max-h-[580px] overflow-y-auto pb-5">
-            {/* Add New Dish Section */}
-            {selectedCategory && (
-              <button 
-                className="absolute right-8 bottom-8 flex items-center justify-center gap-4 text-xl border-2 py-2 px-5 bg-blue z-50 text-white rounded-full hover:opacity-90"
-                onClick={() => setShowDishForm((prev) => !prev)}
-              >
-                <img src={AddRingLogo} alt="Add Ring Logo" className='h-[42px] w-[42px]' />
-                <div>Add Dish</div>
+          <div className="self-end flex justify-between items-center bg-base1 pt-6 pb-3 px-4">
+            <div className='flex items-center gap-4'>
+              <button onClick={() => setShowOrderPanelCard(true)} className='border-blue border-2 shadow-[0_0_8.7px_5px_#0158A124] rounded-full py-1 px-6 font-montsarret font-montserrat-700'>Order Panel</button>
+              <button onClick={() => navigate(`/menu/${cafeId}/getQR`)} className='bg-blue rounded-full py-1 px-12 font-montsarret font-montserrat-700 text-white shadow-[0_0_8.7px_5px_#0158A124]'>Get QR</button>
+              <button onClick={handleLogOut} className='text-2xl rounded-full border-2 border-[#C6C6C6] scale-90'>
+                <img src={SignOutLogo} alt="Sign Out Logo" className='h-[42px] w-[42px] scale-75' />
               </button>
-            )}
-
-            {selectedCategory ? (
-              <>
-                {filteredDishes.length > 0 ? (
-                  filteredDishes.map((dish, index) => (
-                    <ItemCard
-                      key={index}
-                      dishname={dish.dishName}
-                      dishdescription={dish.dishDescription}
-                      dishprice={dish.dishPrice}
-                      dishCategory={selectedCategory}
-                      dishType={dish.dishType}
-                      dishStatus={dish.dishStatus}
-                      onDelete={handleDeleteDish}
-                    />
-                  ))
-                ) : (
-                  <div>No dishes available in this category.</div>
-                )}
-              </>
-            ) : (
-              <div className="text-lg text-center">Please select a category to view dishes</div>
-            )}
+            </div>
           </div>
 
-          {/* Dish Form Popup */}
-          {showDishForm && (
-            <div className="fixed inset-0 bg-black bg-opacity-80 flex justify-center items-center">
-              <div className="bg-white rounded-3xl px-8 pt-12 pb-5 w-[470px] scale-90 relative">
-                <h2 className="text-2xl font-montsarret font-montserrat-700 mb-4 py-2 text-center uppercase">Add Dish to {selectedCategory}</h2>
-                <form onSubmit={handleAddDish} className="flex flex-col gap-4">
-                  <div className='border-2 border-gray rounded-2xl flex items-center gap-1 py-1'>
-                    <img src={PizzaLogo} alt="Pizza Logo" className='h-[42px] w-[42px] ml-1 scale-75' />
-                    <input
-                      type="text"
-                      value={dishName}
-                      onChange={(e) => setDishName(e.target.value)}
-                      placeholder="dish name"
-                      className="outline-none p-1 border-l-2"
-                      required
-                    />
-                  </div>
-                  <div className='border-2 border-gray rounded-2xl flex items-center gap-1 py-1'>
-                    <img src={DescriptionLogo} alt="Description Logo" className='h-[42px] w-[42px] ml-1 pl-2 py-2 scale-75' />
-                    <input
-                      type="text"
-                      value={dishDescription}
-                      onChange={(e) => setDishDescription(e.target.value)}
-                      placeholder="dish description"
-                      className="outline-none p-1 border-l-2"
-                      maxLength={150}
-                      required
-                    />
-                  </div>
-                  <div className='border-2 border-gray rounded-2xl flex items-center gap-1 py-1'>
-                    <img src={CurrencyLogo} alt="Currency Logo" className='h-[42px] w-[42px] ml-1 scale-75' />
-                    <input
-                    type="number"
-                    value={dishPrice}
-                    onChange={(e) => setDishPrice(e.target.value)}
-                    placeholder="dish price"
-                    className="outline-none p-1 border-l-2 w-[83%]"
-                    min={0}
-                    required
-                  />
-                  </div>
 
-                  
-                  <div className={`w-14 h-7 flex items-center rounded-full p-1 cursor-pointer transition-colors duration-300 
-                    ${dishType === 'VEG' ? 'bg-[#008D38]' : 'bg-[#D80303]'}`} onClick={() => setDishType(dishType === 'VEG' ? 'NON-VEG' : 'VEG')}>
-                      <div className={`w-5 h-5 bg-white rounded-full shadow-md transform transition-transform duration-300 
-                      ${dishType === 'VEG' ? 'translate-x-0' : 'translate-x-7'}`}
-                    />
-                  </div>
-
-                  <button 
-                    type="submit"
-                    className="bg-blue text-lg text-white py-2 px-6 mb-3 rounded-2xl uppercase hover:opacity-90"
-                  >
-                    Add Dish
-                  </button>
-                </form>
-                <button 
-                  className="absolute right-2 top-2 scale-75"
-                  onClick={() => setShowDishForm(false)} 
-                >
-                  <img src={CrossLogo} alt="Cross Logo" className='h-[42px] w-[42px]' />
-                </button>
-              </div>
+          {/* Order Panel URL Card */}
+          {showOrderPanelCard && (
+          <div className="fixed inset-0 bg-black bg-opacity-80 flex justify-center items-center z-50">
+            <div className="bg-white rounded-3xl px-6 py-8 w-[25vw] flex flex-col gap-3 items-center relative">
+              <button onClick={() => setShowOrderPanelCard(false)} className='absolute top-4 right-4'>
+                <img src={CrossLogo} alt="" className='h-5 w-5'/>
+              </button>
+              <div className='font-montserrat-700 text-lg mb-2'>ORDER PANEL</div>
+              <button onClick={copyToClipboard} 
+              className='py-1.5 px-2 border-2 border-gray rounded-xl my-1.5 w-full overflow-hidden text-ellipsis whitespace-nowrap max-w-[90%]'>
+                {window.location.origin + orderPanelUrl}</button>
+              <button onClick={() => navigate(orderPanelUrl)} className='py-1.5 bg-blue rounded-xl text-white font-montserrat-300 text-sm px-8'>GO TO ORDER PANEL</button>
             </div>
+          </div>
           )}
+
+          <div className='change-content w-full'>
+            {showDashboard === 'dashboard' ? (
+              <div>
+                <div className='absolute left-[43%] top-[40%] text-6xl uppercase font-montsarret scale-[350%] font-montserrat-700 text-[#DFDFDF] opacity-20 -z-50'>
+                    {cafeName.split(' ').map((word, index) => (
+                        <div key={index}>{word}</div>
+                    ))}
+                </div>
+                <div className='dashboard flex flex-col w-full'>
+                  <Dashboard cafeName={cafeName} cafeEmail={cafeEmail} cafeAddress={cafeAddress} cafeComplains={complains} cafePhone={cafePhone} 
+                  cafeInstagram={cafeInstagram} cafeTables={cafeTables} cafeLogo={cafeLogo} cafeEarnings={earnings} handleContentView={handleShowDashboard} />
+                </div>
+              </div>
+            ) : showDashboard === 'monthlyEarnings' ? (
+              <div>
+                <div className='absolute left-[43%] top-[40%] text-6xl uppercase font-montsarret scale-[350%] font-montserrat-700 text-[#DFDFDF] opacity-20 -z-50'>
+                    {cafeName.split(' ').map((word, index) => (
+                        <div key={index}>{word}</div>
+                    ))}
+                </div>
+                <MonthlyEarnings earnings={earnings} handleContentView={handleShowDashboard} />
+              </div>
+            ) : (
+            <div className="categories flex flex-col sm:flex-row justify-start items-start w-full">
+              <div className='absolute left-[43%] top-[40%] text-6xl uppercase font-montsarret scale-[350%] font-montserrat-700 text-[#DFDFDF] opacity-20 -z-50'>
+                    {cafeName.split(' ').map((word, index) => (
+                        <div key={index}>{word}</div>
+                    ))}
+              </div>
+
+              <div className="flex flex-wrap w-full gap-4 justify-center sm:justify-start h-[78vh] overflow-y-auto pb-5">
+                {/* Add New Dish Section */}
+                {selectedCategory && (
+                  <button 
+                    className="absolute right-8 bottom-8 flex items-center justify-center gap-4 text-xl border-2 py-2 px-5 bg-blue z-50 text-white rounded-full hover:opacity-90"
+                    onClick={() => setShowDishForm((prev) => !prev)}
+                  >
+                    <img src={AddRingLogo} alt="Add Ring Logo" className='h-[42px] w-[42px]' />
+                    <div>Add Dish</div>
+                  </button>
+                )}
+
+                {selectedCategory ? (
+                  <>
+                    {filteredDishes.length > 0 ? (
+                      filteredDishes.map((dish, index) => (
+                        <ItemCard
+                          key={index}
+                          dishname={dish.dishName}
+                          dishdescription={dish.dishDescription}
+                          dishprice={dish.dishPrice}
+                          dishCategory={selectedCategory}
+                          dishType={dish.dishType}
+                          dishStatus={dish.dishStatus}
+                          dishVariants={dish.dishVariants}
+                          dishAddOns={dish.dishAddOns}
+                          onDelete={handleDeleteDish}
+                        />
+                      ))
+                    ) : (
+                      <div>No dishes available in this category.</div>
+                    )}
+                  </>
+                ) : (
+                  <div className="text-lg text-center mx-auto mt-5">Please select a category to view dishes</div>
+                )}
+              </div>
+
+              {/* Dish Form Popup */}
+              {showDishForm && (
+                <div className="fixed inset-0 bg-black bg-opacity-80 flex justify-center items-center z-50">
+                  <div className="bg-white rounded-3xl px-6 pt-12 pb-5 w-[40vw] scale-75 relative">
+                    <h2 className="text-2xl font-montsarret font-montserrat-700 mb-4 py-2 text-center uppercase">Add Dish to {selectedCategory}</h2>
+                    <div className="flex flex-col gap-3">
+                      <div className='border-2 border-gray rounded-2xl flex items-center gap-1 py-1'>
+                        <img src={PizzaLogo} alt="Pizza Logo" className='h-[42px] w-[42px] ml-1 scale-75' />
+                        <input
+                          type="text"
+                          value={dishName}
+                          onChange={(e) => setDishName(e.target.value)}
+                          placeholder="dish name"
+                          className="outline-none p-1 border-l-2"
+                          required
+                        />
+                      </div>
+                      <div className='border-2 border-gray rounded-2xl flex items-center gap-1 py-1'>
+                        <img src={DescriptionLogo} alt="Description Logo" className='h-[42px] w-[42px] ml-1 pl-2 py-2 scale-75' />
+                        <input
+                          type="text"
+                          value={dishDescription}
+                          onChange={(e) => setDishDescription(e.target.value)}
+                          placeholder="dish description"
+                          className="outline-none p-1 border-l-2"
+                          maxLength={150}
+                          required
+                        />
+                      </div>
+                      <div className='border-2 border-gray rounded-2xl flex items-center gap-1 py-1'>
+                        <img src={CurrencyLogo} alt="Currency Logo" className='h-[42px] w-[42px] ml-1 scale-75' />
+                        <input
+                        type="number"
+                        value={dishPrice}
+                        onChange={(e) => setDishPrice(e.target.value)}
+                        placeholder="dish price"
+                        className="outline-none p-1 border-l-2 w-[83%]"
+                        min={0}
+                        required
+                      />
+                      </div>
+
+                      
+                      <div className={`w-14 h-7 flex items-center rounded-full p-1 cursor-pointer transition-colors duration-300 
+                        ${dishType === 'VEG' ? 'bg-[#008D38]' : 'bg-[#D80303]'}`} onClick={() => setDishType(dishType === 'VEG' ? 'NON-VEG' : 'VEG')}>
+                          <div className={`w-5 h-5 bg-white rounded-full shadow-md transform transition-transform duration-300 
+                          ${dishType === 'VEG' ? 'translate-x-0' : 'translate-x-7'}`}
+                        />
+                      </div>
+
+                      {/* Variants Enabled Toggle */}
+                      <div className='flex gap-2 items-center'>
+                        <div onClick={() => setVariantsEnabled(!variantsEnabled)} className={`h-5 w-5 cursor-pointer transition-colors duration-300 ${variantsEnabled ? 'bg-blue' : 'bg-white'} border-2 border-gray rounded flex items-center justify-center`}>
+                          <input type="checkbox" checked={variantsEnabled} onChange={() => setVariantsEnabled(!variantsEnabled)} className="hidden"/>
+                        </div>
+                        <div className='uppercase font-montserrat-500'>Add Variants</div>
+                      </div>
+
+                      {/* Displaying Added Variants */}
+                      {variants.length > 0 && (
+                        <div className='flex gap-1 flex-wrap'>
+                          {variants.map((variant, index) => (
+                            <div key={index} className="flex gap-6 items-center justify-around w-[45%] border-2 border-blue rounded-xl py-1 my-0.5">
+                              <span className="font-montserrat-500 capitalize">{variant.name}</span>
+                              <span className="text-gray-600 flex items-center gap-2">
+                                <div>Rs.{variant.price}</div>
+                                <button onClick={() => setVariants(variants.filter(v => v.name !== variant.name))}>
+                                  <img src={CrossLogo} alt="" className='h-6 w-6 scale-90' />
+                                </button>
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Variant Input Fields */}
+                      <div className={`overflow-hidden transition-transform duration-500 ${variantsEnabled ? 'scale-y-100' : 'scale-y-0'} transform origin-top -mt-2`}>
+                        {variantsEnabled && (
+                          <div className='flex justify-between items-center gap-2 mt-2'>
+                            <div className='w-2/3 border-2 border-gray rounded-2xl flex items-center gap-1 py-1'>
+                              <img src={PizzaLogo} alt="pizza logo" className='rotate-180 h-[42px] w-[42px] ml-1 scale-75' />
+                              <input
+                                type="text"
+                                placeholder='name'
+                                value={variantName}
+                                onChange={(e) => setVariantName(e.target.value)}
+                                className='outline-none p-1 border-l-2 w-[75%]'
+                              />
+                            </div>
+                            <div className='border-2 border-gray rounded-2xl flex items-center gap-1 py-1'>
+                              <img src={CurrencyLogo} alt="currency logo" className='h-[42px] w-[42px] ml-1 scale-75' />
+                              <input
+                                type="number"
+                                placeholder='price'
+                                value={variantPrice}
+                                onChange={(e) => setVariantPrice(e.target.value)}
+                                className='outline-none p-1 mr-2 border-l-2 w-[75%]'
+                              />
+                            </div>
+                            <button onClick={addVariant} type="button" className='bg-blue p-3 rounded-xl text-white align-middle'>
+                              <FaCheck className='h-5 w-5'/>
+                            </button>
+                          </div>
+                        )}
+                      </div>
+
+                      <div className='dropdown-addons flex flex-col gap-2'>
+                        <div className='relative flex items-center w-full py-2 px-2 border-2 border-gray rounded-2xl'>
+                          <FaPlus className='h-4 w-4 ml-2 mr-1.5' />
+                          <div className="relative w-full">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();  
+                                toggleDropdown();
+                              }}
+                              className="flex justify-between text-md font-montserrat-400 items-center w-full px-2"
+                            >
+                              <div className='border-l-2 border-gray pl-2 uppercase font-montserrat-500'>
+                                ADD-ONS
+                              </div>
+                              <FaAngleDown
+                                className={`transform transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}
+                              />
+                            </button>
+                          </div>
+                          {isOpen && (
+                            <div className='absolute top-10 w-full'>
+                              {addons
+                                .filter(addon => !selectedAddons.some(selected => selected.addon_name === addon.addon_name))
+                                .map((addon, index) => (
+                                  <button
+                                    key={index}
+                                    type="button"
+                                    onMouseDown={(e) => {
+                                      e.preventDefault();  // Prevents default form behavior
+                                      e.stopPropagation();
+                                      setSelectedAddons([...selectedAddons, addon]);
+                                      setIsOpen(false);  // Close dropdown after selection
+                                    }}
+                                    className="py-1 cursor-pointer w-full rounded-3xl px-4 bg-white border-2 border-blue my-0.5 uppercase"
+                                  >
+                                    {addon.addon_name} - Rs {addon.addon_price} 
+                                  </button>
+                                ))}
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Display selected add-ons */}
+                        <div className="flex flex-wrap gap-2 mt-1">
+                          {selectedAddons.map((addon, index) => (
+                            <div key={index} className="rounded-full pl-2 pr-1 text-sm flex items-center justify-around py-1 border-2 border-blue gap-4">
+                              <div className='uppercase font-montserrat-500'>{addon.addon_name}</div>
+                              <img
+                                src={CrossLogo}
+                                alt="Remove addon"
+                                className='h-5 w-5 cursor-pointer'
+                                onClick={() => setSelectedAddons(selectedAddons.filter(a => a.addon_name !== addon.addon_name))}
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+
+                      <button 
+                        onClick={handleAddDish}
+                        className="bg-blue text-lg text-white py-2 px-6 mb-3 rounded-2xl uppercase hover:opacity-90"
+                      >
+                        Add Dish
+                      </button>
+                    </div>
+                    <button 
+                      className="absolute right-2 top-2 scale-75"
+                      onClick={() => setShowDishForm(false)} 
+                    >
+                      <img src={CrossLogo} alt="Cross Logo" className='h-[42px] w-[42px]' />
+                    </button>
+                  </div>
+                </div>
+              )}
+          </div>
+        )}
         </div>
       </div>
     </div>

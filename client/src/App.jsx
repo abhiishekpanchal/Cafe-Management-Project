@@ -6,6 +6,8 @@ import OrderUser from './pages/OrderUser';
 import GetQR from './pages/GetQR';
 import OrderPanelAdmin from './pages/OrderPanelAdmin';
 import CartPage from './pages/CartPage';
+import CategoryWiseDishes from './pages/CategoryWiseDishes';
+import UserPage from './pages/UserPage';
 
 function App() {
   return (
@@ -19,8 +21,10 @@ function App() {
         <Route path="/menu/:cafeId/getQR" element={<GetQR />} />
 
         {/* ORDER BY USER */}
-        <Route path="/order/:cafeId/:tableId" element={<OrderUser />} />
-        <Route path="/order/cart/:cafeId/:tableId" element={<CartPage />} />
+        <Route path="/userInfo/:cafeId/:tableId" element={<UserPage />} />
+        <Route path="/order/:cafeId/:tableId/:customer" element={<OrderUser />} />
+        <Route path="/order/:cafeId/:tableId/:customer/:category" element={<CategoryWiseDishes />} />
+        <Route path="/order/cart/:cafeId/:tableId/:customer" element={<CartPage />} />
 
         {/* ORDER PANEL ADMIN */}
         <Route path="/admin/:cafeId" element={<OrderPanelAdmin />} />

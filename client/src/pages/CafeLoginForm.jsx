@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import emailLogo from '../assets/emailLogo.png';
 import passwordLogo from '../assets/passwordLogo.png';
+import CodacityLogo from '../assets/CodacityLogo.png';
+import Bg from '../assets/loginFormBg.png';
 
 function CafeLoginForm() {
     const navigate = useNavigate();
@@ -46,8 +48,12 @@ function CafeLoginForm() {
     }
 
     return (
-        <div className='w-full h-screen flex justify-center items-center pt-6 pb-2'>
-            <div className='flex w-1/2 h-full flex-col justify-center items-center border-r-2 border-black scale-90'>
+        <div className='relative w-full h-screen flex justify-around items-center py-10 overflow-y-hidden'>
+            <a href='https://codacitysolutions.com/' target='_blank' className='absolute bottom-4 left-3 flex items-center cursor-pointer'>
+                <img src={CodacityLogo} alt="Codacity Logo" className='h-7 w-10' />
+                <h2 className='text-xs font-montserrat-700 text-gray pb-1'>Powered by Codacity Solutions</h2>
+            </a>
+            <div className='flex w-1/2 h-full flex-col justify-center items-center scale-90'>
                 <h1 className='text-6xl font-montsarret font-montserrat-700 uppercase font-bold pb-4'>Welcome</h1>
                 <form onSubmit={handleSubmit} className='flex flex-col w-[70%] justify-between items-center gap-7 px-10 pt-10'>
                     <div className='flex gap-1 items-center w-[85%] border-2 border-[#C6C6C6] rounded-xl pr-4 py-1'>
@@ -65,8 +71,8 @@ function CafeLoginForm() {
                     <Link to="/register" className="text-blue font-montserrat-500">Sign-up</Link>
                 </div>
             </div>
-            <div className='w-1/2 flex justify-center items-center font-montsarret font-montserrat-700'>
-                IMAGE
+            <div className='w-1/2'>
+                <img src={Bg} alt="" className=''/>
             </div>
         </div>
     )
