@@ -4,7 +4,7 @@ import { FaMinus, FaPlus } from 'react-icons/fa';
 function DishPopup({ dish, onClose, onAddToOrder, addons, selectedVariant, selectedAddons }) {
     const [currentVariant, setCurrentVariant] = useState(selectedVariant || null);
     const [currentAddons, setCurrentAddons] = useState(selectedAddons || []);
-    const [quantity, setQuantity] = useState(1);  // Default to 1, no need for complex initialization
+    const [quantity, setQuantity] = useState(1);
     const [isVisible, setIsVisible] = useState(false);
     const [showAddButton, setShowAddButton] = useState(quantity === 0);
     const [filteredAddons, setFilteredAddons] = useState([]);
@@ -12,7 +12,7 @@ function DishPopup({ dish, onClose, onAddToOrder, addons, selectedVariant, selec
     useEffect(() => {
         setIsVisible(true);
 
-        // Filter addons based on the required conditions
+        // Filter addons based on dish's required conditions
         const relevantAddons = dish.dishAddOns.filter(dishAddon =>
             addons.some(addon =>
                 addon.addon_name === dishAddon.addOnName &&
@@ -29,7 +29,7 @@ function DishPopup({ dish, onClose, onAddToOrder, addons, selectedVariant, selec
     const decrementQuantity = () => {
         if (quantity === 1) {
             setShowAddButton(true);
-            setQuantity(0);  // Set quantity to 0 when decremented from 1
+            setQuantity(0);
         } else {
             setQuantity(prev => prev - 1);
         }
@@ -37,16 +37,31 @@ function DishPopup({ dish, onClose, onAddToOrder, addons, selectedVariant, selec
 
     const handleAddClick = () => {
         setShowAddButton(false);
-        setQuantity(1);  // Set quantity to 1 on "Add"
+        setQuantity(1);
+    };
+
+    // Ensure addons are unique
+    const handleAddonToggle = (addon) => {
+        setCurrentAddons(prevAddons => {
+            // Check if addon is already selected
+            const exists = prevAddons.some(a => a.addOnName === addon.addOnName);
+            if (exists) {
+                // Remove the addon if it exists
+                return prevAddons.filter(a => a.addOnName !== addon.addOnName);
+            } else {
+                // Add the addon if it does not exist
+                return [...prevAddons, addon];
+            }
+        });
     };
 
     const handleAddToCart = () => {
         if (quantity > 0) {
-            // Pass correct quantity to onAddToOrder
             onAddToOrder(dish, currentVariant, currentAddons, quantity);
         }
         handleClose();
     };
+    
 
     const handleClose = () => {
         setIsVisible(false);
@@ -72,11 +87,16 @@ function DishPopup({ dish, onClose, onAddToOrder, addons, selectedVariant, selec
                                         <div className='w-1/2'>{variant.variantName}</div>
                                         <div className='w-1/2 text-right pr-3'>Rs {variant.variantPrice}</div>
                                     </div>
-                                    <input 
-                                        type="radio" 
-                                        value={variant.variantName} 
-                                        checked={currentVariant === variant} 
-                                        onChange={() => setCurrentVariant(variant)} 
+                                    <input
+                                        type="checkbox"
+                                        value={variant.variantName}
+                                        checked={currentVariant?.variantName === variant.variantName}
+                                        onChange={() => {
+                                            // Toggle the current variant
+                                            setCurrentVariant(prev => 
+                                                prev?.variantName === variant.variantName ? null : variant
+                                            );
+                                        }}
                                         className="mr-2"
                                     />
                                 </label>
@@ -102,15 +122,11 @@ function DishPopup({ dish, onClose, onAddToOrder, addons, selectedVariant, selec
                                         <div className='w-1/2 capitalize'>{addon.addOnName.toLowerCase()}</div>
                                         <div className='w-1/2 text-right pr-3'>Rs {addon.addOnPrice}</div>
                                     </div>
-                                    <input 
-                                        type="checkbox" 
-                                        value={addon.addOnName} 
-                                        checked={currentAddons.includes(addon)} 
-                                        onChange={() => setCurrentAddons(
-                                            currentAddons.includes(addon)
-                                                ? currentAddons.filter(a => a !== addon)
-                                                : [...currentAddons, addon]
-                                        )}
+                                    <input
+                                        type="checkbox"
+                                        value={addon.addOnName}
+                                        checked={currentAddons.some(a => a.addOnName === addon.addOnName)}
+                                        onChange={() => handleAddonToggle(addon)}
                                         className="p-1 h-3 w-3"
                                     />
                                 </label>
@@ -125,15 +141,15 @@ function DishPopup({ dish, onClose, onAddToOrder, addons, selectedVariant, selec
                 <div className='flex justify-around items-center gap-3 mt-4'>
                     <div className='w-[30%] flex items-center'>
                         {showAddButton ? (
-                            <button 
-                                onClick={handleAddClick} 
+                            <button
+                                onClick={handleAddClick}
                                 className="bg-blue text-white px-3 py-2 rounded-lg"
                             >
                                 Add
                             </button>
                         ) : (
                             <div className='flex items-center justify-between px-1.5 py-1 bg-blue text-white rounded-full'>
-                                <button onClick={decrementQuantity} className=''>
+                                <button onClick={decrementQuantity}>
                                     <FaMinus className='scale-75' />
                                 </button>
                                 <span className='text-center px-2.5 py-1 mx-1 rounded'>{quantity}</span>
@@ -144,8 +160,8 @@ function DishPopup({ dish, onClose, onAddToOrder, addons, selectedVariant, selec
                         )}
                     </div>
 
-                    <button 
-                        onClick={handleAddToCart} 
+                    <button
+                        onClick={handleAddToCart}
                         className="bg-blue text-white px-4 py-2 rounded-lg w-[65%]"
                     >
                         Add Item | Rs {dish.dishPrice * quantity}

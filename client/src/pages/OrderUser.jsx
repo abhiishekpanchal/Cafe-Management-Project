@@ -148,33 +148,36 @@ function OrderUser() {
         const existingIndex = updatedOrderList.findIndex(item => 
             item._id === dish._id &&
             item.dishName === dish.dishName &&
-            item.dishVariants?.variantName === validVariant.variantName && // Use validVariant for comparison
-            JSON.stringify(item.addons) === JSON.stringify(addons)
+            JSON.stringify(item.variant) === JSON.stringify(validVariant) && // Compare variants as strings
+            JSON.stringify(item.addons) === JSON.stringify(addons) // Compare addons as strings
         );
     
         console.log("Existing item index:", existingIndex);
     
-        // Define the updatedDish object
-        const updatedDish = {
-            ...dish,
-            dishPrice: totalDishPrice,
-            variant: validVariant, // Ensure variant is valid
-            addons,
-            quantity: existingIndex > -1 ? updatedOrderList[existingIndex].quantity + quantity : quantity // Increment by quantity if it exists
-        };
-    
         if (existingIndex > -1) {
-            // Update existing item
-            updatedOrderList[existingIndex] = { ...updatedOrderList[existingIndex], ...updatedDish };
+            // If dish exists, update its quantity and price
+            const updatedItem = { ...updatedOrderList[existingIndex] };
+            updatedItem.quantity += quantity;
+            updatedItem.dishPrice = totalDishPrice * updatedItem.quantity; // Recalculate price
+            updatedOrderList[existingIndex] = updatedItem; // Replace the old item
         } else {
-            // Add as a new item
+            // Add a new item
+            const updatedDish = {
+                ...dish,
+                dishPrice: totalDishPrice * quantity, // Price multiplied by quantity
+                variant: validVariant, // Add variant
+                addons, // Add addons
+                quantity: quantity
+            };
             updatedOrderList.push(updatedDish);
         }
     
         // Update the state
         setOrderList(updatedOrderList);
         setShowPopup(false);
-    };    
+    };
+     
+          
         
 
     // Handle Complain Section

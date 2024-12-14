@@ -125,7 +125,7 @@ function CartPage() {
           </div>
         ) : (
           <>
-            <div className="flex flex-col font-montserrat-500 gap-2 px-3 h-[78vh] overflow-y-auto">
+            <div className="flex flex-col font-montserrat-500 gap-2 px-3 h-[75vh] overflow-y-auto">
               {orderList.length === 0 ? (
                 <p>Your cart is empty</p>
               ) : (
