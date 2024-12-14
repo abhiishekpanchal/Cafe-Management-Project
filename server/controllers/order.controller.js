@@ -6,30 +6,31 @@ export const placeOrder = async (req, res) => {
 
     // Process each item in the order list
     const updatedOrderList = orderList.map(item => {
-      const { dishName, dishCategory, quantity, dishPrice, dishVariant, dishAddon } = item;
+      const { dishName, dishCategory, quantity, dishPrice, dishVariants, dishAddOns } = item;
 
-      // Calculate variant and addon price based on their quantity
-      const variantPrice = dishVariant ? dishVariant.variantPrice : 0;
-      const addonPrice = dishAddon ? dishAddon.addOnPrice : 0;
+      // Ensure dishPrice, variantPrice, and addOnPrice are numbers
+      const variantPrice = dishVariants?.variantPrice || 0;
+      const addonPrice = dishAddOns
+        ? dishAddOns.reduce((sum, addon) => sum + (addon.addOnPrice || 0), 0)
+        : 0;
 
-      // Calculate total price per item including variant and addon price
-      const itemPrice = (dishPrice + variantPrice + addonPrice) * quantity;
+      const itemPrice = (dishPrice || 0 + variantPrice + addonPrice) * quantity;
 
       return {
         dishName,
         dishCategory,
         quantity,
         dishPrice,
-        variant: dishVariant ? { variantName: dishVariant.variantName, variantPrice } : null,
-        addon: dishAddon ? { addOnName: dishAddon.addOnName, addOnPrice } : null,
+        dishVariants,
+        dishAddOns,
         price: itemPrice,
       };
     });
 
-    // Calculate total order price by summing the individual item prices
+    // Total price of the order
     const totalPrice = updatedOrderList.reduce((acc, item) => acc + item.price, 0);
 
-    // Create a new order with all required details
+    // Save the order
     const newOrder = new Order({
       cafeId,
       tableId,
@@ -38,23 +39,22 @@ export const placeOrder = async (req, res) => {
       totalPrice,
     });
 
-    // Save the order to the database
     await newOrder.save();
 
     return res.status(201).json({
       success: true,
-      message: 'Order placed successfully',
+      message: "Order placed successfully",
       order: newOrder,
     });
-
   } catch (error) {
     console.error("Error placing order:", error);
     return res.status(500).json({
       success: false,
-      message: 'Error placing order. Please try again later.',
+      message: "Error placing order. Please try again later.",
     });
   }
 };
+
 
 
 

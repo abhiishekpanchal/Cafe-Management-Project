@@ -1,65 +1,59 @@
 import mongoose from "mongoose";
 
 const orderSchema = new mongoose.Schema({
-    cafeId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Cafe',
-        required: true,
-    }, 
-    tableId: {
-        type: Number,
-        required: true,
-    },
-    customer: {
+  cafeId: {
+    type: mongoose.Schema.Types.ObjectId,
+    required: true,
+    ref: "Cafe",
+  },
+  tableId: {
+    type: String,
+    required: true,
+  },
+  customer: {
+    type: String,
+    required: true,
+  },
+  orderList: [
+    {
+      dishName: {
         type: String,
         required: true,
-    },
-    orderList: [
+      },
+      dishCategory: {
+        type: String,
+        required: true,
+      },
+      quantity: {
+        type: Number,
+        required: true,
+      },
+      dishPrice: {
+        type: Number,
+        required: true,
+      },
+      dishVariants: {
+        variantName: { type: String },
+        variantPrice: { type: Number },
+      },
+      dishAddOns: [
         {
-            dishName: {
-                type: String,
-                required: true,
-            },
-            dishCategory: {
-                type: String,
-                required: true,
-            },
-            dishVariant: {
-                type: String,
-                required: true,
-            },
-            dishAddons: [{
-                addonName: {
-                    type: String,
-                },
-                addonPrice: {
-                    type: Number,
-                },
-            }],
-            quantity: {
-                type: Number,
-                required: true,
-                default: 1, 
-            },
-            dishPrice: {
-                type: Number,
-                required: true, 
-            },
-            price: {
-                type: Number,
-                required: true,
-            },
-        }
-    ],
-    totalPrice: {
+          addOnName: { type: String },
+          addOnPrice: { type: Number },
+        },
+      ],
+      price: {
         type: Number,
         required: true,
+      },
     },
-    note: {
-        type: String,
-    },
-}, {timestamps:true});
+  ],
+  totalPrice: {
+    type: Number,
+    required: true,
+  },
+}, { timestamps: true });
 
-const Order = mongoose.model('Order', orderSchema);
+const Order = mongoose.model("Order", orderSchema);
 
 export default Order;
