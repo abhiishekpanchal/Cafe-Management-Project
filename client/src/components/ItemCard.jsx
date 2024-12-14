@@ -10,12 +10,12 @@ function ItemCard({ dishname, dishdescription, dishprice, dishType, dishCategory
 
   const handleDeleteDish = async () => {
     const token = localStorage.getItem('token'); 
-
+  
     if (!token) {
       console.error('No token found');
       return;
     }
-
+  
     try {
       const response = await fetch(`/server/menuDetails/deleteDish/${cafeId}`, {
         method: 'DELETE',
@@ -23,19 +23,21 @@ function ItemCard({ dishname, dishdescription, dishprice, dishType, dishCategory
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
         },
-        body: JSON.stringify({ dishname, dishCategory })
+        body: JSON.stringify({ dishname, dishCategory }),
       });
-      const data = await response.json();
-
-      if (data.success) {
-        onDelete(dishname, dishCategory);
+  
+      // Call onDelete directly after the request completes
+      if (response.ok) {
+        console.log("Dish deleted:", dishname);
+        onDelete(dishCategory);
+      } else {
+        console.error("Failed to delete dish, server responded with:", response.status);
       }
-
-      console.log(data);
     } catch (error) {
-      console.error(error);
+      console.error("Error deleting dish:", error);
     }
   };
+  
 
   return (
     <div className='relative flex flex-col justify-start items-center w-full md:w-[27%] max-h-[55%] py-3 pt-7 bg-[#0158A12A] rounded-3xl'>

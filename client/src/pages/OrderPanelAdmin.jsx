@@ -50,29 +50,31 @@ function OrderPanelAdmin() {
         fetchCategories();
     }, [cafeId]);
 
-    useEffect(() => {
-        const fetchOrders = async() => {
-            try {
-                const res = await fetch(`/server/orderDetails/getOrders/${cafeId}`, {
-                    headers: {
-                        'Authorization': `Bearer ${getToken()}`
-                    },
-                });
-                const data = await res.json();
-                if(res.ok) {
-                    setOrdersList(data);
-                }
-                else {
-                    setError(`Error: ${data.message}`);
-                }
-            } catch(error) {
-                setError('Failed to fetch orders');
-            } finally {
-                setLoading(false);
+    const fetchOrders = async () => {
+        try {
+            const res = await fetch(`/server/orderDetails/getOrders/${cafeId}`, {
+                headers: {
+                    'Authorization': `Bearer ${getToken()}`
+                },
+            });
+            const data = await res.json();
+            if (res.ok) {
+                setOrdersList(data);
+            } else {
+                setError(`Error: ${data.message}`);
             }
-        };
+        } catch (error) {
+            setError('Failed to fetch orders');
+        }
+    };
+    
+    const refetchOrders = () => {
+        fetchOrders(); 9
+    };
+    
+    useEffect(() => {
         fetchOrders();
-    }, [cafeId]);
+    }, [cafeId]);    
 
     const handleCategoryChange = (category) => {
         setSelectedCategory(category);
@@ -194,6 +196,7 @@ function OrderPanelAdmin() {
                                             <OrderList 
                                                 key={index}
                                                 order={order}
+                                                refetchOrders={refetchOrders}
                                             />
                                         ))
                                     ) : (

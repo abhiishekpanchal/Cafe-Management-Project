@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 
-function OrderList({order}) {
+function OrderList({order, refetchOrders}) {
   const [orders, setOrders] = useState([...order.orderList]);
 
   const handleStatusUpdate = async (status) => {
@@ -15,6 +15,8 @@ function OrderList({order}) {
         });
 
         if (!response.ok) throw new Error('Failed to update earnings');
+
+        refetchOrders();
 
     } catch (error) {
         console.error("Error updating order status:", error);
@@ -45,7 +47,12 @@ function OrderList({order}) {
             {orders.map((order, index) => {
             return (
             <div key={index} className='flex justify-evenly w-full -my-0 text-sm'>
-              <div className='mt-0.5 w-1/3 text-center capitalize'>{order.dishName}</div>
+              <div className='mt-0.5 ml-1 w-1/3 text-center capitalize flex gap-1 justify-center items-center'>
+                <div>{order.dishName}</div>
+                {order.dishVariants && order.dishVariants.variantName && (
+                  <div className='text-xs'>({order.dishVariants.variantName})</div>
+                )}
+              </div>
               <div className='mt-0.5 w-1/3 text-center'>{order.quantity}</div>
               <div className='mt-0.5 w-1/3 text-center'>{order.price}</div>
             </div>
@@ -54,6 +61,24 @@ function OrderList({order}) {
           </div>
           </div>
         </div>
+        
+        <div className='flex gap-0.5 -ml-1'>
+          {orders.map((dish, index) => (
+            <div key={index} className=''>
+              {dish.dishAddOns.length > 0 ? (
+                dish.dishAddOns.map((addon, idx) => (
+                  <div key={idx} className='text-xs bg-white rounded-xl py-0.5 px-2 lowercase border-[#3295E866] border-2'>
+                    {addon.addOnName}
+                  </div>
+                ))
+              ) : (
+                <></>
+              )}
+            </div>
+          ))}
+        </div>
+
+
         <div className='flex gap-1 bg-white rounded-lg w-full py-1 pl-2 text-xs'>
             <div>Note :</div>
             <div>{order.note ? order.note : 'No note'}</div>

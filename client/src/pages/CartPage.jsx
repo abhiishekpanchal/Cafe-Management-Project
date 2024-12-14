@@ -16,13 +16,6 @@ function CartPage() {
     localStorage.setItem(`orderList_${cafeId}_${tableId}`, JSON.stringify(orderList));
   }, [orderList]);
 
-  // const totalAmount = orderList.reduce((acc, item) => {
-  //   const variantPrice = item.variant ? item.variant.variantPrice : 0;
-  //   const addonPrice = item.addons ? item.addons.reduce((sum, addon) => sum + addon.addOnPrice, 0) : 0;
-  //   const itemTotal = (item.dishPrice + variantPrice + addonPrice) * item.quantity;
-  //   return acc + itemTotal;
-  // }, 0);
-
   const totalAmount = orderList.reduce((acc, item) => {
       return acc + (item.dishPrice * item.quantity);
   }, 0);
@@ -31,17 +24,28 @@ function CartPage() {
   const finalAmount = (totalAmount * 1.075).toFixed(2);
   const tax = (totalAmount * 0.075).toFixed(2);
 
-  const handleQuantityChange = (dishId, newQuantity) => {
+  const handleQuantityChange = (dishId, variant, addons, newQuantity) => {
     setOrderList(prevOrderList => {
       if (newQuantity === 0) {
-        return prevOrderList.filter(item => item._id !== dishId);
+        // Filter out the specific dish based on all identifying parameters
+        return prevOrderList.filter(item => 
+          !(item._id === dishId && 
+            JSON.stringify(item.variant) === JSON.stringify(variant) && 
+            JSON.stringify(item.addons) === JSON.stringify(addons))
+        );
       } else {
+        // Update the specific dish (variant and addons included) by matching all parameters
         return prevOrderList.map(item =>
-          item._id === dishId ? { ...item, quantity: newQuantity } : item
+          item._id === dishId &&
+          JSON.stringify(item.variant) === JSON.stringify(variant) &&
+          JSON.stringify(item.addons) === JSON.stringify(addons) 
+            ? { ...item, quantity: newQuantity } 
+            : item
         );
       }
     });
   };
+  
 
   const handlePlaceOrder = async () => {
     try {
@@ -49,7 +53,7 @@ function CartPage() {
         setError("Your cart is empty.");
         return;
       }
-
+  
       const orderData = {
         cafeId,
         tableId,
@@ -58,22 +62,29 @@ function CartPage() {
           dishName: item.dishName,
           dishCategory: item.dishCategory,
           quantity: item.quantity,
-          dishPrice: item.dishPrice,
-          variant: item.variant ? { variantName: item.variant.variantName, variantPrice: item.variant.variantPrice } : null,
-          addons: item.addons ? item.addons.map(addon => ({ addOnName: addon.addOnName, addOnPrice: addon.addOnPrice })) : [],
+          dishPrice: item.dishPrice || 0, // Default to 0 if dishPrice is missing
+          dishVariants: item.variant
+            ? { variantName: item.variant.variantName, variantPrice: item.variant.variantPrice || 0 }
+            : { variantName: "Default", variantPrice: 0 }, // Default variant with 0 price
+          dishAddOns: item.addons
+            ? item.addons.map(addon => ({
+                addOnName: addon.addOnName,
+                addOnPrice: addon.addOnPrice || 0, // Default to 0 if addOnPrice is missing
+              }))
+            : [],
         })),
       };
-
+  
       const response = await fetch(`/server/orderDetails/placeOrder/${cafeId}/${tableId}`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(orderData),
       });
-
+  
       const result = await response.json();
-
+  
       if (result.success) {
         localStorage.removeItem(`orderList_${cafeId}_${tableId}`);
         setOrderList([]);
@@ -85,6 +96,8 @@ function CartPage() {
       console.error("Error placing order:", error);
     }
   };
+  
+  
 
   const handleGoToHomePage = () => {
     navigate(`/order/${cafeId}/${tableId}/${customer}`);
@@ -93,12 +106,12 @@ function CartPage() {
   return (
     <div>
       <div className='relative h-[100vh]'>
-        <div className='flex gap-5 shadow-2xl items-center p-2 px-3 mb-6'>
+        <div className='flex gap-5 shadow-xl items-center p-2 px-3 mb-5'>
           <div onClick={() => navigate(`/order/${cafeId}/${tableId}/${customer}`)} className='opacity-60 scale-90'><FaArrowLeft /></div>
           <div className="text-lg font-montserrat-600">Cart</div>
         </div>
 
-        <div className='font-montserrat-600 px-3 mb-4'>Your Order</div>
+        <div className='font-montserrat-600 px-3 mb-2.5'>Your Order</div>
         
         {orderPlaced ? (
           <div className="text-center text-green-600 font-semibold">
@@ -112,24 +125,24 @@ function CartPage() {
           </div>
         ) : (
           <>
-            <div className="flex flex-col font-montserrat-500 gap-2 px-3">
+            <div className="flex flex-col font-montserrat-500 gap-2 px-3 h-[78vh] overflow-y-auto">
               {orderList.length === 0 ? (
                 <p>Your cart is empty</p>
               ) : (
                 <div className='flex flex-col'>
-                  <div className='flex flex-col gap-2'>
-                    {orderList.map(item => (
-                      <div key={item._id}>
+                  <div className='flex flex-col gap-1.5 mb-1 pt-1.5'>
+                    {orderList.map((item,index) => (
+                      <div key={index}>
                         <CartItemCard item={item} variant={item.variant} 
                           addons={item.addons} onQuantityChange={handleQuantityChange} />
                       </div>
                     ))}
                   </div>
-                  <div className='mt-2 px-3 rounded-2xl text-sm shadow-[0_0_18px_rgba(0,0,0,0.15)]'>
+                  <div className='mt-3 px-3 rounded-2xl text-sm shadow-[0_0_18px_rgba(0,0,0,0.15)]'>
                     <input type="text" placeholder='Add cooking requests...' className='py-2 outline-none w-full' />
                   </div>
-                  <div className='font-montserrat-600 my-4'>Additional Details</div>
-                  <div className='mt-2 px-3 py-1 flex justify-between items-center rounded-2xl text-sm shadow-[0_0_18px_rgba(0,0,0,0.15)]'>
+                  <div className='font-montserrat-600 mt-3'>Additional Details</div>
+                  <div className='mt-2 mb-4 px-3 py-1 flex justify-between items-center rounded-2xl text-sm shadow-[0_0_18px_rgba(0,0,0,0.15)]'>
                     <div>Tax</div>
                     <div>₹{tax}</div>
                   </div>
@@ -138,13 +151,13 @@ function CartPage() {
             </div>
 
             {orderList.length > 0 && (
-              <div className="absolute flex justify-between items-center bottom-0 z-50 pt-3 pb-8 w-full px-3 font-montserrat-500 shadow-[0_0_18px_rgba(0,0,0,0.3)]">
+              <div className="absolute flex justify-between items-center bottom-0 z-50 pt-3 pb-6 w-full px-3 font-montserrat-500 shadow-[0_0_18px_rgba(0,0,0,0.3)]">
                 <p>Total : ₹{finalAmount}</p>
                 <button 
                   onClick={handlePlaceOrder} 
                   className="uppercase bg-blue text-white rounded-xl py-1 px-3 hover:bg-opacity-90"
                 >
-                  Proceed to Pay
+                  Confirm Order
                 </button>
               </div>
             )}

@@ -127,33 +127,55 @@ function OrderUser() {
         setShowPopup(true);
     };
 
-    const handleAddToOrder = (dish, variant = {}, addons = []) => {
+    const handleAddToOrder = (dish, variant = {}, addons = [], quantity = 1) => {
         const updatedOrderList = [...orderList];
-        const existingIndex = updatedOrderList.findIndex(item => item._id === dish._id);
+    
+        // Ensure variant is always an object
+        const validVariant = variant || {};
+    
+        console.log("Adding to Order:");
+        console.log("Dish:", dish);
+        console.log("Variant:", validVariant);
+        console.log("Addons:", addons);
+        console.log("Quantity:", quantity);
     
         // Calculate prices for variant and addons
-        const variantPrice = variant?.variantPrice || 0;
+        const variantPrice = validVariant.variantPrice || 0;
         const addonPrice = addons.reduce((total, addon) => total + (addon.addOnPrice || 0), 0);
         const totalDishPrice = (dish.dishPrice || 0) + variantPrice + addonPrice;
     
-        // Define updatedDish with quantity, defaulting to 1 if new
-        const updatedDish = { 
-            ...dish, 
+        // Find the existing item with the same dish, variant, and addons
+        const existingIndex = updatedOrderList.findIndex(item => 
+            item._id === dish._id &&
+            item.dishName === dish.dishName &&
+            item.dishVariants?.variantName === validVariant.variantName && // Use validVariant for comparison
+            JSON.stringify(item.addons) === JSON.stringify(addons)
+        );
+    
+        console.log("Existing item index:", existingIndex);
+    
+        // Define the updatedDish object
+        const updatedDish = {
+            ...dish,
             dishPrice: totalDishPrice,
-            variant, 
+            variant: validVariant, // Ensure variant is valid
             addons,
-            quantity: existingIndex > -1 ? updatedOrderList[existingIndex].quantity : 1 // default to 1 if new dish
+            quantity: existingIndex > -1 ? updatedOrderList[existingIndex].quantity + quantity : quantity // Increment by quantity if it exists
         };
     
         if (existingIndex > -1) {
+            // Update existing item
             updatedOrderList[existingIndex] = { ...updatedOrderList[existingIndex], ...updatedDish };
         } else {
+            // Add as a new item
             updatedOrderList.push(updatedDish);
         }
     
+        // Update the state
         setOrderList(updatedOrderList);
         setShowPopup(false);
     };    
+        
 
     // Handle Complain Section
     const handleComplaintSubmit = async () => {
@@ -306,7 +328,7 @@ function OrderUser() {
 
             {/* MAIN SECTION */}
             <div className='flex-grow overflow-y-auto mb-3 mt-3'>
-                <div className='flex justify-center items-center mb-6 rounded-xl border-2 border-gray w-[90%] h-[140px] mx-auto'>
+                <div className='flex justify-center items-center mb-6 rounded-2xl border-2 border-gray w-[90%] h-[140px] mx-auto'>
                     {banner?.url ? (
                         <img src={banner.url} alt="Cafe Banner" className='w-full h-full object-cover rounded-xl' />
                     ) : (
@@ -369,7 +391,7 @@ function OrderUser() {
             )}
 
             {/* Codacity Footer - Appears only at the bottom */}
-            <div className='codacity my-3 px-4 flex items-center justify-center'>
+            <div className='my-3 px-4 flex items-center justify-center'>
                 <img src={CodacityLogo} alt="Codacity Logo" className='h-7 w-10' />
                 <h2 className='text-xs font-montserrat-700 text-gray pb-1'>Powered by Codacity Solutions</h2>
             </div>

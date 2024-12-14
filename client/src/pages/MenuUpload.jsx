@@ -60,68 +60,73 @@ function MenuUpload() {
     setIsOpen(!isOpen);
   };
 
-  useEffect(() => {
-    const fetchCategoriesAndAddons = async () => {
-      try {
-        const res = await fetch(`/server/cafeDetails/getCafeDetails/${cafeId}`, {
-          headers: {
-            'Authorization': `Bearer ${getToken()}`, 
-          },
-        });
-        const data = await res.json();
-        if (res.ok) {
-          setCafeName(data.name);
-          setCafePhone(data.phone);
-          setCafeEmail(data.email);
-          setCafeTables(data.tables);
-          setCafeInstagram(data.instagram);
-          setCafeAddress(data.address);
-          setCafeLogo(data.logoImg.url);
-          setComplains(data.complains);
-          setEarnings(data.earnings);
-          setCategories(data.categories);
-          setAddons(data.addons);     
-        } else {
-          setError(`Error: ${data.message}`);
-        }
-      } catch (err) {
-        setError('Failed to fetch categories');
-      } finally {
-        setLoading(false);
-      }
-    };
+  const fetchCategoriesAndAddons = async () => {
+    try {
+      const res = await fetch(`/server/cafeDetails/getCafeDetails/${cafeId}`, {
+        headers: {
+          'Authorization': `Bearer ${getToken()}`,
+        },
+      });
+      const data = await res.json();
 
+      if (res.ok) {
+        setCafeName(data.name);
+        setCafePhone(data.phone);
+        setCafeEmail(data.email);
+        setCafeTables(data.tables);
+        setCafeInstagram(data.instagram);
+        setCafeAddress(data.address);
+        setCafeLogo(data.logoImg.url);
+        setComplains(data.complains);
+        setEarnings(data.earnings);
+        setCategories(data.categories);
+        setAddons(data.addons);
+      } else {
+        setError(`Error: ${data.message}`);
+      }
+    } catch (err) {
+      setError('Failed to fetch categories');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Call the function inside useEffect when the component mounts
+  useEffect(() => {
     fetchCategoriesAndAddons();
   }, [cafeId]);
 
 
   const fetchCategoryDishes = async (category) => {
-    try {
-      const res = await fetch(`/server/menuDetails/getMenu/${cafeId}`, {
-        headers: {
-          Authorization: `Bearer ${getToken()}`,
-        },
-      });
-      const data = await res.json();
-      
-      if (res.status === 404) {
-        // If no dishes are found, clear dishes and show message
-        setFilteredDishes([]);
-        setError(`No dishes found in this category`);
-      } else if (res.ok) {
-        // If dishes are found, filter them based on category
-        const filtered = data.dishes.filter((dish) => dish.dishCategory === category);
-        setDishes(data.dishes); 
-        setFilteredDishes(filtered); 
-        setError(null); 
-      } else {
-        setError(`Error: ${data.message}`);
+      try {
+          const res = await fetch(`/server/menuDetails/getMenu/${cafeId}`, {
+              headers: {
+                  Authorization: `Bearer ${getToken()}`,
+              },
+          });
+          const data = await res.json();
+
+          if (res.ok) {
+              if (!data.dishes || data.dishes.length === 0) {
+                  // No dishes found, clear the lists and show a message
+                  setFilteredDishes([]);
+                  setDishes([]); 
+                  setError(`No dishes found in this category`);
+              } else {
+                  // Filter dishes based on category
+                  const filtered = data.dishes.filter((dish) => dish.dishCategory === category);
+                  setDishes(data.dishes);
+                  setFilteredDishes(filtered);
+                  setError(null);
+              }
+          } else {
+              setError(`Error: ${data.message}`);
+          }
+      } catch (err) {
+          console.error(err);
+          setError('Failed to fetch dishes');
       }
-    } catch (err) {
-      setError('Failed to fetch dishes');
-    }
   };
-  
 
   // Handle category selection and trigger fetch for dishes
   const handleCategoryChange = (category) => {
@@ -199,36 +204,6 @@ function MenuUpload() {
     }
   };
 
-  
-
-  // Handle deletion of a dish
-  const handleDeleteDish = async (dishName, dishCategory) => {
-    try {
-      const res = await fetch(`/server/menuDetails/deleteDish/${cafeId}`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${getToken()}`,
-        },
-        body: JSON.stringify({ dishName, dishCategory }),
-      });
-  
-      const data = await res.json();
-  
-      if (res.ok) {
-        // Update filteredDishes state
-        setFilteredDishes((prevDishes) => 
-           prevDishes.filter((dish) => dish.dishName !== dishName && dish.dishCategory !== dishCategory)
-        );
-        console.log("Dish deleted:", dishName, dishCategory);
-      } else {
-        setError(`Error: ${data.message}`);
-      }
-    } catch (err) {
-      setError('Failed to delete dish');
-    }
-  };
-
   const addVariant = () => {
     if (variantName && variantPrice) {
       setVariants([...variants, { name: variantName, price: variantPrice }]);
@@ -250,7 +225,7 @@ function MenuUpload() {
             <SidebarProvider>
               <AppSidebar Categories={[...categories]} Addons={[...addons]} 
                 onCategoryChange={handleCategoryChange} CafeName={cafeName}
-                handleContentView={handleShowDashboard} />
+                handleContentView={handleShowDashboard} fetchCategoriesAndAddons={fetchCategoriesAndAddons} />
               <SidebarTrigger />
             </SidebarProvider>
 
@@ -340,7 +315,7 @@ function MenuUpload() {
                           dishStatus={dish.dishStatus}
                           dishVariants={dish.dishVariants}
                           dishAddOns={dish.dishAddOns}
-                          onDelete={handleDeleteDish}
+                          onDelete={(category) => fetchCategoryDishes(category)}
                         />
                       ))
                     ) : (

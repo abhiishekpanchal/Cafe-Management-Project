@@ -24,7 +24,7 @@ import RemoveLogo from "../assets/removeLogo.png";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "./ui/collapsible";
 import { useParams } from 'react-router-dom';
 
-export function AppSidebar({ Categories, Addons, onCategoryChange, CafeName, handleContentView }) {
+export function AppSidebar({ Categories, Addons, onCategoryChange, CafeName, handleContentView, fetchCategoriesAndAddons }) {
   const { cafeId } = useParams();
   const [showCategories, setShowCategories] = useState(false);
   const [showInput, setShowInput] = useState(false);
@@ -67,11 +67,12 @@ export function AppSidebar({ Categories, Addons, onCategoryChange, CafeName, han
           },
           body: JSON.stringify({ category: newCategory }),
         });
+  
         const data = await res.json();
         if (res.ok) {
-          setCategories((prevCategories) => [...prevCategories, newCategory]);
-          setNewCategory('');
-          setShowInput(false);
+          setNewCategory('');       // Reset the input field
+          setShowInput(false);      // Hide the input field
+          fetchCategoriesAndAddons(); // Fetch updated categories and addons
         } else {
           alert(`Error: ${data.message}`);
         }
@@ -80,6 +81,7 @@ export function AppSidebar({ Categories, Addons, onCategoryChange, CafeName, han
       }
     }
   };
+  
 
   const handleDeleteCategory = async (category) => {
     try {
@@ -94,17 +96,25 @@ export function AppSidebar({ Categories, Addons, onCategoryChange, CafeName, han
 
       const data = await res.json();
       if (res.ok) {
+        // Remove the deleted category from the state
         setCategories((prevCategories) => prevCategories.filter((cat) => cat !== category));
+        
+        // Reset selected category if it's deleted
         if (category === selectedCategory) {
           setSelectedCategory(null);
         }
+
+        // Fetch updated categories and addons
+        fetchCategoriesAndAddons();
       } else {
         setError(`Error: ${data.message}`);
       }
     } catch (err) {
-      setError('Failed to delete category', err);
+      setError('Failed to delete category');
+      console.error(err);
     }
-  };
+};
+
 
   const handleAddAddon = async () => {
     if (addonName.trim()) {

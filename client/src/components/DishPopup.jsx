@@ -4,7 +4,7 @@ import { FaMinus, FaPlus } from 'react-icons/fa';
 function DishPopup({ dish, onClose, onAddToOrder, addons, selectedVariant, selectedAddons }) {
     const [currentVariant, setCurrentVariant] = useState(selectedVariant || null);
     const [currentAddons, setCurrentAddons] = useState(selectedAddons || []);
-    const [quantity, setQuantity] = useState(selectedVariant || selectedAddons ? 1 : 0);
+    const [quantity, setQuantity] = useState(1);  // Default to 1, no need for complex initialization
     const [isVisible, setIsVisible] = useState(false);
     const [showAddButton, setShowAddButton] = useState(quantity === 0);
     const [filteredAddons, setFilteredAddons] = useState([]);
@@ -29,7 +29,7 @@ function DishPopup({ dish, onClose, onAddToOrder, addons, selectedVariant, selec
     const decrementQuantity = () => {
         if (quantity === 1) {
             setShowAddButton(true);
-            setQuantity(0);
+            setQuantity(0);  // Set quantity to 0 when decremented from 1
         } else {
             setQuantity(prev => prev - 1);
         }
@@ -37,11 +37,14 @@ function DishPopup({ dish, onClose, onAddToOrder, addons, selectedVariant, selec
 
     const handleAddClick = () => {
         setShowAddButton(false);
-        setQuantity(1);
+        setQuantity(1);  // Set quantity to 1 on "Add"
     };
 
     const handleAddToCart = () => {
-        onAddToOrder(dish, currentVariant, currentAddons, quantity);
+        if (quantity > 0) {
+            // Pass correct quantity to onAddToOrder
+            onAddToOrder(dish, currentVariant, currentAddons, quantity);
+        }
         handleClose();
     };
 
@@ -145,7 +148,7 @@ function DishPopup({ dish, onClose, onAddToOrder, addons, selectedVariant, selec
                         onClick={handleAddToCart} 
                         className="bg-blue text-white px-4 py-2 rounded-lg w-[65%]"
                     >
-                        Add Item | Rs {100}
+                        Add Item | Rs {dish.dishPrice * quantity}
                     </button>
                 </div>
             </div>
