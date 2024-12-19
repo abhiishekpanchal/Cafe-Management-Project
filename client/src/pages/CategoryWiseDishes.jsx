@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { FaArrowLeft, FaSearch } from 'react-icons/fa';
-import OrderItemCard from '../components/OrderItemCard';
-import DishPopup from '../components/DishPopUp'; 
+import OrderItemCard from '../components/OrderItemCard.jsx';
+import DishPopup from '../components/DishPopup.jsx'; 
 
 function CategoryWiseDishes() {
     const { cafeId, tableId, category, customer } = useParams();
@@ -59,7 +59,6 @@ function CategoryWiseDishes() {
                 });
                 const data = await res.json();
                 if (res.ok) {
-                    console.log("Fetched Dishes:", data.dishes); // Debugging
                     setDishes(data.dishes);
                 } else {
                     console.log(`Error: ${data.message}`);
@@ -142,7 +141,6 @@ function CategoryWiseDishes() {
 
     // Function to open the dish popup
     const handleDishClick = (dish) => {
-        console.log("Selected Dish:", dish); // Debugging
         setSelectedDish(dish);
         const existingDish = orderList.find(item => item._id === dish._id);
         if (existingDish) {
@@ -209,9 +207,6 @@ function CategoryWiseDishes() {
 
             {/* DishPopUp */}
             {showPopup && (
-                <>
-                {console.log("Addons passed to DishPopup:", selectedDish.dishAddOns)}
-                {console.log("Addons passed to DishPopup:", selectedDish)}
                 <DishPopup 
                     dish={selectedDish}
                     onClose={() => setShowPopup(false)}
@@ -220,7 +215,6 @@ function CategoryWiseDishes() {
                     selectedVariant={selectedVariant}
                     selectedAddons={selectedAddons} 
                 />
-                </>
             )}
 
             {/* STICKY CART BLOCK */}

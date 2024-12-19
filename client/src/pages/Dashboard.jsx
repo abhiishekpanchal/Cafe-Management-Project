@@ -64,7 +64,6 @@ function Dashboard({ cafeName, cafePhone, cafeAddress, cafeTables, cafeInstagram
     
         if (cafeId) {
             fetchUsers();
-            console.log(users);
         }
     }, [cafeId]);    
 
@@ -83,7 +82,6 @@ function Dashboard({ cafeName, cafePhone, cafeAddress, cafeTables, cafeInstagram
     };
 
     const updateCafeDetails = async () => {
-        console.log('called');
         setLoading(true);
         setError(false);
         setSuccess(false);
