@@ -11,13 +11,11 @@ export const postUserDetails = async (req, res) => {
     }
 
     try {
-        console.log('1');
         const newUser = new User({
             name,
             phone,
             cafeId,
         });
-        console.log('2');
 
         await newUser.save();
         res.status(201).json({ message: 'User details saved successfully', user: newUser });

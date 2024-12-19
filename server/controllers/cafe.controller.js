@@ -152,7 +152,6 @@ export const deleteCategory = async (req, res) => {
       await cafe.save();
   
       const dishes = await Menu.deleteMany({cafeId, dishCategory: category});
-      console.log(dishes);
 
       res.status(200).json({ message: 'Category deleted successfully', categories: cafe.categories });
     } catch (error) {
