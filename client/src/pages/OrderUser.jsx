@@ -133,16 +133,14 @@ function OrderUser() {
         // Ensure variant is always an object
         const validVariant = variant || {};
     
-        console.log("Adding to Order:");
-        console.log("Dish:", dish);
-        console.log("Variant:", validVariant);
-        console.log("Addons:", addons);
-        console.log("Quantity:", quantity);
+        // Replace dish price with variant price if a variant exists, else use the dish price
+        const basePrice = validVariant.variantPrice || dish.dishPrice || 0;
     
-        // Calculate prices for variant and addons
-        const variantPrice = validVariant.variantPrice || 0;
+        // Calculate total price for addons
         const addonPrice = addons.reduce((total, addon) => total + (addon.addOnPrice || 0), 0);
-        const totalDishPrice = (dish.dishPrice || 0) + variantPrice + addonPrice;
+    
+        // Total price = base price (variant or dish) + addons
+        const totalDishPrice = basePrice + addonPrice;
     
         // Find the existing item with the same dish, variant, and addons
         const existingIndex = updatedOrderList.findIndex(item => 
@@ -151,9 +149,7 @@ function OrderUser() {
             JSON.stringify(item.variant) === JSON.stringify(validVariant) && // Compare variants as strings
             JSON.stringify(item.addons) === JSON.stringify(addons) // Compare addons as strings
         );
-    
-        console.log("Existing item index:", existingIndex);
-    
+        
         if (existingIndex > -1) {
             // If dish exists, update its quantity and price
             const updatedItem = { ...updatedOrderList[existingIndex] };
@@ -164,9 +160,9 @@ function OrderUser() {
             // Add a new item
             const updatedDish = {
                 ...dish,
-                dishPrice: totalDishPrice * quantity, // Price multiplied by quantity
-                variant: validVariant, // Add variant
-                addons, // Add addons
+                dishPrice: totalDishPrice,
+                variant: validVariant, 
+                addons, 
                 quantity: quantity
             };
             updatedOrderList.push(updatedDish);
@@ -175,9 +171,7 @@ function OrderUser() {
         // Update the state
         setOrderList(updatedOrderList);
         setShowPopup(false);
-    };
-     
-          
+    };    
         
 
     // Handle Complain Section
@@ -239,7 +233,7 @@ function OrderUser() {
                         </div>
                         <button
                             className="bg-white text-blue p-1 px-4 py-1 rounded-xl font-montserrat-600"
-                            onClick={() => navigate(`/order/cart/${cafeId}/${tableId}/${customer}`)}
+                            onClick={() => navigate(`/order/${cafeId}/${tableId}/${customer}/cart`)}
                         >
                             View Cart
                         </button>

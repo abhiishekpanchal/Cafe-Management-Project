@@ -26,6 +26,14 @@ function OrderPanelAdmin() {
     const getToken = () => localStorage.getItem('token');
 
     useEffect(() => {
+        const intervalId = setInterval(() => {
+            window.location.reload();
+        }, 60000); // Reloads page every 1 minute
+    
+        return () => clearInterval(intervalId); // Clean up
+    }, []);    
+
+    useEffect(() => {
         const fetchCategories = async () => {
             try {
                 const res = await fetch(`/server/cafeDetails/getCafeDetails/${cafeId}`, {
@@ -59,6 +67,8 @@ function OrderPanelAdmin() {
             });
             const data = await res.json();
             if (res.ok) {
+                // Sort orders by createdAt or updatedAt in descending order (latest first)
+                const sortedOrders = data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
                 setOrdersList(data);
             } else {
                 setError(`Error: ${data.message}`);

@@ -11,6 +11,7 @@ function CartPage() {
   
   const [orderList, setOrderList] = useState(initialOrderList);
   const [orderPlaced, setOrderPlaced] = useState(false);
+  const [cookingRequest, setCookingRequest] = useState('');
 
   useEffect(() => {
     localStorage.setItem(`orderList_${cafeId}_${tableId}`, JSON.stringify(orderList));
@@ -58,18 +59,19 @@ function CartPage() {
         cafeId,
         tableId,
         customer,
+        cookingRequest,
         orderList: orderList.map(item => ({
           dishName: item.dishName,
           dishCategory: item.dishCategory,
           quantity: item.quantity,
-          dishPrice: item.dishPrice || 0, // Default to 0 if dishPrice is missing
+          dishPrice: item.dishPrice || 0, 
           dishVariants: item.variant
             ? { variantName: item.variant.variantName, variantPrice: item.variant.variantPrice || 0 }
-            : { variantName: "Default", variantPrice: 0 }, // Default variant with 0 price
+            : { variantName: "Default", variantPrice: 0 }, 
           dishAddOns: item.addons
             ? item.addons.map(addon => ({
                 addOnName: addon.addOnName,
-                addOnPrice: addon.addOnPrice || 0, // Default to 0 if addOnPrice is missing
+                addOnPrice: addon.addOnPrice || 0, 
               }))
             : [],
         })),
@@ -98,7 +100,6 @@ function CartPage() {
   };
   
   
-
   const handleGoToHomePage = () => {
     navigate(`/order/${cafeId}/${tableId}/${customer}`);
   };
@@ -139,7 +140,11 @@ function CartPage() {
                     ))}
                   </div>
                   <div className='mt-3 px-3 rounded-2xl text-sm shadow-[0_0_18px_rgba(0,0,0,0.15)]'>
-                    <input type="text" placeholder='Add cooking requests...' className='py-2 outline-none w-full' />
+                    <input type="text" 
+                      placeholder='Add cooking requests...' 
+                      className='py-2 outline-none w-full' 
+                      value={cookingRequest} 
+                      onChange={(e) => setCookingRequest(e.target.value)}/>
                   </div>
                   <div className='font-montserrat-600 mt-3'>Additional Details</div>
                   <div className='mt-2 mb-4 px-3 py-1 flex justify-between items-center rounded-2xl text-sm shadow-[0_0_18px_rgba(0,0,0,0.15)]'>

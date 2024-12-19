@@ -1,17 +1,11 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { FaAngleDown } from 'react-icons/fa';
 
-function DropDown({ title, listItems = [] }) {
-  const [isOpen, setIsOpen] = useState(false);
-
-  const toggleDropdown = () => {
-    setIsOpen(!isOpen);
-  };
-
+function DropDown({ title, listItems = [], isOpen, onToggle }) {
   return (
     <div className="relative bg-[#3295E866] rounded-3xl w-full">
       <button
-        onClick={toggleDropdown}
+        onClick={onToggle}
         className="flex justify-between text-sm font-montserrat-400 items-center w-full px-4 py-1"
       >
         <div>{title}</div>

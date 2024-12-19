@@ -4,16 +4,16 @@ import VegLogo from '../assets/vegLogo.png';
 import NonVegLogo from '../assets/nonvegLogo.png';
 
 function CartItemCard({ item, variant, addons, onQuantityChange }) {
-  const { _id, dishName = '', dishPrice, quantity } = item; // Default to empty string if dishName is undefined
+  const { _id, dishName = '', dishPrice, quantity } = item; 
 
   // Handle quantity increment
   const handleIncrement = () => {
-    onQuantityChange(_id, variant, addons, quantity + 1);  // Pass variant and addons
+    onQuantityChange(_id, variant, addons, quantity + 1);  
   };
 
   // Handle quantity decrement
   const handleDecrement = () => {
-    onQuantityChange(_id, variant, addons, quantity - 1);  // Pass variant and addons
+    onQuantityChange(_id, variant, addons, quantity - 1);  
   };
 
   return (
@@ -54,7 +54,9 @@ function CartItemCard({ item, variant, addons, onQuantityChange }) {
             <FaPlus />
           </button>
         </div>
-        <div className="text-sm font-montserrat-600">₹{dishPrice * quantity}</div>
+        <div className="text-sm font-montserrat-600">
+          ₹{dishPrice* quantity}
+        </div>
       </div>
     </div>
   );

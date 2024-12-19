@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import VegLogo from '../assets/vegLogo.png';
 import NonVegLogo from '../assets/nonvegLogo.png';
@@ -8,14 +8,20 @@ import DropDown from './DropDown';
 function ItemCard({ dishname, dishdescription, dishprice, dishType, dishCategory, dishVariants, dishAddOns, onDelete }) {
   const { cafeId } = useParams();
 
+  const [activeDropdown, setActiveDropdown] = useState(null); // Track which dropdown is open
+
+  const handleDropdownToggle = (dropdown) => {
+    setActiveDropdown((prev) => (prev === dropdown ? null : dropdown));
+  };
+
   const handleDeleteDish = async () => {
     const token = localStorage.getItem('token'); 
-  
+
     if (!token) {
       console.error('No token found');
       return;
     }
-  
+
     try {
       const response = await fetch(`/server/menuDetails/deleteDish/${cafeId}`, {
         method: 'DELETE',
@@ -25,8 +31,7 @@ function ItemCard({ dishname, dishdescription, dishprice, dishType, dishCategory
         },
         body: JSON.stringify({ dishname, dishCategory }),
       });
-  
-      // Call onDelete directly after the request completes
+
       if (response.ok) {
         console.log("Dish deleted:", dishname);
         onDelete(dishCategory);
@@ -37,20 +42,15 @@ function ItemCard({ dishname, dishdescription, dishprice, dishType, dishCategory
       console.error("Error deleting dish:", error);
     }
   };
-  
 
   return (
     <div className='relative flex flex-col justify-start items-center w-full md:w-[27%] max-h-[55%] py-3 pt-7 bg-[#0158A12A] rounded-3xl'>
       {/* Dish type icon */}
       <div className='absolute top-1 left-1 scale-110'>
         {dishType === 'VEG' ? (
-          <div className='text-green'>
-            <img src={VegLogo} alt="Veg Logo" className='h-[42px] w-[42px] scale-50' />
-          </div>
+          <img src={VegLogo} alt="Veg Logo" className='h-[42px] w-[42px] scale-50' />
         ) : (
-          <div className='text-red'>
-             <img src={NonVegLogo} alt="NonVeg Logo" className='h-[42px] w-[42px] scale-50' />
-          </div>
+          <img src={NonVegLogo} alt="NonVeg Logo" className='h-[42px] w-[42px] scale-50' />
         )}
       </div>
 
@@ -69,15 +69,27 @@ function ItemCard({ dishname, dishdescription, dishprice, dishType, dishCategory
 
       <div className='w-full h-1 bg-white'></div>
 
-      {/* Dish description and price */}
+      {/* Dish description and dropdowns */}
       <div className='flex flex-col justify-between h-full items-start gap-1 px-3 font-semibold bg-base4 rounded-md w-full'>
-        <div className='text-xs font-montsarret font-montserrat-500 capitalize break-words max-h-20 text-ellipsis w-full my-2'
-        style={{ wordWrap: 'break-word', wordBreak: 'break-word' }}>
+        <div
+          className='text-xs font-montsarret font-montserrat-500 capitalize break-words max-h-20 text-ellipsis w-full my-2'
+          style={{ wordWrap: 'break-word', wordBreak: 'break-word' }}
+        >
           {dishdescription}
         </div>
         <div className='w-full flex flex-col gap-2'>
-          <DropDown title='Variants' listItems={dishVariants} />
-          <DropDown title='Add-ons' listItems={dishAddOns} />
+          <DropDown
+            title='Variants'
+            listItems={dishVariants}
+            isOpen={activeDropdown === 'variants'}
+            onToggle={() => handleDropdownToggle('variants')}
+          />
+          <DropDown
+            title='Add-ons'
+            listItems={dishAddOns}
+            isOpen={activeDropdown === 'addons'}
+            onToggle={() => handleDropdownToggle('addons')}
+          />
         </div>
       </div>
     </div>

@@ -2,7 +2,7 @@ import Order from '../models/order.model.js';
 
 export const placeOrder = async (req, res) => {
   try {
-    const { cafeId, tableId, customer, orderList } = req.body;
+    const { cafeId, tableId, customer, orderList, cookingRequest } = req.body;
 
     // Process each item in the order list
     const updatedOrderList = orderList.map(item => {
@@ -37,6 +37,7 @@ export const placeOrder = async (req, res) => {
       customer,
       orderList: updatedOrderList,
       totalPrice,
+      cookingRequest,
     });
 
     await newOrder.save();
@@ -54,8 +55,6 @@ export const placeOrder = async (req, res) => {
     });
   }
 };
-
-
 
 
 export const getOrders = async (req, res) => {

@@ -13,21 +13,28 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        
-        {/* CAFE REGISTRATION */}
-        <Route path="/register" element={<CafeRegistrationForm />} />
+        {/* ROOT ROUTE */}
         <Route path="/" element={<CafeLoginForm />} />
-        <Route path="/menu/:cafeId" element={<MenuUpload />} />
-        <Route path="/menu/:cafeId/getQR" element={<GetQR />} />
 
-        {/* ORDER BY USER */}
-        <Route path="/userInfo/:cafeId/:tableId" element={<UserPage />} />
-        <Route path="/order/:cafeId/:tableId/:customer" element={<OrderUser />} />
-        <Route path="/order/:cafeId/:tableId/:customer/:category" element={<CategoryWiseDishes />} />
-        <Route path="/order/cart/:cafeId/:tableId/:customer" element={<CartPage />} />
+        {/* CAFE REGISTRATION & MENU MANAGEMENT */}
+        <Route path="register" element={<CafeRegistrationForm />} />
+        <Route path="menu/:cafeId">
+          <Route index element={<MenuUpload />} /> 
+          <Route path="getQR" element={<GetQR />} />
+        </Route>
 
-        {/* ORDER PANEL ADMIN */}
-        <Route path="/admin/:cafeId" element={<OrderPanelAdmin />} />
+        {/* USER ORDERING */}
+        <Route path="order/:cafeId/:tableId/:customer">
+          <Route index element={<OrderUser />} />
+          <Route path=":category" element={<CategoryWiseDishes />} />
+          <Route path="cart" element={<CartPage />} />
+        </Route>
+
+        {/* USER INFORMATION */}
+        <Route path="userInfo/:cafeId/:tableId" element={<UserPage />} />
+
+        {/* ADMIN ORDER PANEL */}
+        <Route path="admin/:cafeId" element={<OrderPanelAdmin />} />
 
       </Routes>
     </BrowserRouter>

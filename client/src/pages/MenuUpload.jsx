@@ -187,6 +187,8 @@ function MenuUpload() {
               addons
             }
           ]);
+          fetchCategoriesAndAddons();
+          fetchCategoryDishes(selectedCategory);
           setShowDishForm(false);
           setDishName('');
           setDishDescription('');
@@ -225,7 +227,8 @@ function MenuUpload() {
             <SidebarProvider>
               <AppSidebar Categories={[...categories]} Addons={[...addons]} 
                 onCategoryChange={handleCategoryChange} CafeName={cafeName}
-                handleContentView={handleShowDashboard} fetchCategoriesAndAddons={fetchCategoriesAndAddons} />
+                handleContentView={handleShowDashboard} fetchCategoriesAndAddons={fetchCategoriesAndAddons}
+                fetchCategoryDishes={fetchCategoryDishes} />
               <SidebarTrigger />
             </SidebarProvider>
 
@@ -340,7 +343,7 @@ function MenuUpload() {
                           value={dishName}
                           onChange={(e) => setDishName(e.target.value)}
                           placeholder="dish name"
-                          className="outline-none p-1 border-l-2"
+                          className="outline-none p-1 border-l-2 w-[89%]"
                           required
                         />
                       </div>
@@ -351,7 +354,7 @@ function MenuUpload() {
                           value={dishDescription}
                           onChange={(e) => setDishDescription(e.target.value)}
                           placeholder="dish description"
-                          className="outline-none p-1 border-l-2"
+                          className="outline-none p-1 border-l-2 w-[89%]"
                           maxLength={150}
                           required
                         />
@@ -363,7 +366,7 @@ function MenuUpload() {
                         value={dishPrice}
                         onChange={(e) => setDishPrice(e.target.value)}
                         placeholder="dish price"
-                        className="outline-none p-1 border-l-2 w-[83%]"
+                        className="outline-none p-1 border-l-2 w-[89%]"
                         min={0}
                         required
                       />
@@ -453,7 +456,7 @@ function MenuUpload() {
                             </button>
                           </div>
                           {isOpen && (
-                            <div className='absolute top-10 w-full'>
+                            <div className='absolute top-10 w-full -ml-1.5'>
                               {addons
                                 .filter(addon => !selectedAddons.some(selected => selected.addon_name === addon.addon_name))
                                 .map((addon, index) => (
@@ -466,9 +469,10 @@ function MenuUpload() {
                                       setSelectedAddons([...selectedAddons, addon]);
                                       setIsOpen(false);  // Close dropdown after selection
                                     }}
-                                    className="py-1 cursor-pointer w-full rounded-3xl px-4 bg-white border-2 border-blue my-0.5 uppercase"
+                                    className="py-1 w-full rounded-3xl px-4 bg-white border-2 border-blue my-0.5 uppercase flex justify-between items-center"
                                   >
-                                    {addon.addon_name} - Rs {addon.addon_price} 
+                                    <div>{addon.addon_name}</div>
+                                    <div>Rs {addon.addon_price}</div> 
                                   </button>
                                 ))}
                             </div>

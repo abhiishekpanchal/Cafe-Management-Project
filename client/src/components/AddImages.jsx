@@ -9,11 +9,13 @@ function AddImages({ categories, handleAddImagesPopup, cafeId }) {
   const [dropdownCategories, setDropdownCategories] = useState([...categories]);
   const [selectedCategory, setSelectedCategory] = useState('category');
   const [imageFile, setImageFile] = useState(null);
-  const [bannerFile, setBannerFile] = useState(null); 
-  
-  const toggleDropdown = () => {
-    setIsOpen(!isOpen);
-  };
+  const [bannerFile, setBannerFile] = useState(null);
+
+  // State for messages
+  const [imageMessage, setImageMessage] = useState(null);
+  const [bannerMessage, setBannerMessage] = useState(null);
+
+  const toggleDropdown = () => setIsOpen(!isOpen);
 
   const handleCategorySelect = (category) => {
     setSelectedCategory(category);
@@ -23,20 +25,22 @@ function AddImages({ categories, handleAddImagesPopup, cafeId }) {
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      setImageFile(file); 
+      setImageFile(file);
+      setImageMessage(null); // Clear previous messages
     }
   };
 
   const handleBannerChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      setBannerFile(file); 
+      setBannerFile(file);
+      setBannerMessage(null); 
     }
   };
 
   const uploadImage = async () => {
-    if (!selectedCategory || !imageFile) {
-      alert("Please select a category and upload an image before submitting.");
+    if (selectedCategory=='category' || !imageFile) {
+      setImageMessage({ type: 'error', text: "Please select a category and upload an image before submitting." });
       return;
     }
 
@@ -51,52 +55,48 @@ function AddImages({ categories, handleAddImagesPopup, cafeId }) {
       });
 
       if (response.ok) {
-        const result = await response.json();
-        alert('Image uploaded successfully');
-        setSelectedCategory('category'); 
+        setImageMessage({ type: 'success', text: "Image uploaded successfully." });
+        setSelectedCategory('category');
         setImageFile(null);
       } else {
         const errorData = await response.json();
-        alert(`Error uploading image: ${errorData.message}`);
+        setImageMessage({ type: 'error', text: `Error: ${errorData.message}` });
       }
     } catch (error) {
       console.error('Error:', error);
-      alert("An error occurred while uploading the image.");
+      setImageMessage({ type: 'error', text: "An error occurred while uploading the image." });
     }
   };
 
   const uploadBanner = async () => {
     if (!bannerFile) {
-      alert("Please upload a banner image before submitting.");
+      setBannerMessage({ type: 'error', text: "Please upload a banner image before submitting." });
       return;
     }
 
     const formData = new FormData();
-    formData.append('bannerFile', bannerFile); 
+    formData.append('bannerFile', bannerFile);
 
     try {
       const response = await fetch(`/server/cafeDetails/uploadBanner/${cafeId}`, {
         method: 'POST',
-        body: formData, 
+        body: formData,
       });
 
       if (response.ok) {
-        const result = await response.json();
-        alert('Banner uploaded successfully');
-        setBannerFile(null); 
+        setBannerMessage({ type: 'success', text: "Banner uploaded successfully." });
+        setBannerFile(null);
       } else {
         const errorData = await response.json();
-        alert(`Error uploading banner: ${errorData.message}`);
+        setBannerMessage({ type: 'error', text: `Error: ${errorData.message}` });
       }
     } catch (error) {
       console.error('Error:', error);
-      alert("An error occurred while uploading the banner.");
+      setBannerMessage({ type: 'error', text: "An error occurred while uploading the banner." });
     }
   };
 
-  const closePopup = () => {
-    handleAddImagesPopup();
-  };
+  const closePopup = () => handleAddImagesPopup();
 
   return (
     <div>
@@ -108,6 +108,8 @@ function AddImages({ categories, handleAddImagesPopup, cafeId }) {
 
         <div className='flex flex-col justify-start items-center gap-2 w-full'>
           <div className='font-montserrat-700 text-xl mb-2'>ADD IMAGES</div>
+
+          {/* Dropdown */}
           <div className='relative flex items-center w-[80%] py-1 px-2 border-2 border-gray rounded-xl'>
             <img src={PizzaLogo} alt="Logo" className='h-6 w-6' />
             <div className="relative w-full">
@@ -138,53 +140,65 @@ function AddImages({ categories, handleAddImagesPopup, cafeId }) {
             )}
           </div>
 
-          <div className='w-[80%] flex justify-center items-center py-1.5 gap-3'>
-            <div className='bg-blue rounded-xl flex items-center justify-center py-1.5 w-full'>
-              <img src={UploadLogo} alt="Upload" className='h-6 w-6' />
-              <div className='font-montserrat-500 text-md text-white'>
+          {/* Upload Image */}
+          <div className='w-[80%] flex flex-col items-center gap-2'>
+            <div className='flex justify-center items-center py-1.5 gap-3 w-full'>
+              <div className='bg-blue rounded-xl flex items-center justify-center py-1.5 w-full'>
+                <img src={UploadLogo} alt="Upload" className='h-6 w-6' />
                 <input 
                   type="file" 
                   name='imageFile' 
-                  id={`image-${selectedCategory}`} 
+                  id='imageFile' 
                   className='hidden' 
+                  accept="image/png, image/jpeg, image/jpg, image/webp"
                   onChange={handleImageChange} 
                 />
-                <label htmlFor={`image-${selectedCategory}`}>Upload Image</label>
+                <label htmlFor='imageFile' className='font-montserrat-500 text-md text-white cursor-pointer'>Upload Image</label>
               </div>
+              {imageFile && (
+                <button onClick={uploadImage} className='bg-blue p-2.5 rounded-xl text-white'>
+                  <FaCheck />
+                </button>
+              )}
             </div>
-            {imageFile && (
-              <button onClick={uploadImage} className='bg-blue p-2.5 rounded-xl text-white'>
-                <FaCheck />
-              </button>
+            {imageMessage && (
+              <div className={`text-sm ${imageMessage.type === 'success' ? 'text-green' : 'text-red'}`}>
+                {imageMessage.text}
+              </div>
             )}
           </div>
         </div>
 
-        {/* Section for Uploading Banner */}
-        <div className='flex flex-col justify-start items-center gap-1 w-full'>
-            <div className='font-montserrat-400 text-sm mb-1'>DISCOUNT BANNER</div>
-            <div className='w-[80%] flex justify-center items-center py-1.5 gap-3'>
-            <div className='bg-blue rounded-xl flex items-center justify-center py-1.5 w-full'>
-              <img src={UploadLogo} alt="Upload" className='h-6 w-6' />
-              <div className='font-montserrat-500 text-md text-white'>
+        {/* Upload Banner */}
+        <div className='flex flex-col justify-start items-center gap-2 w-full'>
+          <div className='font-montserrat-400 text-sm'>DISCOUNT BANNER</div>
+          <div className='w-[80%] flex flex-col items-center gap-2'>
+            <div className='flex justify-center items-center py-1.5 gap-3 w-full'>
+              <div className='bg-blue rounded-xl flex items-center justify-center py-1.5 w-full'>
+                <img src={UploadLogo} alt="Upload" className='h-6 w-6' />
                 <input 
                   type="file" 
                   name='bannerFile' 
-                  id='banner'
+                  id='bannerFile' 
                   className='hidden' 
+                  accept="image/png, image/jpeg, image/jpg, image/webp"
                   onChange={handleBannerChange} 
                 />
-                <label htmlFor='banner'>Upload Banner</label>
+                <label htmlFor='bannerFile' className='font-montserrat-500 text-md text-white cursor-pointer'>Upload Banner</label>
               </div>
+              {bannerFile && (
+                <button onClick={uploadBanner} className='bg-blue p-2.5 rounded-xl text-white'>
+                  <FaCheck />
+                </button>
+              )}
             </div>
-            {bannerFile && (
-              <button onClick={uploadBanner} className='bg-blue p-2.5 rounded-xl text-white'>
-                <FaCheck />
-              </button>
+            {bannerMessage && (
+              <div className={`text-sm ${bannerMessage.type === 'success' ? 'text-green' : 'text-red'}`}>
+                {bannerMessage.text}
+              </div>
             )}
           </div>
         </div>
-
       </div>
     </div>
   );

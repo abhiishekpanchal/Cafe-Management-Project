@@ -24,7 +24,7 @@ import RemoveLogo from "../assets/removeLogo.png";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "./ui/collapsible";
 import { useParams } from 'react-router-dom';
 
-export function AppSidebar({ Categories, Addons, onCategoryChange, CafeName, handleContentView, fetchCategoriesAndAddons }) {
+export function AppSidebar({ Categories, Addons, onCategoryChange, handleContentView, fetchCategoriesAndAddons, fetchCategoryDishes }) {
   const { cafeId } = useParams();
   const [showCategories, setShowCategories] = useState(false);
   const [showInput, setShowInput] = useState(false);
@@ -70,9 +70,9 @@ export function AppSidebar({ Categories, Addons, onCategoryChange, CafeName, han
   
         const data = await res.json();
         if (res.ok) {
-          setNewCategory('');       // Reset the input field
-          setShowInput(false);      // Hide the input field
-          fetchCategoriesAndAddons(); // Fetch updated categories and addons
+          setNewCategory('');       
+          setShowInput(false);      
+          fetchCategoriesAndAddons(); 
         } else {
           alert(`Error: ${data.message}`);
         }
@@ -130,6 +130,7 @@ export function AppSidebar({ Categories, Addons, onCategoryChange, CafeName, han
         const data = await res.json();
         if (res.ok) {
           setAddons((prevAddons) => [...prevAddons, { addon_name: addonName, addon_price: addonPrice }]);
+          fetchCategoriesAndAddons();
           setAddonName('');
           setAddonPrice(0);
           setShowInputAddon(false);
@@ -156,6 +157,8 @@ export function AppSidebar({ Categories, Addons, onCategoryChange, CafeName, han
       const data = await res.json();
       if (res.ok) {
         setAddons((prevAddons) => prevAddons.filter((add) => add.addon_name !== addon_name));
+        fetchCategoryDishes(selectedCategory);
+        fetchCategoriesAndAddons();
       } else {
         setError(`Error: ${data.message}`);
       }
@@ -206,7 +209,7 @@ export function AppSidebar({ Categories, Addons, onCategoryChange, CafeName, han
                         <div>{error}</div>
                       ) : categories.length > 0 ? (
                         categories.map((category) => (
-                          <SidebarMenuSubItem key={category}>
+                          <SidebarMenuSubItem key={category} onClick={() => handleCategorySelection(category)}>
                             <SidebarMenuSubButton asChild>
                               <div
                                 key={category}
@@ -218,7 +221,6 @@ export function AppSidebar({ Categories, Addons, onCategoryChange, CafeName, han
                                   type="radio"
                                   name="categories"
                                   id={category}
-                                  onChange={() => handleCategorySelection(category)}
                                   checked={selectedCategory === category}
                                   hidden
                                 />
@@ -247,7 +249,7 @@ export function AppSidebar({ Categories, Addons, onCategoryChange, CafeName, han
                               value={newCategory}
                               onChange={(e) => setNewCategory(e.target.value)}
                               placeholder="Add new category"
-                              className="border p-2 rounded-md"
+                              className="border p-1 mt-1.5 rounded-md"
                             />
                             <button
                               onClick={handleAddCategory}

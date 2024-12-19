@@ -2,13 +2,20 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { FaArrowLeft, FaSearch } from 'react-icons/fa';
 import OrderItemCard from '../components/OrderItemCard';
+import DishPopup from '../components/DishPopUp'; 
 
 function CategoryWiseDishes() {
     const { cafeId, tableId, category, customer } = useParams();
     const [dishes, setDishes] = useState([]);
+    const [addons, setAddons] = useState([]);
     const [filteredDishes, setFilteredDishes] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
-    const [dishType, setDishType] = useState('BOTH'); 
+    const [dishType, setDishType] = useState('BOTH');
+    const [selectedDish, setSelectedDish] = useState(null);
+    const [showPopup, setShowPopup] = useState(false);
+    const [selectedVariant, setSelectedVariant] = useState(null);
+    const [selectedAddons, setSelectedAddons] = useState([]);
+
     const getToken = () => localStorage.getItem('token');
     const navigate = useNavigate();
 
@@ -17,7 +24,31 @@ function CategoryWiseDishes() {
         return savedOrderList ? JSON.parse(savedOrderList) : [];
     });
 
-    // Fetch dishes once when component mounts
+    useEffect(() => {
+            const fetchCafeAddOns = async () => {
+                try {
+                    const res = await fetch(`/server/cafeDetails/getCafeDetails/${cafeId}`, {
+                        headers: {
+                            'Authorization': `Bearer ${getToken()}`,
+                        },
+                    });
+                    const data = await res.json();
+                    if (res.ok) {
+                        setAddons(data.addons);
+                    } else {
+                        setError(`Error: ${data.message}`);
+                    }
+                } catch (err) {
+                    setError('Failed to fetch categories');
+                } finally {
+                    setLoading(false);
+                }
+            };
+    
+            fetchCafeAddOns();
+        }, [cafeId]);
+
+    // Fetch dishes when component mounts
     useEffect(() => {
         const fetchCategoryDishes = async () => {
             try {
@@ -28,6 +59,7 @@ function CategoryWiseDishes() {
                 });
                 const data = await res.json();
                 if (res.ok) {
+                    console.log("Fetched Dishes:", data.dishes); // Debugging
                     setDishes(data.dishes);
                 } else {
                     console.log(`Error: ${data.message}`);
@@ -41,14 +73,16 @@ function CategoryWiseDishes() {
 
     // Filter dishes based on category, status, and dish type
     useEffect(() => {
-        let filtered = dishes.filter(dish => 
+        let filtered = dishes.filter(dish =>
             dish.dishCategory === category &&
             dish.dishStatus === true &&
             (dishType === 'BOTH' || dish.dishType === dishType)
         );
 
         if (searchTerm) {
-            filtered = filtered.filter(dish => dish.dishName.toLowerCase().includes(searchTerm.toLowerCase()));
+            filtered = filtered.filter(dish =>
+                dish.dishName.toLowerCase().includes(searchTerm.toLowerCase())
+            );
         }
 
         setFilteredDishes(filtered);
@@ -60,15 +94,65 @@ function CategoryWiseDishes() {
     }, [orderList, cafeId, tableId]);
 
     // Function to handle adding or updating a dish in the orderList
-    const handleAddToOrder = (dish, quantity) => {
-        const existingDishIndex = orderList.findIndex(item => item._id === dish._id);
-        if (existingDishIndex !== -1) {
-            const updatedOrderList = [...orderList];
-            updatedOrderList[existingDishIndex].quantity = quantity;
-            setOrderList(updatedOrderList);
+    const handleAddToOrder = (dish, variant = {}, addons = [], quantity = 1) => {
+        const updatedOrderList = [...orderList];
+    
+        // Ensure variant is always an object
+        const validVariant = variant || {};
+    
+        // Replace dish price with variant price if a variant exists, else use the dish price
+        const basePrice = validVariant.variantPrice || dish.dishPrice || 0;
+    
+        // Calculate total price for addons
+        const addonPrice = addons.reduce((total, addon) => total + (addon.addOnPrice || 0), 0);
+    
+        // Total price = base price (variant or dish) + addons
+        const totalDishPrice = basePrice + addonPrice;
+    
+        // Find the existing item with the same dish, variant, and addons
+        const existingIndex = updatedOrderList.findIndex(item => 
+            item._id === dish._id &&
+            item.dishName === dish.dishName &&
+            JSON.stringify(item.variant) === JSON.stringify(validVariant) && // Compare variants as strings
+            JSON.stringify(item.addons) === JSON.stringify(addons) // Compare addons as strings
+        );
+        
+        if (existingIndex > -1) {
+            // If dish exists, update its quantity and price
+            const updatedItem = { ...updatedOrderList[existingIndex] };
+            updatedItem.quantity += quantity;
+            updatedItem.dishPrice = totalDishPrice * updatedItem.quantity; // Recalculate price
+            updatedOrderList[existingIndex] = updatedItem; // Replace the old item
         } else {
-            setOrderList([...orderList, { ...dish, quantity }]);
+            // Add a new item
+            const updatedDish = {
+                ...dish,
+                dishPrice: totalDishPrice,
+                variant: validVariant, 
+                addons, 
+                quantity: quantity
+            };
+            updatedOrderList.push(updatedDish);
         }
+    
+        // Update the state
+        setOrderList(updatedOrderList);
+        setShowPopup(false);
+    };
+
+    // Function to open the dish popup
+    const handleDishClick = (dish) => {
+        console.log("Selected Dish:", dish); // Debugging
+        setSelectedDish(dish);
+        const existingDish = orderList.find(item => item._id === dish._id);
+        if (existingDish) {
+            setSelectedVariant(existingDish.variant);
+            setSelectedAddons(existingDish.addons);
+        } else {
+            setSelectedVariant(null);
+            setSelectedAddons([]);
+        }
+        setShowPopup(true);
     };
 
     // Function to handle changes in the select dropdown
@@ -79,51 +163,85 @@ function CategoryWiseDishes() {
     return (
         <div className='flex flex-col'>
             {/* Header */}
-            <div className='flex flex-col gap-2 py-2'>
-                <div className='flex gap-4 items-center px-2'>
-                    <FaArrowLeft onClick={() => navigate(`/order/${cafeId}/${tableId}/${customer}`)} className='h-5 w-5 opacity-60 scale-[80%]' />
-                    <div className='uppercase font-montserrat-600'>{category}</div>
-                </div>
-                <div className='flex justify-between text-xs shadow-xl pb-4 px-2'>
-                    <div className='flex items-center py-1 px-1 pr-1.5 rounded-full border-2 border-gray'>
-                        <select 
-                            name="DishType" 
-                            id="dish-type" 
-                            className='outline-none font-montserrat-400 text-sm'
-                            value={dishType}
-                            onChange={handleDishTypeChange} // Add onChange to update dishType state
-                        >
-                            <option value="VEG">Pure-Veg</option>
-                            <option value="NON-VEG">Non-Veg</option>
-                            <option value="BOTH">Both</option>
-                        </select>
-                    </div>
-                    <div className='flex items-center justify-between px-2 rounded-full border-2 border-gray'>
-                        <input type="search" placeholder='Search in Menu' value={searchTerm}  onChange={(e) => setSearchTerm(e.target.value)}
-                         className='mx-1 font-montserrat-400 outline-none'/>
-                        <FaSearch className='h-4 w-4 opacity-60 cursor-pointer' />
-                    </div>
-                </div>
+            <div className='flex gap-4 items-center px-2 py-2'>
+                <FaArrowLeft
+                    onClick={() => navigate(`/order/${cafeId}/${tableId}/${customer}`)}
+                    className='h-5 w-5 opacity-60 scale-[80%]'
+                />
+                <div className='uppercase font-montserrat-600'>{category}</div>
+            </div>
 
-                {/* Main Section */}
-                <div>
-                    <div className='font-montserrat-700 text-xl p-3 uppercase'>{category}</div>
-                    <div className='flex flex-col gap-2 px-3'>
-                        {filteredDishes.length > 0 ? (
-                            filteredDishes.map(dish => (
-                                <div key={dish._id}>
-                                    <OrderItemCard 
-                                        dish={dish}
-                                        onAddToOrder={handleAddToOrder}
-                                    />
-                                </div>
-                            ))
-                        ) : (
-                            <div className='text-sm font-montserrat-400'>No dishes available at the moment. Try another category!</div>
-                        )}
-                    </div>
+            {/* Filters */}
+            <div className='flex justify-between px-2 pb-4 shadow-xl'>
+                <select
+                    name='DishType'
+                    id='dish-type'
+                    className='outline-none font-montserrat-400 text-sm border rounded-full p-1'
+                    value={dishType}
+                    onChange={handleDishTypeChange}
+                >
+                    <option value='VEG'>Pure-Veg</option>
+                    <option value='NON-VEG'>Non-Veg</option>
+                    <option value='BOTH'>Both</option>
+                </select>
+                <div className='flex border rounded-full px-2'>
+                    <input
+                        type='search'
+                        placeholder='Search in Menu'
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className='outline-none font-montserrat-400'
+                    />
+                    <FaSearch className='h-4 w-4 opacity-60' />
                 </div>
             </div>
+
+            {/* Dish List */}
+            <div className='p-3'>
+                {filteredDishes.map((dish) => (
+                    <OrderItemCard
+                        key={dish._id}
+                        dish={dish}
+                        onAddToOrder={() => handleDishClick(dish)}
+                    />
+                ))}
+            </div>
+
+            {/* DishPopUp */}
+            {showPopup && (
+                <>
+                {console.log("Addons passed to DishPopup:", selectedDish.dishAddOns)}
+                {console.log("Addons passed to DishPopup:", selectedDish)}
+                <DishPopup 
+                    dish={selectedDish}
+                    onClose={() => setShowPopup(false)}
+                    onAddToOrder={handleAddToOrder}
+                    addons={addons}
+                    selectedVariant={selectedVariant}
+                    selectedAddons={selectedAddons} 
+                />
+                </>
+            )}
+
+            {/* STICKY CART BLOCK */}
+            {orderList.length > 0 && (
+                <div
+                    className="fixed bottom-2 w-11/12 left-3 rounded-2xl bg-blue text-white z-20 transition-all duration-300"
+                    style={{ transform: `translateY(${orderList.length > 0 ? '0' : '100%'})` }}
+                >
+                    <div className="flex justify-between items-center px-4 py-2">
+                        <div className="font-montserrat-400 text-md">
+                            {`${orderList.length} item(s) in cart`}
+                        </div>
+                        <button
+                            className="bg-white text-blue p-1 px-4 py-1 rounded-xl font-montserrat-600"
+                            onClick={() => navigate(`/order/${cafeId}/${tableId}/${customer}/cart`)}
+                        >
+                            View Cart
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

@@ -164,7 +164,9 @@ function DishPopup({ dish, onClose, onAddToOrder, addons, selectedVariant, selec
                         onClick={handleAddToCart}
                         className="bg-blue text-white px-4 py-2 rounded-lg w-[65%]"
                     >
-                        Add Item | Rs {dish.dishPrice * quantity}
+                        Add Item | Rs {((currentVariant?.variantPrice || dish.dishPrice || 0) 
+                        + currentAddons.reduce((total, addon) => total + (addon.addOnPrice || 0), 0)) 
+                        * quantity}
                     </button>
                 </div>
             </div>

@@ -48,6 +48,9 @@ const orderSchema = new mongoose.Schema({
       },
     },
   ],
+  cookingRequest: {
+    type: String,
+  },
   totalPrice: {
     type: Number,
     required: true,

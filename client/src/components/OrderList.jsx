@@ -62,9 +62,9 @@ function OrderList({order, refetchOrders}) {
           </div>
         </div>
         
-        <div className='flex gap-0.5 -ml-1'>
+        <div className='flex gap-0.5'>
           {orders.map((dish, index) => (
-            <div key={index} className=''>
+            <div key={index} className='flex gap-2.5'>
               {dish.dishAddOns.length > 0 ? (
                 dish.dishAddOns.map((addon, idx) => (
                   <div key={idx} className='text-xs bg-white rounded-xl py-0.5 px-2 lowercase border-[#3295E866] border-2'>
@@ -81,7 +81,7 @@ function OrderList({order, refetchOrders}) {
 
         <div className='flex gap-1 bg-white rounded-lg w-full py-1 pl-2 text-xs'>
             <div>Note :</div>
-            <div>{order.note ? order.note : 'No note'}</div>
+            <div>{order.cookingRequest ? order.cookingRequest : 'No note'}</div>
         </div>
         <div className='flex justify-between'>
           <div onClick={() => handleStatusUpdate("cancelled")} 
