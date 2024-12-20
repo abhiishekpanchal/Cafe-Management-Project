@@ -3,24 +3,20 @@ import UserLogo from '../assets/cafeNameLogo.png';
 import PhoneLogo from '../assets/callLogo.png';
 import { FaArrowRight } from 'react-icons/fa';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useAuth } from '@/auth/AuthContext';
 
 function UserPage() {
   const { cafeId, tableId } = useParams();
+  const { token, load } = useAuth();
   const navigate = useNavigate();
   const [cafeLogo, setCafeLogo] = useState('');
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
 
-  const getToken = () => localStorage.getItem('token');
-
   useEffect(() => {
     const fetchCafeDetails = async () => {
       try {
-        const res = await fetch(`/server/cafeDetails/getCafeDetails/${cafeId}`, {
-          headers: {
-            'Authorization': `Bearer ${getToken()}`,
-          },
-        });
+        const res = await fetch(`/server/cafeDetails/getCafeDetails/${cafeId}`);
         const data = await res.json();
         if (res.ok) {
           setCafeLogo(data.logoImg.url);
@@ -47,7 +43,7 @@ function UserPage() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${getToken()}`,
+          'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify({
           name,

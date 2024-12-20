@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { FaArrowLeft, FaSearch } from 'react-icons/fa';
 import OrderItemCard from '../components/OrderItemCard.jsx';
 import DishPopup from '../components/DishPopup.jsx'; 
+import { useAuth } from '@/auth/AuthContext.jsx';
 
 function CategoryWiseDishes() {
     const { cafeId, tableId, category, customer } = useParams();
@@ -16,7 +17,6 @@ function CategoryWiseDishes() {
     const [selectedVariant, setSelectedVariant] = useState(null);
     const [selectedAddons, setSelectedAddons] = useState([]);
 
-    const getToken = () => localStorage.getItem('token');
     const navigate = useNavigate();
 
     const [orderList, setOrderList] = useState(() => {
@@ -24,14 +24,12 @@ function CategoryWiseDishes() {
         return savedOrderList ? JSON.parse(savedOrderList) : [];
     });
 
+    const token = localStorage.getItem('token');
+
     useEffect(() => {
             const fetchCafeAddOns = async () => {
                 try {
-                    const res = await fetch(`/server/cafeDetails/getCafeDetails/${cafeId}`, {
-                        headers: {
-                            'Authorization': `Bearer ${getToken()}`,
-                        },
-                    });
+                    const res = await fetch(`/server/cafeDetails/getCafeDetails/${cafeId}`);
                     const data = await res.json();
                     if (res.ok) {
                         setAddons(data.addons);
@@ -52,11 +50,7 @@ function CategoryWiseDishes() {
     useEffect(() => {
         const fetchCategoryDishes = async () => {
             try {
-                const res = await fetch(`/server/menuDetails/getMenu/${cafeId}`, {
-                    headers: {
-                        'Authorization': `Bearer ${getToken()}`,
-                    },
-                });
+                const res = await fetch(`/server/menuDetails/getMenu/${cafeId}`);
                 const data = await res.json();
                 if (res.ok) {
                     setDishes(data.dishes);

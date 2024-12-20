@@ -19,11 +19,10 @@ import {
 } from "@/components/ui/sidebar";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "./ui/collapsible";
 
-export function AppSidebar2({ Categories, onCategoryChange, CafeName, handleContentView }) {
+export function AppSidebar2({ Categories, onCategoryChange, handleContentView }) {
   const [showCategories, setShowCategories] = useState(false);
   const [categories, setCategories] = useState([...Categories]);
   const [selectedCategory, setSelectedCategory] = useState("");
-  const [showAddons, setShowAddons] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 

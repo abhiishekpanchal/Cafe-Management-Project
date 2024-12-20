@@ -6,9 +6,11 @@ import { FaArrowLeft, FaCheck } from 'react-icons/fa';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { AppSidebar2 } from '@/components/app-sidebar2';
 import AddImages from '@/components/AddImages';
+import { useAuth } from '@/auth/AuthContext.jsx';
 
 function OrderPanelAdmin() {
     const { cafeId } = useParams(); 
+    const { token, load } = useAuth();
     const [cafeName, setCafeName] = useState('');
     const [categories, setCategories] = useState([]);
     const [addons, setAddons] = useState([]);
@@ -23,24 +25,25 @@ function OrderPanelAdmin() {
 
     const navigate = useNavigate();
 
-    const getToken = () => localStorage.getItem('token');
+    useEffect(() => {
+        if (!load && !token) {
+            navigate('/', { replace: true });
+        }
+    }, [token, load, navigate]);
 
     useEffect(() => {
         const intervalId = setInterval(() => {
-            window.location.reload();
-        }, 60000); // Reloads page every 1 minute
+            fetchOrders(); 
+        }, 60000);
     
-        return () => clearInterval(intervalId); // Clean up
-    }, []);    
+        return () => clearInterval(intervalId);
+    }, [cafeId]);
+       
 
     useEffect(() => {
         const fetchCategories = async () => {
             try {
-                const res = await fetch(`/server/cafeDetails/getCafeDetails/${cafeId}`, {
-                    headers: {
-                        'Authorization': `Bearer ${getToken()}`,
-                    },
-                });
+                const res = await fetch(`/server/cafeDetails/getCafeDetails/${cafeId}`);
                 const data = await res.json();
                 if (res.ok) {
                     setCafeName(data.name);
@@ -62,7 +65,7 @@ function OrderPanelAdmin() {
         try {
             const res = await fetch(`/server/orderDetails/getOrders/${cafeId}`, {
                 headers: {
-                    'Authorization': `Bearer ${getToken()}`
+                    'Authorization': `Bearer ${token}`
                 },
             });
             const data = await res.json();
@@ -92,11 +95,7 @@ function OrderPanelAdmin() {
 
     const fetchCategoryDishes = async () => {
         try {
-            const res = await fetch(`/server/menuDetails/getMenu/${cafeId}`, {
-                headers: {
-                    'Authorization': `Bearer ${getToken()}`, 
-                },
-            });
+            const res = await fetch(`/server/menuDetails/getMenu/${cafeId}`);
             const data = await res.json();
             if (res.ok) {
                 setDishes(data.dishes);
@@ -123,7 +122,7 @@ function OrderPanelAdmin() {
 
 
     const updateAddonStatus = async (addonName, addonPrice, newStatus) => {
-        const token = getToken();
+        const token = token;
         if (!token) {
             console.error('No token found');
             return;

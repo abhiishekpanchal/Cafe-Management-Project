@@ -1,9 +1,11 @@
+import { useAuth } from '@/auth/AuthContext';
 import React, { useEffect, useState } from 'react';
 import { FaCheck } from 'react-icons/fa';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
 function Dashboard({ cafeName, cafePhone, cafeAddress, cafeTables, cafeInstagram, cafeLogo, cafeEmail, cafeComplains, cafeEarnings, handleContentView }) {
     const { cafeId } = useParams();
+    const { token, load } = useAuth();
     const [editable, setEditable] = useState(false);
     const [currentMonthEarnings, setCurrentMonthEarnings] = useState(0);
     const [complains, setComplains] = useState([...cafeComplains]);
@@ -21,6 +23,8 @@ function Dashboard({ cafeName, cafePhone, cafeAddress, cafeTables, cafeInstagram
     const [error, setError] = useState(false);
     const [success, setSuccess] = useState(false);
 
+    const navigate = useNavigate();
+
     const data = [
         { title: 'Name', val: formData.name, key: 'name' },
         { title: 'Phone', val: formData.phone, key: 'phone' },
@@ -29,6 +33,12 @@ function Dashboard({ cafeName, cafePhone, cafeAddress, cafeTables, cafeInstagram
         { title: 'Instagram', val: formData.instagram, key: 'instagram' },
         { title: 'Email', val: formData.email, key: 'email' },
     ];
+
+    useEffect(() => {
+        if (!load && !token) {
+            navigate('/', { replace: true });
+        }
+    }, [token, load, navigate]);
 
     useEffect(() => {
         setFormData({
@@ -48,26 +58,30 @@ function Dashboard({ cafeName, cafePhone, cafeAddress, cafeTables, cafeInstagram
 
     }, [cafeName, cafePhone, cafeAddress, cafeTables, cafeInstagram, cafeLogo, cafeEmail, cafeComplains]);
 
+    // Fetch users with Authorization header
     useEffect(() => {
         const fetchUsers = async () => {
             try {
-                const response = await fetch(`/server/userDetails/getAllUsers/${cafeId}`);
+                const response = await fetch(`/server/userDetails/getAllUsers/${cafeId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                    },
+                });
                 if (!response.ok) {
                     throw new Error('Failed to fetch users');
                 }
                 const data = await response.json();
-                setUsers(data.users); 
+                setUsers(data.users);
             } catch (error) {
                 console.error('Error fetching users:', error.message);
             }
         };
-    
-        if (cafeId) {
+
+        if (cafeId && token) {
             fetchUsers();
         }
-    }, [cafeId]);    
+    }, [cafeId, token]);    
 
-    const getToken = () => localStorage.getItem('token');
 
     const handleChange = (key, value) => {
         setFormData((prevData) => ({ ...prevData, [key]: value }));
@@ -87,7 +101,7 @@ function Dashboard({ cafeName, cafePhone, cafeAddress, cafeTables, cafeInstagram
         setSuccess(false);
 
         try {
-            const token = getToken();
+            const token = token;
             const form = new FormData();
             form.append('name', formData.name);
             form.append('phone', formData.phone);

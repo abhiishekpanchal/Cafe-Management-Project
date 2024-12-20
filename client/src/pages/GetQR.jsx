@@ -1,9 +1,11 @@
+import { useAuth } from '@/auth/AuthContext';
 import React, { useEffect, useState } from 'react';
 import QRCode from 'react-qr-code';
 import { useParams, useNavigate } from 'react-router-dom';
 
 function GetQR() {
     const { cafeId } = useParams();
+    const { token, load} = useAuth();
     const [cafeName, setCafeName] = useState('');
     const [numTables, setNumTables] = useState(0); 
     const [qrCodes, setQrCodes] = useState([]);   
@@ -11,15 +13,15 @@ function GetQR() {
     const [generateQR, setGenerateQR] = useState(false);
     const navigate = useNavigate();
 
-    const getToken = () => localStorage.getItem('token');
+    useEffect(() => {
+        if (!load && !token) {
+            navigate('/', { replace: true });
+        }
+    }, [token, load, navigate]);
 
     const fetchCafeDetails = async () => {
         try {
-            const res = await fetch(`/server/cafeDetails/getCafeDetails/${cafeId}`, {
-                headers: {
-                    'Authorization': `Bearer ${getToken()}`,
-                },
-            });
+            const res = await fetch(`/server/cafeDetails/getCafeDetails/${cafeId}`);
             const data = await res.json();
             if (res.ok) {
                 setCafeName(data.name);

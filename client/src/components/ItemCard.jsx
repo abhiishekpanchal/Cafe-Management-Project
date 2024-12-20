@@ -4,18 +4,19 @@ import VegLogo from '../assets/vegLogo.png';
 import NonVegLogo from '../assets/nonvegLogo.png';
 import RemoveLogo from '../assets/removeLogo.png';
 import DropDown from './DropDown';
+import { useAuth } from '@/auth/AuthContext';
 
 function ItemCard({ dishname, dishdescription, dishprice, dishType, dishCategory, dishVariants, dishAddOns, onDelete }) {
   const { cafeId } = useParams();
+  const { token } = useAuth();
 
-  const [activeDropdown, setActiveDropdown] = useState(null); // Track which dropdown is open
+  const [activeDropdown, setActiveDropdown] = useState(null); 
 
   const handleDropdownToggle = (dropdown) => {
     setActiveDropdown((prev) => (prev === dropdown ? null : dropdown));
   };
 
   const handleDeleteDish = async () => {
-    const token = localStorage.getItem('token'); 
 
     if (!token) {
       console.error('No token found');

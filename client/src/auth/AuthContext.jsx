@@ -3,34 +3,41 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-    const [user, setUser] = useState(null); // Holds user data if logged in
+    const [token, setToken] = useState(null);
+    const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
 
-    // Load user from localStorage on initial render
     useEffect(() => {
-        const savedUser = JSON.parse(localStorage.getItem("user"));
-        if (savedUser) {
-            setUser(savedUser);
+        // Load token and user email from localStorage on app start
+        const storedToken = localStorage.getItem('token');
+        const storedUser = JSON.parse(localStorage.getItem('user'));
+
+        if (storedToken) {
+            setToken(storedToken);
+            setUser(storedUser); // Load user email
         }
         setLoading(false);
     }, []);
 
-    const login = (userData) => {
-        setUser(userData);
-        localStorage.setItem("user", JSON.stringify(userData));
+    const login = (newToken, userEmail) => {
+        localStorage.setItem('token', newToken);
+        localStorage.setItem('user', JSON.stringify({ email: userEmail }));
+        setToken(newToken);
+        setUser({ email: userEmail });
     };
 
     const logout = () => {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        setToken(null);
         setUser(null);
-        localStorage.removeItem("user");
     };
 
     return (
-        <AuthContext.Provider value={{ user, login, logout, loading }}>
+        <AuthContext.Provider value={{ token, user, login, logout, loading }}>
             {children}
         </AuthContext.Provider>
     );
 };
 
-// Custom hook to use AuthContext
 export const useAuth = () => useContext(AuthContext);

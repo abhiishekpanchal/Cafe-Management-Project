@@ -9,9 +9,11 @@ import ThumbDown from '../assets/thumb_down.png';
 import CodacityLogo from '../assets/CodacityLogo.png';
 import SendLogo from '../assets/Send.png';
 import DishPopup from '@/components/DishPopup';
+import { useAuth } from '@/auth/AuthContext';
 
 function OrderUser() {
     const { cafeId, tableId, customer } = useParams();
+    const { token } = useAuth();
     const navigate = useNavigate();
     const [cafeName, setCafeName] = useState('');
     const [selectedCategory, setSelectedCategory] = useState(null);
@@ -40,16 +42,10 @@ function OrderUser() {
         return savedOrderList ? JSON.parse(savedOrderList) : [];
     });
 
-    const getToken = () => localStorage.getItem('token');
-
     useEffect(() => {
         const fetchCafeDetails = async () => {
             try {
-                const res = await fetch(`/server/cafeDetails/getCafeDetails/${cafeId}`, {
-                    headers: {
-                        'Authorization': `Bearer ${getToken()}`,
-                    },
-                });
+                const res = await fetch(`/server/cafeDetails/getCafeDetails/${cafeId}`);
                 const data = await res.json();
                 if (res.ok) {
                     setCafeName(data.name);
@@ -73,11 +69,7 @@ function OrderUser() {
 
     const fetchCategoryDishes = async () => {
         try {
-            const res = await fetch(`/server/menuDetails/getMenu/${cafeId}`, {
-                headers: {
-                    'Authorization': `Bearer ${getToken()}`,
-                },
-            });
+            const res = await fetch(`/server/menuDetails/getMenu/${cafeId}`);
             const data = await res.json();
             if (res.ok) {
                 setDishes(data.dishes);

@@ -3,15 +3,16 @@ import NonVegLogo from '../assets/nonvegLogo.png';
 import VegLogo from '../assets/vegLogo.png';
 import { FaCheck } from 'react-icons/fa'
 import { useParams } from 'react-router-dom';
+import { useAuth } from '@/auth/AuthContext';
 
 function AdminItemCard({ dishName, dishPrice, dishType, dishCategory }) {
   const { cafeId } = useParams();
-  
+  const { token, load } = useAuth();
+    
   const [isChecked, setIsChecked] = useState(true);  
 
   useEffect(() => {
     const fetchDishStatus = async () => {
-      const token = localStorage.getItem('token');
   
       if (!token) {
         console.error('No token found');

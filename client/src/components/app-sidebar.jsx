@@ -23,9 +23,11 @@ import { FaCheck } from "react-icons/fa";
 import RemoveLogo from "../assets/removeLogo.png";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "./ui/collapsible";
 import { useParams } from 'react-router-dom';
+import { useAuth } from '@/auth/AuthContext';
 
 export function AppSidebar({ Categories, Addons, onCategoryChange, handleContentView, fetchCategoriesAndAddons, fetchCategoryDishes }) {
   const { cafeId } = useParams();
+  const { token } = useAuth();
   const [showCategories, setShowCategories] = useState(false);
   const [showInput, setShowInput] = useState(false);
   const [newCategory, setNewCategory] = useState("");
@@ -38,8 +40,6 @@ export function AppSidebar({ Categories, Addons, onCategoryChange, handleContent
   const [addons, setAddons] = useState([...Addons]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-
-  const getToken = () => localStorage.getItem('token');
 
   useEffect(() => {
     setCategories([...Categories]);
@@ -63,7 +63,7 @@ export function AppSidebar({ Categories, Addons, onCategoryChange, handleContent
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${getToken()}`,
+            'Authorization': `Bearer ${token}`,
           },
           body: JSON.stringify({ category: newCategory }),
         });
@@ -89,7 +89,7 @@ export function AppSidebar({ Categories, Addons, onCategoryChange, handleContent
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${getToken()}`,
+          'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify({ category }),
       });
@@ -123,7 +123,7 @@ export function AppSidebar({ Categories, Addons, onCategoryChange, handleContent
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${getToken()}`,
+            'Authorization': `Bearer ${token}`,
           },
           body: JSON.stringify({ addon_name: addonName, addon_price: addonPrice }),
         });
@@ -149,7 +149,7 @@ export function AppSidebar({ Categories, Addons, onCategoryChange, handleContent
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${getToken()}`,
+          'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify({ addon_name }),
       });

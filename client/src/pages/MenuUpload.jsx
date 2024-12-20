@@ -10,13 +10,14 @@ import { useParams, useNavigate } from 'react-router-dom';
 import ItemCard from '../components/ItemCard';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/app-sidebar';
+import { useAuth } from '@/auth/AuthContext.jsx';
 import Dashboard from './Dashboard';
 import MonthlyEarnings from '@/components/MonthlyEarnings';
 
 function MenuUpload() {
   const { cafeId } = useParams();
   const navigate = useNavigate();
-  
+  const { token, load } = useAuth();
   const [cafeName, setCafeName] = useState('');
   const [cafePhone, setCafePhone] = useState(0);
   const [cafeEmail, setCafeEmail] = useState('');
@@ -48,8 +49,11 @@ function MenuUpload() {
   const [isOpen, setIsOpen] = useState(false);
   const orderPanelUrl = `/admin/${cafeId}`;
 
-  // Function to get the token from localStorage
-  const getToken = () => localStorage.getItem('token');
+  useEffect(() => {
+      if (!load && !token) {
+          navigate('/', { replace: true });
+      }
+  }, [token, load, navigate]);
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(window.location.origin + orderPanelUrl);
@@ -61,15 +65,27 @@ function MenuUpload() {
   };
 
   const fetchCategoriesAndAddons = async () => {
+    setLoading(true);
+    setError(null);
+  
+    if (!token) {
+      setError('Authorization token is missing');
+      setLoading(false);
+      return;
+    }
+  
     try {
       const res = await fetch(`/server/cafeDetails/getCafeDetails/${cafeId}`, {
+        method: 'GET',
         headers: {
-          'Authorization': `Bearer ${getToken()}`,
+          'Content-Type': 'application/json',
         },
       });
+  
       const data = await res.json();
-
+  
       if (res.ok) {
+        // Update states with fetched data
         setCafeName(data.name);
         setCafePhone(data.phone);
         setCafeEmail(data.email);
@@ -82,28 +98,30 @@ function MenuUpload() {
         setCategories(data.categories);
         setAddons(data.addons);
       } else {
-        setError(`Error: ${data.message}`);
+        setError(`Error: ${data.message || 'Unknown error occurred'}`);
+        console.error('Error fetching data:', data);
       }
     } catch (err) {
-      setError('Failed to fetch categories');
+      setError('Failed to fetch data');
+      console.error('Network error:', err);
     } finally {
       setLoading(false);
     }
-  };
+  };  
 
-  // Call the function inside useEffect when the component mounts
   useEffect(() => {
-    fetchCategoriesAndAddons();
-  }, [cafeId]);
-
+      if (!load && token) { 
+          fetchCategoriesAndAddons();
+      } else if (!load && !token) {
+          console.error('No token available, redirecting to login.');
+          setError('Authorization required');
+      }
+  }, [token, load, cafeId]); 
+ 
 
   const fetchCategoryDishes = async (category) => {
       try {
-          const res = await fetch(`/server/menuDetails/getMenu/${cafeId}`, {
-              headers: {
-                  Authorization: `Bearer ${getToken()}`,
-              },
-          });
+          const res = await fetch(`/server/menuDetails/getMenu/${cafeId}`);
           const data = await res.json();
 
           if (res.ok) {
@@ -154,7 +172,7 @@ function MenuUpload() {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${getToken()}`,
+            'Authorization': `Bearer ${token}`,
           },
           body: JSON.stringify({
             dishName,
@@ -216,7 +234,7 @@ function MenuUpload() {
 
   const handleLogOut = () => {
     localStorage.removeItem('token');
-    localStorage.removeItem('cafeId');
+    localStorage.removeItem('user');
     navigate('/'); 
   };
 

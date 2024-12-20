@@ -8,6 +8,7 @@ import OrderPanelAdmin from './pages/OrderPanelAdmin';
 import CartPage from './pages/CartPage';
 import CategoryWiseDishes from './pages/CategoryWiseDishes';
 import UserPage from './pages/UserPage';
+import ProtectedRoute from './auth/ProtectedRoute.jsx';
 
 function App() {
   return (
@@ -18,24 +19,42 @@ function App() {
 
         {/* CAFE REGISTRATION & MENU MANAGEMENT */}
         <Route path="register" element={<CafeRegistrationForm />} />
+        
+        {/* PROTECTED MENU ROUTES */}
         <Route path="menu/:cafeId">
-          <Route index element={<MenuUpload />} /> 
-          <Route path="getQR" element={<GetQR />} />
+          <Route index element={
+              <ProtectedRoute>
+                <MenuUpload />
+              </ProtectedRoute>
+            }
+          />
+          <Route path="getQR" element={
+              <ProtectedRoute>
+                <GetQR />
+              </ProtectedRoute>
+            }
+          />
         </Route>
 
-        {/* USER ORDERING */}
+        {/* USER ORDERING (PUBLIC ROUTES) */}
         <Route path="order/:cafeId/:tableId/:customer">
           <Route index element={<OrderUser />} />
           <Route path=":category" element={<CategoryWiseDishes />} />
           <Route path="cart" element={<CartPage />} />
         </Route>
 
-        {/* USER INFORMATION */}
+        {/* USER INFORMATION (PUBLIC ROUTE) */}
         <Route path="userInfo/:cafeId/:tableId" element={<UserPage />} />
 
-        {/* ADMIN ORDER PANEL */}
-        <Route path="admin/:cafeId" element={<OrderPanelAdmin />} />
-
+        {/* ADMIN ORDER PANEL (PROTECTED ROUTE) */}
+        <Route
+          path="admin/:cafeId"
+          element={
+            <ProtectedRoute>
+              <OrderPanelAdmin />
+            </ProtectedRoute>
+          }
+        />
       </Routes>
     </BrowserRouter>
   );

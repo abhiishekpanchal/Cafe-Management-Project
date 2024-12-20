@@ -1,7 +1,9 @@
+import { useAuth } from '@/auth/AuthContext';
 import React, { useState } from 'react'
 
 function OrderList({order, refetchOrders}) {
   const [orders, setOrders] = useState([...order.orderList]);
+  const { token, load } = useAuth();
 
   const handleStatusUpdate = async (status) => {
     try {
@@ -9,7 +11,7 @@ function OrderList({order, refetchOrders}) {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                Authorization: `Bearer ${localStorage.getItem('token')}`,
+                Authorization: `Bearer ${token}`,
             },
             body: JSON.stringify({ orderId: order._id, status }),
         });

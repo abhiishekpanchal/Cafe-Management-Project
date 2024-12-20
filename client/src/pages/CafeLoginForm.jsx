@@ -4,8 +4,10 @@ import emailLogo from '../assets/emailLogo.png';
 import passwordLogo from '../assets/passwordLogo.png';
 import CodacityLogo from '../assets/CodacityLogo.png';
 import Bg from '../assets/loginFormBg.png';
+import { useAuth } from '@/auth/AuthContext.jsx';
 
 function CafeLoginForm() {
+    const { login } = useAuth(); // Access login function from AuthContext
     const navigate = useNavigate();
 
     const [formData, setFormData] = useState({
@@ -22,7 +24,7 @@ function CafeLoginForm() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-
+    
         try {
             const res = await fetch(`/server/cafeDetails/cafeLogin`, {
                 method: 'POST',
@@ -34,10 +36,12 @@ function CafeLoginForm() {
                     password: formData.password,
                 }),
             });
+    
             const data = await res.json();
+    
             if (res.ok) {
-                // Store the JWT token
-                localStorage.setItem('token', data.token);
+                // Correct order of arguments: token first, then email
+                login(data.token, formData.email); 
                 navigate(`/menu/${data.cafeId}`);
             } else {
                 alert(`Error: ${data.message}`);
@@ -45,7 +49,8 @@ function CafeLoginForm() {
         } catch (error) {
             console.error('Error:', error);
         }
-    }
+    };
+    
 
     return (
         <div className='relative w-full h-screen flex justify-around items-center py-10 overflow-y-hidden'>
