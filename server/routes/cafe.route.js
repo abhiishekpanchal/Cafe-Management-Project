@@ -7,7 +7,7 @@ const router = express.Router();
 router.post('/cafeRegister', cafeRegister);
 router.post('/cafeLogin', cafeLogin);
 router.put('/updateCafe/:cafeId', authenticateJWT, updateCafeDetails);
-router.get('/getCafeDetails/:cafeId', authenticateJWT, getCafeDetails);
+router.get('/getCafeDetails/:cafeId', getCafeDetails);
 router.post('/postCategory/:cafeId',authenticateJWT, addCategory);
 router.delete('/deleteCategory/:cafeId',authenticateJWT, deleteCategory);
 router.post('/postAddon/:cafeId', authenticateJWT, addAddon);
