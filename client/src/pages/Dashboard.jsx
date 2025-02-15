@@ -101,7 +101,6 @@ function Dashboard({ cafeName, cafePhone, cafeAddress, cafeTables, cafeInstagram
         setSuccess(false);
 
         try {
-            const token = token;
             const form = new FormData();
             form.append('name', formData.name);
             form.append('phone', formData.phone);
@@ -126,6 +125,7 @@ function Dashboard({ cafeName, cafePhone, cafeAddress, cafeTables, cafeInstagram
             setSuccess(true);
             setEditable(false);
         } catch (error) {
+            console.log("Error");
             setError(true);
         } finally {
             setLoading(false);
@@ -133,7 +133,7 @@ function Dashboard({ cafeName, cafePhone, cafeAddress, cafeTables, cafeInstagram
     };
 
     return (
-        <div className='flex flex-col h-[79vh] w-full pr-14 -mt-3 overflow-y-auto'>
+        <div className='flex flex-col h-[79vh] w-full pr-14 -mt-3 overflow-y-auto scrollbar-hide'>
             <div>
                 <button onClick={() => handleContentView('monthlyEarnings')} 
                 className='rounded-full border-2 border-blue py-1 px-4 text-xs font-montserrat-600 my-1 -mt-8 text-center'>VIEW MORE</button>
@@ -153,9 +153,9 @@ function Dashboard({ cafeName, cafePhone, cafeAddress, cafeTables, cafeInstagram
                         <div className='text-lg font-montserrat-700'>CAFE DETAILS</div>
                         <div className='flex gap-3 items-center'>
                             {editable ? (
-                                <div className='bg-blue text-white rounded-full p-1 cursor-pointer' onClick={updateCafeDetails}>
+                                <button className='bg-blue text-white rounded-full p-1' onClick={updateCafeDetails}>
                                     <FaCheck />
-                                </div>
+                                </button>
                             ) : null}
                             <button
                                 className='font-montserrat-400 text-xs px-6 py-1 rounded-3xl border-2 bg-blue text-white'
@@ -176,7 +176,7 @@ function Dashboard({ cafeName, cafePhone, cafeAddress, cafeTables, cafeInstagram
                                             type="text"
                                             value={formData[info.key]}
                                             onChange={(e) => handleChange(info.key, e.target.value)}
-                                            className='p-0.5 pl-1 rounded-lg outline-none'
+                                            className='p-0.5 pl-1 -ml-2 mr-0.5 rounded-lg outline-none'
                                         />
                                     ) : (
                                         <div>{info.val}</div>
@@ -202,10 +202,10 @@ function Dashboard({ cafeName, cafePhone, cafeAddress, cafeTables, cafeInstagram
                 </div>
                 <div className='flex flex-col justify-start items-start w-1/2 rounded-3xl bg-[#0158A12A]'>
                     <div className='w-full my-3'>
-                        <div className='pl-4 mb-2 font-montserrat-700 text-lg'>COMPLAIN LIST</div>
+                        <div className='pl-4 mb-2 font-montserrat-700 text-lg'>FEEDBACK</div>
                         <hr className='h-1 bg-white mt-1' />
                     </div>
-                    <div className='flex flex-col gap-4 w-full h-[30vh] overflow-y-auto'>
+                    <div className='flex flex-col gap-4 w-full h-[35vh] overflow-y-auto scrollbar-hide'>
                         {complains.map((complain, index) => {
                             return (
                                 <div key={index} className='flex justify-between w-full px-4 text-xs'>
@@ -217,17 +217,17 @@ function Dashboard({ cafeName, cafePhone, cafeAddress, cafeTables, cafeInstagram
                     </div>
                 </div>
             </div>
-            <div className='flex flex-col justify-start items-start w-full rounded-3xl bg-[#0158A12A]'>
-                <div className='w-full my-3'>
+            <div className='flex flex-col justify-start items-start w-full rounded-3xl bg-[#0158A12A] pb-2'>
+                <div className='w-full my-2'>
                     <div className='pl-4 mb-2 font-montserrat-700 text-lg'>CUSTOMER DETAILS</div>
-                    <hr className='h-1 bg-white mt-1' />
+                    <hr className='h-1 bg-white' />
                 </div>
                 <div className='flex justify-between px-4 font-montserrat-700 mb-1.5 w-full text-sm'>
                     <div>Name</div>
                     <div>Phone</div>
                     <div>Visited at</div>
                 </div>
-                <div className='flex flex-col gap-4 w-full h-[30vh] overflow-y-auto'>
+                <div className='flex flex-col gap-4 w-full h-[30vh] overflow-y-auto scrollbar-hide'>
                     {users.length > 0 ? (
                         users.map((user) => (
                                 <div key={user._id} className='flex justify-between px-4 text-xs'>

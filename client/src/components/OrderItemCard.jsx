@@ -33,7 +33,7 @@ function OrderItemCard({ dish, onAddToOrder }) {
   const toggleDescription = () => setIsExpanded(!isExpanded);
 
   return (
-    <div className='relative flex justify-between items-center w-[92vw] px-2 py-3 rounded-2xl border-2 border-gray'>
+    <div className='relative flex justify-between items-center w-[92vw] px-2 py-3 my-1.5 rounded-2xl border-2 border-gray'>
 
       {/* Dish name, price, and description */}
       <div className='flex flex-col justify-between gap-1 h-full w-[73%]'>

@@ -13,6 +13,8 @@ import InstagramLogo from '../assets/instagramLogo.png';
 function CafeRegistrationForm() {
     const navigate = useNavigate();
     const [imgFile, setImgFile] = useState('');
+    const [errorMessage, setErrorMessage] = useState('');
+    const [fileName, setFileName] = useState('upload logo (.png, .jpg, .jpeg)');
 
     const [formData, setFormData] = useState({
         name: '',
@@ -47,14 +49,23 @@ function CafeRegistrationForm() {
 
     const handleImage = (e) => {
         const file = e.target.files[0];
-        setFileToBase(file);
+        if (file) {
+            setFileToBase(file);
+            setFileName(file.name); 
+        }
     }
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setErrorMessage('');
+
+        if (!formData.name || !formData.address || !formData.tables || !formData.email || !formData.phone || !formData.password || !formData.confirmPassword) {
+            setErrorMessage('Please fill all the fields');
+            return;
+        }
 
         if (formData.password !== formData.confirmPassword) {
-            alert('Passwords do not match');
+            setErrorMessage('Passwords do not match');
             return;
         }
 
@@ -72,13 +83,13 @@ function CafeRegistrationForm() {
             });
             const data = await res.json();
             if (res.ok) {
-                // Store the JWT token
                 localStorage.setItem('token', data.token);
                 navigate(`/menu/${data.cafeId}`);
             } else {
-                alert(`Error: ${data.message}`);
+                setErrorMessage('Either mail or phone number already exists');
             }
         } catch (error) {
+            setErrorMessage('Something went wrong. Please try again.');
             console.error('Error:', error);
         }
     };
@@ -108,7 +119,7 @@ function CafeRegistrationForm() {
                     </div>
                     <div className='flex gap-1 w-[43%] items-center border-2 border-[#C6C6C6] rounded-xl'>
                         <img src={PhoneLogo} alt="Phone Logo" className='w-[44px] h-[44px] ml-1 scale-[60%]' />
-                        <input onChange={handleChange} type="phone" min={10} name="cafePhone" id="phone" placeholder='contact number' className='outline-none border-l-2 pl-2 border-black w-[80%]' autoComplete='off' />
+                        <input onChange={handleChange} type="phone" maxLength={10} pattern="\d{10}" name="cafePhone" id="phone" placeholder='contact number' className='outline-none border-l-2 pl-2 border-black w-[80%]' autoComplete='off' />
                     </div>
                 </div>
 
@@ -133,14 +144,16 @@ function CafeRegistrationForm() {
                         <img src={InstagramLogo} alt="Instagram Logo" className='w-[44px] h-[44px] ml-1 scale-[80%]' />
                         <input onChange={handleChange} type="text" name="cafeInstagram" id="instagram" placeholder='instagram handle' className='outline-none border-l-2 pl-2 border-black w-[80%]' autoComplete='off' />
                     </div>
-                    <div className='flex gap-1 w-[43%] items-center border-2 border-[#C6C6C6] rounded-xl'>
+                    <div className='flex gap-1 w-[43%] items-center border-2 border-[#C6C6C6] rounded-xl cursor-pointer'>
                         <img src={UploadLogo} alt="Email Logo" className='w-[42px] h-[42px] ml-1 scale-[85%]' />
                         <input onChange={handleImage} type="file" name="cafeLogo" id="cafeLogo" placeholder='logo' className='outline-non hidden' autoComplete='off' />
-                        <label htmlFor="cafeLogo" className='border-l-2 pl-2 border-black w-[80%] text-[#888888]'>upload logo (.png, .jpg. .jpeg)</label>
+                        <label htmlFor="cafeLogo" className='border-l-2 pl-2 border-black w-[80%] text-[#888888] cursor-pointer'>{fileName}</label>
                     </div>
                 </div>
 
-                <div className='w-full flex justify-center mt-4'>
+                {errorMessage && <div className='text-sm text-red font-montserrat-500 text-center w-full -mb-4'>{errorMessage}</div>}
+
+                <div className='w-full flex justify-center'>
                     <button className='border-2 border-blue rounded-xl w-[45%] text-xl p-1 shadow-[0_0_7.6px_0_#0158A133]'>Register</button>
                 </div>
             </form>

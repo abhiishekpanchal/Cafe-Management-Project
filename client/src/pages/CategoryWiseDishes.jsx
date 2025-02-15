@@ -38,8 +38,6 @@ function CategoryWiseDishes() {
                     }
                 } catch (err) {
                     setError('Failed to fetch categories');
-                } finally {
-                    setLoading(false);
                 }
             };
     
@@ -164,7 +162,7 @@ function CategoryWiseDishes() {
             </div>
 
             {/* Filters */}
-            <div className='flex justify-between px-2 pb-4 shadow-xl'>
+            <div className='flex justify-between px-2 pb-4 gap-0.5 shadow-xl'>
                 <select
                     name='DishType'
                     id='dish-type'
@@ -176,13 +174,13 @@ function CategoryWiseDishes() {
                     <option value='NON-VEG'>Non-Veg</option>
                     <option value='BOTH'>Both</option>
                 </select>
-                <div className='flex border rounded-full px-2'>
+                <div className='flex items-center border rounded-full px-2'>
                     <input
                         type='search'
                         placeholder='Search in Menu'
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className='outline-none font-montserrat-400'
+                        className='outline-none font-montserrat-400 text-sm bg-none'
                     />
                     <FaSearch className='h-4 w-4 opacity-60' />
                 </div>
@@ -190,14 +188,19 @@ function CategoryWiseDishes() {
 
             {/* Dish List */}
             <div className='p-3'>
-                {filteredDishes.map((dish) => (
-                    <OrderItemCard
-                        key={dish._id}
-                        dish={dish}
-                        onAddToOrder={() => handleDishClick(dish)}
-                    />
-                ))}
+                {filteredDishes.length === 0 ? (
+                    <p className="text-center text-gray-500 text-sm font-semibold">{`Note: Currently ${category} are not available.`}</p>
+                ) : (
+                    filteredDishes.map((dish) => (
+                        <OrderItemCard
+                            key={dish._id}
+                            dish={dish}
+                            onAddToOrder={() => handleDishClick(dish)}
+                        />
+                    ))
+                )}
             </div>
+
 
             {/* DishPopUp */}
             {showPopup && (

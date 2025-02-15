@@ -183,8 +183,8 @@ function OrderPanelAdmin() {
             
                 <div className='pt-6 pb-3 px-4 self-end flex justify-between items-center'>
                     <div className='flex items-center gap-4'>
-                        <div onClick={openImagePopup} className='bg-blue text-white font-montsarret font-montserrat-400 text-lg rounded-full px-6 py-1 cursor-pointer'>Add Images</div>
-                        <div className='rounded-full border-2 p-1.5'><FaArrowLeft /></div>
+                        <button onClick={openImagePopup} className='bg-blue text-white font-montsarret font-montserrat-400 text-lg rounded-full px-6 py-1'>Add Images</button>
+                        <button onClick={() => navigate(`/menu/${cafeId}`)} className='rounded-full border-2 p-1.5'><FaArrowLeft /></button>
                     </div>
                 </div>
 
@@ -200,6 +200,11 @@ function OrderPanelAdmin() {
                         <div className="flex flex-wrap justify-center gap-4 sm:justify-start w-full items-start max-h-[78vh] overflow-y-auto pb-5">
                             {selectedPanel === 'orders' ? (
                                 <>
+                                    <div className='absolute left-[43%] top-[40%] text-6xl uppercase font-montsarret scale-[350%] font-montserrat-700 text-[#DFDFDF] opacity-20 -z-50'>
+                                        {cafeName.split(' ').map((word, index) => (
+                                            <div key={index}>{word}</div>
+                                        ))}
+                                    </div>
                                     {ordersList.length > 0 ? (
                                         ordersList.map((order, index) => (
                                             <OrderList 
@@ -214,6 +219,11 @@ function OrderPanelAdmin() {
                                 </>
                             ) : selectedPanel === 'category' ? (
                                 <>
+                                    <div className='absolute left-[43%] top-[40%] text-6xl uppercase font-montsarret scale-[350%] font-montserrat-700 text-[#DFDFDF] opacity-20 -z-50'>
+                                        {cafeName.split(' ').map((word, index) => (
+                                            <div key={index}>{word}</div>
+                                        ))}
+                                    </div>
                                     {filteredDishes.length > 0 ? (
                                         filteredDishes.map((dish, index) => (
                                             <AdminItemCard
@@ -232,6 +242,11 @@ function OrderPanelAdmin() {
                                 </>
                             ) : (
                                 <>
+                                    <div className='absolute left-[43%] top-[40%] text-6xl uppercase font-montsarret scale-[350%] font-montserrat-700 text-[#DFDFDF] opacity-20 -z-50'>
+                                        {cafeName.split(' ').map((word, index) => (
+                                            <div key={index}>{word}</div>
+                                        ))}
+                                    </div>
                                     {addons.length > 0 ? (
                                         addons.map((addon, index) => (
                                             <div key={index} className="flex justify-between items-center py-3 px-5 bg-[#0158A11A] rounded-2xl w-full">

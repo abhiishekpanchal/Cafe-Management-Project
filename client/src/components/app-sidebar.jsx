@@ -11,7 +11,6 @@ import {
   SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
@@ -25,20 +24,19 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "./ui/collap
 import { useParams } from 'react-router-dom';
 import { useAuth } from '@/auth/AuthContext';
 
-export function AppSidebar({ Categories, Addons, onCategoryChange, handleContentView, fetchCategoriesAndAddons, fetchCategoryDishes }) {
+export function AppSidebar({ Categories, Addons, onCategoryChange, selectedCategory, setSelectedCategory, handleContentView, handleShowAddImages, fetchCategoriesAndAddons, fetchCategoryDishes }) {
   const { cafeId } = useParams();
   const { token } = useAuth();
   const [showCategories, setShowCategories] = useState(false);
   const [showInput, setShowInput] = useState(false);
   const [newCategory, setNewCategory] = useState("");
   const [categories, setCategories] = useState([...Categories]);
-  const [selectedCategory, setSelectedCategory] = useState("");
+  // const [selectedCategory, setSelectedCategory] = useState("");
   const [showAddons, setShowAddons] = useState(false);
   const [showInputAddon, setShowInputAddon] = useState(false);
   const [addonName, setAddonName] = useState("");
   const [addonPrice, setAddonPrice] = useState(0);
   const [addons, setAddons] = useState([...Addons]);
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -54,6 +52,12 @@ export function AppSidebar({ Categories, Addons, onCategoryChange, handleContent
     if (onCategoryChange) {
       onCategoryChange(category);
     }
+  };
+
+  const handleViewChange = (section) => {
+    handleContentView(section); 
+    setShowCategories(section === "categories");
+    setShowAddons(section === "addons");
   };
 
   const handleAddCategory = async () => {
@@ -74,10 +78,10 @@ export function AppSidebar({ Categories, Addons, onCategoryChange, handleContent
           setShowInput(false);      
           fetchCategoriesAndAddons(); 
         } else {
-          alert(`Error: ${data.message}`);
+          setError('Error creating new category.');
         }
       } catch (error) {
-        console.error('Error:', error);
+        setError('Network Error');
       }
     }
   };
@@ -96,22 +100,18 @@ export function AppSidebar({ Categories, Addons, onCategoryChange, handleContent
 
       const data = await res.json();
       if (res.ok) {
-        // Remove the deleted category from the state
         setCategories((prevCategories) => prevCategories.filter((cat) => cat !== category));
         
-        // Reset selected category if it's deleted
-        if (category === selectedCategory) {
-          setSelectedCategory(null);
-        }
+        setTimeout(() => {
+          setSelectedCategory((prev) => (prev === category ? null : prev));
+          fetchCategoriesAndAddons();
+        }, 0);
 
-        // Fetch updated categories and addons
-        fetchCategoriesAndAddons();
       } else {
-        setError(`Error: ${data.message}`);
+        setError('Error deleting the category');
       }
     } catch (err) {
-      setError('Failed to delete category');
-      console.error(err);
+      setError('Network Error');
     }
 };
 
@@ -135,10 +135,10 @@ export function AppSidebar({ Categories, Addons, onCategoryChange, handleContent
           setAddonPrice(0);
           setShowInputAddon(false);
         } else {
-          alert(`Error: ${data.message}`);
+          setError('Error adding new Add-On');
         }
       } catch (error) {
-        console.error('Error:', error);
+        setError('Network Error');
       }
     }
   };
@@ -160,10 +160,10 @@ export function AppSidebar({ Categories, Addons, onCategoryChange, handleContent
         fetchCategoryDishes(selectedCategory);
         fetchCategoriesAndAddons();
       } else {
-        setError(`Error: ${data.message}`);
+        setError('Error deleting the Add-On');
       }
     } catch (err) {
-      setError('Failed to delete add-on');
+      setError('Network Error');
     }
   };
 
@@ -176,7 +176,7 @@ export function AppSidebar({ Categories, Addons, onCategoryChange, handleContent
               <SidebarMenuItem>
                 <SidebarMenuButton tooltip="DashBoard">
                   <div className='w-full flex gap-2 text-lg items-center uppercase rounded-lg font-montserrat-600 border-2 border-blue'
-                  onClick={() => handleContentView('dashboard')}>
+                  onClick={() => handleViewChange('dashboard')}>
                     <img src={DashBoardLogo} alt="" className='h-5 w-5 ml-2' />
                     <h2>DashBoard</h2>
                   </div>
@@ -195,7 +195,7 @@ export function AppSidebar({ Categories, Addons, onCategoryChange, handleContent
                   <CollapsibleTrigger asChild>
                     <SidebarMenuButton tooltip="Categories" onClick={() => setShowCategories(!showCategories)}>
                       <div className="w-full flex gap-2 text-lg items-center uppercase rounded-lg font-montserrat-600 border-2 border-blue"
-                      onClick={() => handleContentView('categories')}>
+                      onClick={() => handleViewChange('categories')}>
                         <img src={CategoriesLogo} alt="" className='h-5 w-5 ml-2' />
                         <h2>Categories</h2>
                       </div>
@@ -203,17 +203,13 @@ export function AppSidebar({ Categories, Addons, onCategoryChange, handleContent
                   </CollapsibleTrigger>
                   <CollapsibleContent>
                     <SidebarMenuSub>
-                      {loading ? (
-                        <div>Loading categories...</div>
-                      ) : error ? (
-                        <div>{error}</div>
-                      ) : categories.length > 0 ? (
+                      {categories.length > 0 ? (
                         categories.map((category) => (
                           <SidebarMenuSubItem key={category} onClick={() => handleCategorySelection(category)}>
                             <SidebarMenuSubButton asChild>
                               <div
                                 key={category}
-                                className={`flex relative gap-3 rounded-3xl py-2 -my-1 items-center border-2 border-blue ${
+                                className={`flex relative gap-3 rounded-3xl py-4 -my-1 items-center border-2 border-blue ${
                                   selectedCategory === category ? "shadow-[0_0_6.4px_0_#3295E8]" : ""
                                 } mt-2`}
                               >
@@ -242,6 +238,8 @@ export function AppSidebar({ Categories, Addons, onCategoryChange, handleContent
                       )}
 
                       <SidebarMenuSubItem>
+                        {error && <div className='text-red text-sm text-center'>{error}</div>}
+
                         {showInput ? (
                           <div className="flex flex-col gap-2">
                             <input
@@ -299,7 +297,7 @@ export function AppSidebar({ Categories, Addons, onCategoryChange, handleContent
                               <SidebarMenuSubButton asChild>
                                 <div
                                   key={addon.addon_name}
-                                  className="flex relative gap-3 rounded-3xl py-2 -my-1 items-center border-2 border-blue mt-2"
+                                  className="flex relative gap-3 rounded-3xl py-4 -my-1 items-center border-2 border-blue mt-2"
                                 >
                                   <div className="flex justify-between w-[85%] font-montserrat-500 uppercase text-xs">
                                     <div>{addon.addon_name}</div>
@@ -319,6 +317,8 @@ export function AppSidebar({ Categories, Addons, onCategoryChange, handleContent
                         <div className="text-center mt-2">Please add your first add-on</div>
                       )}
                       <SidebarMenuSubItem>
+                        {error && <div className='text-red text-sm text-center'>{error}</div>}
+
                         {showInputAddon ? (
                             <div className="flex flex-col items-center text-sm justify-between h-16 w-48 mt-2">
                               <div className='flex items-center justify-between'>
@@ -366,6 +366,24 @@ export function AppSidebar({ Categories, Addons, onCategoryChange, handleContent
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+
+        {/* Add Images Section */}
+        <SidebarGroup>
+          <SidebarGroupContent>
+            <SidebarMenu className='-mt-2'>
+              <SidebarMenuItem>
+                <SidebarMenuButton tooltip="Images">
+                  <div className='w-full flex gap-2 text-lg items-center uppercase rounded-lg font-montserrat-600 border-2 border-blue'
+                  onClick={() => handleShowAddImages(true)}>
+                    <img src={DashBoardLogo} alt="" className='h-5 w-5 ml-2' />
+                    <h2>Add Images</h2>
+                  </div>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
       </SidebarContent>
       
       <SidebarFooter>

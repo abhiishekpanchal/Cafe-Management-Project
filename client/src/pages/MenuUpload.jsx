@@ -13,6 +13,7 @@ import { AppSidebar } from '@/components/app-sidebar';
 import { useAuth } from '@/auth/AuthContext.jsx';
 import Dashboard from './Dashboard';
 import MonthlyEarnings from '@/components/MonthlyEarnings';
+import AddImages from '@/components/AddImages';
 
 function MenuUpload() {
   const { cafeId } = useParams();
@@ -35,6 +36,7 @@ function MenuUpload() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showDishForm, setShowDishForm] = useState(false);
+  const [showAddImages, setShowAddImages] = useState(false);
   const [showOrderPanelCard, setShowOrderPanelCard] = useState(false);
   const [dishName, setDishName] = useState('');
   const [dishDescription, setDishDescription] = useState('');
@@ -47,6 +49,7 @@ function MenuUpload() {
   const [showDashboard, setShowDashboard] = useState('dashboard');
   const [earnings, setEarnings] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
+  const [urlCopied, setUrlCopied] = useState(false);
   const orderPanelUrl = `/admin/${cafeId}`;
 
   useEffect(() => {
@@ -56,8 +59,10 @@ function MenuUpload() {
   }, [token, load, navigate]);
 
   const copyToClipboard = () => {
-    navigator.clipboard.writeText(window.location.origin + orderPanelUrl);
-    alert("URL copied to clipboard!");
+    navigator.clipboard.writeText(window.location.origin + orderPanelUrl).then(() => {
+      setUrlCopied(true);
+      setTimeout(() => setUrlCopied(false), 3000); 
+    });
   };
 
   const toggleDropdown = () => {
@@ -152,6 +157,15 @@ function MenuUpload() {
     fetchCategoryDishes(category); 
   };
 
+  useEffect(() => {
+    if (!selectedCategory) {
+      setShowDishForm(false); // Close the add dish form if category is deleted
+    }
+  }, [selectedCategory]);
+
+  // Close Add Images pop up
+  const closeImagePopup = () => setShowAddImages(false);
+
   // Handle Dashboard and category content toggling
   const handleShowDashboard = (content) => {
     if (content === 'dashboard') {
@@ -243,12 +257,19 @@ function MenuUpload() {
 
         {/* SIDEBAR */}    
             <SidebarProvider>
-              <AppSidebar Categories={[...categories]} Addons={[...addons]} 
-                onCategoryChange={handleCategoryChange} CafeName={cafeName}
+              <AppSidebar Categories={[...categories]} Addons={[...addons]} onCategoryChange={handleCategoryChange} 
+                selectedCategory={selectedCategory} setSelectedCategory={setSelectedCategory} CafeName={cafeName}
                 handleContentView={handleShowDashboard} fetchCategoriesAndAddons={fetchCategoriesAndAddons}
-                fetchCategoryDishes={fetchCategoryDishes} />
+                fetchCategoryDishes={fetchCategoryDishes} handleShowAddImages={setShowAddImages} />
               <SidebarTrigger />
             </SidebarProvider>
+
+        {/* Pop-up overlay and content */}
+        {showAddImages && (
+            <div className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-50 z-50">
+              <AddImages categories={categories} handleAddImagesPopup={closeImagePopup} cafeId={cafeId} />
+            </div>
+        )}
 
         {/* CONTENT SECTION */}
         <div className="flex flex-col justify-start items-start flex-wrap w-[2000vw] p-4 gap-3 overflow-hidden">
@@ -273,8 +294,10 @@ function MenuUpload() {
               </button>
               <div className='font-montserrat-700 text-lg mb-2'>ORDER PANEL</div>
               <button onClick={copyToClipboard} 
-              className='py-1.5 px-2 border-2 border-gray rounded-xl my-1.5 w-full overflow-hidden text-ellipsis whitespace-nowrap max-w-[90%]'>
-                {window.location.origin + orderPanelUrl}</button>
+                className='py-1.5 px-2 border-2 border-gray rounded-xl my-1.5 w-full overflow-hidden text-ellipsis whitespace-nowrap max-w-[90%]'>
+                {window.location.origin + orderPanelUrl}
+              </button>
+              {urlCopied && <div className="text-green font-montserrat-500 text-sm">URL Copied!</div>}
               <button onClick={() => navigate(orderPanelUrl)} className='py-1.5 bg-blue rounded-xl text-white font-montserrat-300 text-sm px-8'>GO TO ORDER PANEL</button>
             </div>
           </div>
@@ -311,19 +334,23 @@ function MenuUpload() {
               </div>
 
               <div className="flex flex-wrap w-full gap-4 justify-center sm:justify-start h-[78vh] overflow-y-auto pb-5">
-                {/* Add New Dish Section */}
-                {selectedCategory && (
-                  <button 
-                    className="absolute right-8 bottom-8 flex items-center justify-center gap-4 text-xl border-2 py-2 px-5 bg-blue z-50 text-white rounded-full hover:opacity-90"
-                    onClick={() => setShowDishForm((prev) => !prev)}
-                  >
-                    <img src={AddRingLogo} alt="Add Ring Logo" className='h-[42px] w-[42px]' />
-                    <div>Add Dish</div>
-                  </button>
-                )}
-
-                {selectedCategory ? (
+                {/* If no category is selected, show the message */}
+                {!selectedCategory ? (
+                  <div className="text-lg text-center mx-auto mt-5">
+                    Please select a category to view dishes
+                  </div>
+                ) : (
                   <>
+                    {/* Add Dish Button (Only when category is selected) */}
+                    <button 
+                      className="absolute right-8 bottom-8 flex items-center justify-center gap-4 text-xl border-2 py-2 px-5 bg-blue z-50 text-white rounded-full hover:opacity-90"
+                      onClick={() => setShowDishForm((prev) => !prev)}
+                    >
+                      <img src={AddRingLogo} alt="Add Ring Logo" className='h-[42px] w-[42px]' />
+                      <div>Add Dish</div>
+                    </button>
+
+                    {/* Dish List */}
                     {filteredDishes.length > 0 ? (
                       filteredDishes.map((dish, index) => (
                         <ItemCard
@@ -343,10 +370,9 @@ function MenuUpload() {
                       <div>No dishes available in this category.</div>
                     )}
                   </>
-                ) : (
-                  <div className="text-lg text-center mx-auto mt-5">Please select a category to view dishes</div>
                 )}
               </div>
+
 
               {/* Dish Form Popup */}
               {showDishForm && (
@@ -482,7 +508,7 @@ function MenuUpload() {
                                     key={index}
                                     type="button"
                                     onMouseDown={(e) => {
-                                      e.preventDefault();  // Prevents default form behavior
+                                      e.preventDefault();  
                                       e.stopPropagation();
                                       setSelectedAddons([...selectedAddons, addon]);
                                       setIsOpen(false);  // Close dropdown after selection
@@ -523,7 +549,18 @@ function MenuUpload() {
                     </div>
                     <button 
                       className="absolute right-2 top-2 scale-75"
-                      onClick={() => setShowDishForm(false)} 
+                      onClick={() => {
+                        setShowDishForm(false);
+                        setDishName('');
+                        setDishDescription('');
+                        setDishPrice(0);
+                        setDishType('VEG');
+                        setVariantsEnabled(false);
+                        setVariants([]);
+                        setVariantName('');
+                        setVariantPrice('');
+                        setSelectedAddons([]);
+                      }}
                     >
                       <img src={CrossLogo} alt="Cross Logo" className='h-[42px] w-[42px]' />
                     </button>

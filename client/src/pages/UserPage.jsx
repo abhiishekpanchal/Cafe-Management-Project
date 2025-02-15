@@ -12,6 +12,7 @@ function UserPage() {
   const [cafeLogo, setCafeLogo] = useState('');
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
+  const [error, setError] = useState('');
 
   useEffect(() => {
     const fetchCafeDetails = async () => {
@@ -34,7 +35,7 @@ function UserPage() {
 
   const handleSubmit = async () => {
     if (!name || !phone) {
-      alert("Please fill in both fields");
+      setError("Please fill in both fields");
       return;
     }
 
@@ -56,10 +57,10 @@ function UserPage() {
       if (res.ok) {
         navigate(`/order/${cafeId}/${tableId}/${name}`);
       } else {
-        console.log(`Error: ${data.message}`);
+        setError('Failed to save the user details');
       }
     } catch (err) {
-      console.log('Failed to save user details');
+      setError('Network Error. Try again!');
     }
   };
 
@@ -75,7 +76,10 @@ function UserPage() {
               type="text"
               placeholder='name'
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={(e) => {
+                setName(e.target.value);
+                setError('');
+              }}
               className='border-l-2 border-black pl-2 outline-none font-montserrat-400'
             />
           </div>
@@ -85,20 +89,26 @@ function UserPage() {
               type="number"
               placeholder='number'
               value={phone}
-              onChange={(e) => setPhone(e.target.value)}
+              onChange={(e) => {
+                setPhone(e.target.value);
+                setError('');
+              }}
               className='border-l-2 border-black pl-2 outline-none font-montserrat-400'
             />
           </div>
-          <div className='w-[110%] flex justify-end'>
+
+          {error && <div className='text-red text-xs font-montserrat-400 -my-2'>{error}</div> }
+
+          <button className='w-[110%] flex justify-end'>
             <div>
               <div
-                onClick={handleSubmit} // Call the function when clicked
+                onClick={handleSubmit} 
                 className='bg-blue p-2.5 text-white rounded-lg cursor-pointer'
               >
                 <FaArrowRight />
               </div>
             </div>
-          </div>
+          </button>
         </div>
       </div>
     </div>

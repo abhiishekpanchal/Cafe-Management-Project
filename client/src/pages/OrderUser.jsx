@@ -8,6 +8,7 @@ import InstaLogo from '../assets/insta.png';
 import ThumbDown from '../assets/thumb_down.png';
 import CodacityLogo from '../assets/CodacityLogo.png';
 import SendLogo from '../assets/Send.png';
+import CartLogo from '../assets/cart-icon.png';
 import DishPopup from '@/components/DishPopup';
 import { useAuth } from '@/auth/AuthContext';
 
@@ -278,6 +279,9 @@ function OrderUser() {
                         </a>
                         <button onClick={() => setIsComplainOpen(!isComplainOpen)} className='rounded-full h-8 w-8 border-2 border-gray'>
                             <img src={ThumbDown} alt="Complain Logo" className='scale-75' />
+                        </button>
+                        <button onClick={(e) => {navigate(`/order/${cafeId}/${tableId}/${customer}/cart`)}} className='rounded-full h-8 w-8 border-2 border-gray'>
+                            <img src={CartLogo} alt="Cart Logo" className='scale-75' />
                         </button>
                     </div>
                 </div>

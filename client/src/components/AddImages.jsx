@@ -107,7 +107,8 @@ function AddImages({ categories, handleAddImagesPopup, cafeId }) {
         </div>
 
         <div className='flex flex-col justify-start items-center gap-2 w-full'>
-          <div className='font-montserrat-700 text-xl mb-2'>ADD IMAGES</div>
+          <div className='font-montserrat-700 text-xl -mb-2'>ADD IMAGES</div>
+          <div className='font-montserrat-500 text-gray text-xs'>Preferable ratio: 512 × 512 px</div>
 
           {/* Dropdown */}
           <div className='relative flex items-center w-[80%] py-1 px-2 border-2 border-gray rounded-xl'>
@@ -171,7 +172,9 @@ function AddImages({ categories, handleAddImagesPopup, cafeId }) {
 
         {/* Upload Banner */}
         <div className='flex flex-col justify-start items-center gap-2 w-full'>
-          <div className='font-montserrat-400 text-sm'>DISCOUNT BANNER</div>
+          <div className='font-montserrat-400 text-sm -mb-2'>DISCOUNT BANNER</div>
+          <div className='font-montserrat-500 text-gray text-xs -mb-1'>Preferable ratio: 2560 × 1008 px</div>
+
           <div className='w-[80%] flex flex-col items-center gap-2'>
             <div className='flex justify-center items-center py-1.5 gap-3 w-full'>
               <div className='bg-blue rounded-xl flex items-center justify-center py-1.5 w-full'>
