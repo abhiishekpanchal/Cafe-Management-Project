@@ -250,6 +250,7 @@ function MenuUpload() {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     navigate('/'); 
+    window.location.reload(); 
   };
 
   return (

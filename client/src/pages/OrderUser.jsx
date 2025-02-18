@@ -8,7 +8,8 @@ import InstaLogo from '../assets/insta.png';
 import ThumbDown from '../assets/thumb_down.png';
 import CodacityLogo from '../assets/CodacityLogo.png';
 import SendLogo from '../assets/Send.png';
-import CartLogo from '../assets/cart-icon.png';
+import CartLogo from '../assets/Bag.png';
+import MenuLogo from '../assets/Book_open_light.png';
 import DishPopup from '@/components/DishPopup';
 import { useAuth } from '@/auth/AuthContext';
 
@@ -205,14 +206,14 @@ function OrderUser() {
             
             
             {/* MENU BUTTON */}
-            <div
+            {/* <div
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
                 className={`uppercase font-montserrat-500 px-4 py-1 rounded-full fixed left-[40%] bg-blue text-white text-sm shadow-[0_0_18px_rgba(0,0,0,0.15)] z-50 transition-transform duration-300 ${
                     orderList.length > 0 ? 'bottom-16' : 'bottom-3'
                 }`}
             >
                 MENU
-            </div>
+            </div> */}
 
             {/* STICKY CART BLOCK */}
             {orderList.length > 0 && (
@@ -274,13 +275,7 @@ function OrderUser() {
                         <div className='font-montsarret font-montserrat-400 text-xs'>Table : {`${tableId}`}</div>
                     </div>
                     <div className='flex gap-2 justify-end'>
-                        <a href={instagramHandle} target='_blank' className='rounded-full h-8 w-8 border-2 border-gray cursor-pointer'>
-                            <img src={InstaLogo} alt="Insta Logo" className='scale-75' />
-                        </a>
-                        <button onClick={() => setIsComplainOpen(!isComplainOpen)} className='rounded-full h-8 w-8 border-2 border-gray'>
-                            <img src={ThumbDown} alt="Complain Logo" className='scale-75' />
-                        </button>
-                        <button onClick={(e) => {navigate(`/order/${cafeId}/${tableId}/${customer}/cart`)}} className='rounded-full h-8 w-8 border-2 border-gray'>
+                        <button onClick={(e) => {navigate(`/order/${cafeId}/${tableId}/${customer}/cart`)}} className='rounded-full h-8 w-8 border-2 border-gray shadow-xl'>
                             <img src={CartLogo} alt="Cart Logo" className='scale-75' />
                         </button>
                     </div>
@@ -311,22 +306,32 @@ function OrderUser() {
                         {complaintMessage}
                     </div>
                 )}
-
-                <div className='w-full border-2 border-gray rounded-xl flex gap-3 items-center'>
-                    <img src={SearchLogo} alt="" className='h-5 w-5 ml-1.5 -mr-1' />
-                    <input type="search" className='w-[80%] pr-2 py-0.5 outline-none' 
-                        value={searchTerm}  onChange={(e) => setSearchTerm(e.target.value)} />
-                </div>
             </div>
 
             {/* MAIN SECTION */}
-            <div className='flex-grow overflow-y-auto mb-3 mt-3'>
-                <div className='flex justify-center items-center mb-6 rounded-2xl border-2 border-gray w-[90%] h-[140px] mx-auto'>
+            <div className='flex-grow overflow-y-auto mb-3'>
+                <div className='flex justify-center items-center mb-3 rounded-2xl border-2 border-gray w-[92%] h-[140px] mx-auto'>
                     {banner?.url ? (
                         <img src={banner.url} alt="Cafe Banner" className='w-full h-full object-cover rounded-xl' />
                     ) : (
                         <div>No Banner Available</div>
                     )}
+                </div>
+
+                <div className='mx-3 rounded-2xl border-2 border-gray shadow-xl w-[92%] flex justify-evenly my-3 p-1'>
+                        <div className='flex flex-col items-center'>
+                            <a href={instagramHandle} target='_blank' className='cursor-pointer h-6 w-6'>
+                                <img src={InstaLogo} alt="Insta Logo" className='scale-75' />
+                            </a>
+                            <div className='-mt-1 font-montserrat-500 text-xs mb-1'>Instagram</div>
+                        </div>
+                        
+                        <div className='flex flex-col items-center'>
+                            <button onClick={() => setIsComplainOpen(!isComplainOpen)} className='h-6 w-6'>
+                                <img src={ThumbDown} alt="Complain Logo" className='scale-75' />
+                            </button>
+                            <div className='-mt-1 font-montserrat-500 text-xs mb-1'>Feedback</div>
+                        </div>
                 </div>
 
                 <div className='flex flex-col justify-evenly py-2 w-full border-y-2 border-gray'>
@@ -351,7 +356,21 @@ function OrderUser() {
                 </div>
 
                 <div className='flex flex-col justify-evenly py-2 w-full'>
-                    <div className='font-montsarret font-montserrat-700 uppercase pl-3'>For You</div>
+                    <div className='flex justify-between items-center font-montsarret font-montserrat-700 uppercase px-3 mb-2'>
+                        <div>For You</div>
+                        <div className='flex items-center'>
+                            <button onClick={(e) => setIsMenuOpen(!isMenuOpen)} className='rounded-full h-7 w-7 border-2 border-gray shadow-xl'>
+                                <img src={MenuLogo} alt="Menu Logo" className='scale-75' />
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div className='border-2 border-gray rounded-xl flex gap-3 items-center mx-3'>
+                        <img src={SearchLogo} alt="" className='h-5 w-5 ml-1.5 -mr-1' />
+                        <input type="search" className='w-[80%] pr-2 py-0.5 outline-none' 
+                            value={searchTerm}  onChange={(e) => setSearchTerm(e.target.value)} />
+                    </div>
+
                     <div className='flex flex-col justify-start items-start gap-2 pl-3 pt-3'>
                         {filteredDishes?.length > 0 ? (
                             filteredDishes
