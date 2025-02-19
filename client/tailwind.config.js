@@ -70,6 +70,7 @@ export default {
   		black: '#000000',
   		blue: '#0158A1',
   		light_blue: '#3295E8',
+		user_blue: '#B6CCFE',
   		gray: '#C6C6C6',
 		green: '#008000',
 		red: '#ff0800',

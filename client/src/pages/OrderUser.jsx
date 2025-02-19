@@ -203,17 +203,6 @@ function OrderUser() {
 
     return (
         <div className='relative flex flex-col w-full min-h-[100vh]'>
-            
-            
-            {/* MENU BUTTON */}
-            {/* <div
-                onClick={() => setIsMenuOpen(!isMenuOpen)}
-                className={`uppercase font-montserrat-500 px-4 py-1 rounded-full fixed left-[40%] bg-blue text-white text-sm shadow-[0_0_18px_rgba(0,0,0,0.15)] z-50 transition-transform duration-300 ${
-                    orderList.length > 0 ? 'bottom-16' : 'bottom-3'
-                }`}
-            >
-                MENU
-            </div> */}
 
             {/* STICKY CART BLOCK */}
             {orderList.length > 0 && (
@@ -268,11 +257,10 @@ function OrderUser() {
             </div>
 
             {/* HEADER */}
-            <div className='sticky top-0 bg-white w-full flex flex-col gap-2 px-3 py-3 capitalize z-20'>
+            <div className='sticky top-0 bg-white w-full flex flex-col gap-2 px-3 pt-3 pb-2 z-20'>
                 <div className='flex justify-between items-center w-full'>
                     <div className='flex flex-col'>
-                        <div className='font-montsarret font-montserrat-700 text-xl'>{`${cafeName}`}</div>
-                        <div className='font-montsarret font-montserrat-400 text-xs'>Table : {`${tableId}`}</div>
+                        <div className='uppercase font-montserrat-700 text-2xl'>{`${cafeName}`}</div>
                     </div>
                     <div className='flex gap-2 justify-end'>
                         <button onClick={(e) => {navigate(`/order/${cafeId}/${tableId}/${customer}/cart`)}} className='rounded-full h-8 w-8 border-2 border-gray shadow-xl'>
@@ -310,7 +298,7 @@ function OrderUser() {
 
             {/* MAIN SECTION */}
             <div className='flex-grow overflow-y-auto mb-3'>
-                <div className='flex justify-center items-center mb-3 rounded-2xl border-2 border-gray w-[92%] h-[140px] mx-auto'>
+                <div className='flex justify-center items-center mb-3 rounded-2xl border-2 border-gray shadow-xl w-[90%] h-[140px] mx-auto'>
                     {banner?.url ? (
                         <img src={banner.url} alt="Cafe Banner" className='w-full h-full object-cover rounded-xl' />
                     ) : (
@@ -318,7 +306,7 @@ function OrderUser() {
                     )}
                 </div>
 
-                <div className='mx-3 rounded-2xl border-2 border-gray shadow-xl w-[92%] flex justify-evenly my-3 p-1'>
+                <div className='mx-3 rounded-2xl border-2 border-gray shadow-xl w-[91.5%] flex justify-evenly my-3 p-1'>
                         <div className='flex flex-col items-center'>
                             <a href={instagramHandle} target='_blank' className='cursor-pointer h-6 w-6'>
                                 <img src={InstaLogo} alt="Insta Logo" className='scale-75' />
@@ -334,8 +322,8 @@ function OrderUser() {
                         </div>
                 </div>
 
-                <div className='flex flex-col justify-evenly py-2 w-full border-y-2 border-gray'>
-                    <div className='font-montsarret font-montserrat-700 uppercase pl-3 pb-2 mb-[-2px]'>Explore Now</div>
+                <div className='flex flex-col justify-evenly py-1 w-full'>
+                    <div className='font-montsarret font-montserrat-700 uppercase px-3 mb-[-0.5rem]'>Explore Now</div>
                     <div className='h-[25vh] flex justify-start items-center gap-2 px-3 overflow-x-scroll scrollbar-hide'>
                         {categories.length === 0 ? (
                             <div>No categories</div>
@@ -355,17 +343,17 @@ function OrderUser() {
                     </div>    
                 </div>
 
-                <div className='flex flex-col justify-evenly py-2 w-full'>
-                    <div className='flex justify-between items-center font-montsarret font-montserrat-700 uppercase px-3 mb-2'>
+                <div className='flex flex-col justify-evenly pb-2 w-full'>
+                    <div className='flex justify-between items-center font-montsarret font-montserrat-700 uppercase px-3 pb-1 mb-2'>
                         <div>For You</div>
                         <div className='flex items-center'>
-                            <button onClick={(e) => setIsMenuOpen(!isMenuOpen)} className='rounded-full h-7 w-7 border-2 border-gray shadow-xl'>
-                                <img src={MenuLogo} alt="Menu Logo" className='scale-75' />
+                            <button onClick={(e) => setIsMenuOpen(!isMenuOpen)} className='rounded-full h-7 w-7 shadow-xl bg-user_blue'>
+                                <img src={MenuLogo} alt="Menu Logo" className='scale-[65%]' />
                             </button>
                         </div>
                     </div>
                     
-                    <div className='border-2 border-gray rounded-xl flex gap-3 items-center mx-3'>
+                    <div className='border-2 border-gray rounded-xl flex gap-3 items-center mx-3 shadow-lg'>
                         <img src={SearchLogo} alt="" className='h-5 w-5 ml-1.5 -mr-1' />
                         <input type="search" className='w-[80%] pr-2 py-0.5 outline-none' 
                             value={searchTerm}  onChange={(e) => setSearchTerm(e.target.value)} />

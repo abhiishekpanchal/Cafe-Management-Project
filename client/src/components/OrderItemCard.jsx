@@ -33,18 +33,18 @@ function OrderItemCard({ dish, onAddToOrder }) {
   const toggleDescription = () => setIsExpanded(!isExpanded);
 
   return (
-    <div className='relative flex justify-between items-center w-[92vw] px-2 py-3 my-1.5 rounded-2xl border-2 border-gray'>
+    <div className='relative flex justify-between items-center w-[92vw] px-2 py-3 my-1.5 rounded-2xl border-2 border-gray shadow-lg'>
 
       {/* Dish name, price, and description */}
       <div className='flex flex-col justify-between gap-1 h-full w-[73%]'>
         <div className='flex flex-col justify-between items-start mb-2 h-full'>
-          <div className='capitalize text-md font-montsarret font-montserrat-600 w-full rounded-xl'>
+          <div className='capitalize text-md font-montserrat-600 w-full rounded-xl'>
             {dish.dishName}
           </div>
-          <div className='font-montsarret font-montserrat-500 text-sm mt-auto w-full'>{`Rs.${dish.dishPrice}`}</div>
+          <div className='font-montserrat-500 text-sm mt-auto w-full'>{`Rs.${dish.dishPrice}`}</div>
         </div>
         
-        <div className='text-xs font-montsarret font-montserrat-400 w-full' style={{ wordWrap: 'break-word', wordBreak: 'break-word' }}>
+        <div className='text-xs font-montserrat-400 w-full' style={{ wordWrap: 'break-word', wordBreak: 'break-word' }}>
           <span
             className={`${isExpanded ? '' : 'truncate'} inline-block`}
             style={{
@@ -82,9 +82,9 @@ function OrderItemCard({ dish, onAddToOrder }) {
         {/* Conditional rendering for Add button or Quantity input */}
         <div className='absolute bottom-3 right-2'>
           {showAddButton ? (
-            <div className='flex justify-center items-center bg-blue hover:opacity-90 px-2 rounded-full'>
+            <div className='flex justify-center items-center bg-user_blue hover:opacity-90 px-2 rounded-full'>
               <button 
-                className='text-white uppercase font-montsarret font-montserrat-700 text-xs px-2 py-1'
+                className='text-black uppercase font-montsarret font-montserrat-700 text-xs px-2 py-1'
                 onClick={handleAddClick}
               >
                 Add
