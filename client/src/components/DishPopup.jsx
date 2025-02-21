@@ -143,12 +143,12 @@ function DishPopup({ dish, onClose, onAddToOrder, addons, selectedVariant, selec
                         {showAddButton ? (
                             <button
                                 onClick={handleAddClick}
-                                className="bg-blue text-white px-3 py-2 rounded-lg"
+                                className="bg-user_blue text-black px-3 py-2 rounded-lg"
                             >
                                 Add
                             </button>
                         ) : (
-                            <div className='flex items-center justify-between px-1.5 py-1 bg-blue text-white rounded-full'>
+                            <div className='flex items-center justify-between px-1.5 py-1 bg-user_blue text-black rounded-full'>
                                 <button onClick={decrementQuantity}>
                                     <FaMinus className='scale-75' />
                                 </button>
@@ -162,7 +162,7 @@ function DishPopup({ dish, onClose, onAddToOrder, addons, selectedVariant, selec
 
                     <button
                         onClick={handleAddToCart}
-                        className="bg-blue text-white px-4 py-2 rounded-lg w-[65%]"
+                        className="bg-user_blue text-black font-montserrat-400 px-4 py-2 rounded-lg w-[65%]"
                     >
                         Add Item | Rs {((currentVariant?.variantPrice || dish.dishPrice || 0) 
                         + currentAddons.reduce((total, addon) => total + (addon.addOnPrice || 0), 0)) 

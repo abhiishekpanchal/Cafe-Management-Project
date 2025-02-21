@@ -83,12 +83,10 @@ function OrderUser() {
         }
     };
 
-    // Fetch dishes once when component mounts
     useEffect(() => {
         fetchCategoryDishes();
     }, [cafeId]);
 
-    // Filter dishes based on selected category and search term
     useEffect(() => {
         let filtered = dishes.filter(dish => dish.dishStatus === true); 
         
@@ -103,7 +101,6 @@ function OrderUser() {
         setFilteredDishes(filtered);
     }, [selectedCategory, dishes, searchTerm]);
 
-    // Save orderList to localStorage whenever it updates
     useEffect(() => {
         localStorage.setItem(`orderList_${cafeId}_${tableId}`, JSON.stringify(orderList));
     }, [orderList, cafeId, tableId]);
@@ -202,20 +199,24 @@ function OrderUser() {
     }, [complaintMessage]);
 
     return (
-        <div className='relative flex flex-col w-full min-h-[100vh]'>
+        <div className='relative bg-user_bg flex flex-col w-full min-h-[100vh]'>
+            {/* MENU BUTTON */}
+            <button onClick={(e) => setIsMenuOpen(!isMenuOpen)} className='fixed z-50 right-4 bottom-[5.8rem] rounded-full h-7 w-7 shadow-xl bg-user_blue'>
+                <img src={MenuLogo} alt="Menu Logo" className='scale-[65%]' />
+            </button>
 
             {/* STICKY CART BLOCK */}
             {orderList.length > 0 && (
                 <div
-                    className="fixed bottom-2 w-11/12 left-3 rounded-2xl bg-blue text-white z-50 transition-all duration-300"
+                    className="fixed bottom-2 w-11/12 left-3 rounded-2xl bg-user_blue text-white z-50 transition-all duration-300"
                     style={{ transform: `translateY(${orderList.length > 0 ? '0' : '100%'})` }}
                 >
                     <div className="flex justify-between items-center px-4 py-2">
-                        <div className="font-montserrat-400 text-md">
+                        <div className="font-montserrat-500 text-md">
                             {`${orderList.length} item(s) in cart`}
                         </div>
                         <button
-                            className="bg-white text-blue p-1 px-4 py-1 rounded-xl font-montserrat-600"
+                            className="bg-white text-black p-1 px-4 py-1 rounded-xl font-montserrat-500"
                             onClick={() => navigate(`/order/${cafeId}/${tableId}/${customer}/cart`)}
                         >
                             View Cart
@@ -225,11 +226,10 @@ function OrderUser() {
             )}
 
 
-
             {/* POP-UP MENU */}
             <div className={`fixed inset-0 z-50 ${isMenuOpen ? 'bg-black bg-opacity-50' : 'bg-transparent pointer-events-none'}`}>
                 {/* Pop-up Container */}
-                <div className={`fixed bottom-0 left-0 w-full max-h-[70vh] bg-white rounded-t-3xl shadow-lg border-t-2 z-50 transition-transform duration-500 ${isMenuOpen ? 'translate-y-0' : 'translate-y-full'}`}>
+                <div className={`fixed bottom-0 left-0 w-full max-h-[70vh] bg-user_bg rounded-t-3xl shadow-lg border-t-2 z-50 transition-transform duration-500 ${isMenuOpen ? 'translate-y-0' : 'translate-y-full'}`}>
                     {/* Close Button */}
                     <button
                         className="absolute top-2 right-4 text-lg font-montserrat-700"
@@ -244,7 +244,7 @@ function OrderUser() {
                         <div className='flex flex-col gap-2 max-h-[55vh] overflow-y-auto'>
                             {categories.map((category, index) => (
                                 <div onClick={()=>navigate(`/order/${cafeId}/${tableId}/${customer}/${category}`)} key={index} 
-                                    className='flex justify-between items-center bg-white px-3 py-2 rounded-lg'>
+                                    className='flex justify-between items-center px-3 py-2 rounded-lg'>
                                     <div className='font-montserrat-500 uppercase'>{category}</div>
                                     <div>
                                         <img src={ExpandRight} className='h-5 w-5' />
@@ -257,19 +257,19 @@ function OrderUser() {
             </div>
 
             {/* HEADER */}
-            <div className='sticky top-0 bg-white w-full flex flex-col gap-2 px-3 pt-3 pb-2 z-20'>
+            <div className='sticky top-0 bg-user_bg w-full flex flex-col gap-2 px-3 pt-3 pb-2 z-20'>
                 <div className='flex justify-between items-center w-full'>
                     <div className='flex flex-col'>
                         <div className='uppercase font-montserrat-700 text-2xl'>{`${cafeName}`}</div>
                     </div>
                     <div className='flex gap-2 justify-end'>
-                        <button onClick={(e) => {navigate(`/order/${cafeId}/${tableId}/${customer}/cart`)}} className='rounded-full h-8 w-8 border-2 border-gray shadow-xl'>
+                        <button onClick={(e) => {navigate(`/order/${cafeId}/${tableId}/${customer}/cart`)}} className='rounded-full h-8 w-8 border-2 border-gray bg-user_comp shadow-xl'>
                             <img src={CartLogo} alt="Cart Logo" className='scale-75' />
                         </button>
                     </div>
                 </div>
 
-                <div className={`w-full border-2 border-gray rounded-xl flex gap-3 items-center overflow-hidden transition-all duration-500 ease-in-out ${
+                <div className={`w-full border-2 border-gray bg-user_comp rounded-xl flex gap-3 items-center overflow-hidden transition-all duration-500 ease-in-out ${
                     isComplainOpen ? 'max-h-20 opacity-100' : 'max-h-0 opacity-0'
                     }`}
                 >
@@ -298,7 +298,7 @@ function OrderUser() {
 
             {/* MAIN SECTION */}
             <div className='flex-grow overflow-y-auto mb-3'>
-                <div className='flex justify-center items-center mb-3 rounded-2xl border-2 border-gray shadow-xl w-[90%] h-[140px] mx-auto'>
+                <div className='flex justify-center items-center mb-3 rounded-2xl shadow-xl w-[90%] h-[140px] mx-auto'>
                     {banner?.url ? (
                         <img src={banner.url} alt="Cafe Banner" className='w-full h-full object-cover rounded-xl' />
                     ) : (
@@ -306,7 +306,7 @@ function OrderUser() {
                     )}
                 </div>
 
-                <div className='mx-3 rounded-2xl border-2 border-gray shadow-xl w-[91.5%] flex justify-evenly my-3 p-1'>
+                <div className='mx-auto rounded-2xl border-2 border-gray bg-user_comp shadow-xl w-[90%] flex justify-evenly my-3 p-1'>
                         <div className='flex flex-col items-center'>
                             <a href={instagramHandle} target='_blank' className='cursor-pointer h-6 w-6'>
                                 <img src={InstaLogo} alt="Insta Logo" className='scale-75' />
@@ -322,9 +322,9 @@ function OrderUser() {
                         </div>
                 </div>
 
-                <div className='flex flex-col justify-evenly py-1 w-full'>
-                    <div className='font-montsarret font-montserrat-700 uppercase px-3 mb-[-0.5rem]'>Explore Now</div>
-                    <div className='h-[25vh] flex justify-start items-center gap-2 px-3 overflow-x-scroll scrollbar-hide'>
+                <div className='flex flex-col justify-evenly py-1 w-[90%] mx-auto'>
+                    <div className='font-montserrat-700 uppercase'>Explore Now</div>
+                    <div className='h-[25vh] flex justify-start items-center gap-2 overflow-x-scroll scrollbar-hide'>
                         {categories.length === 0 ? (
                             <div>No categories</div>
                         ) : (
@@ -343,23 +343,18 @@ function OrderUser() {
                     </div>    
                 </div>
 
-                <div className='flex flex-col justify-evenly pb-2 w-full'>
-                    <div className='flex justify-between items-center font-montsarret font-montserrat-700 uppercase px-3 pb-1 mb-2'>
+                <div className='flex flex-col justify-evenly pb-2 w-[90%] mx-auto'>
+                    <div className='flex justify-between items-center font-montsarret font-montserrat-700 uppercase pb-1 mb-1'>
                         <div>For You</div>
-                        <div className='flex items-center'>
-                            <button onClick={(e) => setIsMenuOpen(!isMenuOpen)} className='rounded-full h-7 w-7 shadow-xl bg-user_blue'>
-                                <img src={MenuLogo} alt="Menu Logo" className='scale-[65%]' />
-                            </button>
-                        </div>
                     </div>
                     
-                    <div className='border-2 border-gray rounded-xl flex gap-3 items-center mx-3 shadow-lg'>
+                    <div className='border-2 border-gray bg-user_comp rounded-xl flex gap-3 items-center shadow-lg'>
                         <img src={SearchLogo} alt="" className='h-5 w-5 ml-1.5 -mr-1' />
-                        <input type="search" className='w-[80%] pr-2 py-0.5 outline-none' 
+                        <input type="search" className='w-[80%] pr-2 py-1 outline-none' 
                             value={searchTerm}  onChange={(e) => setSearchTerm(e.target.value)} />
                     </div>
 
-                    <div className='flex flex-col justify-start items-start gap-2 pl-3 pt-3'>
+                    <div className='flex flex-col justify-start items-start gap-2 pt-3 w-[90%]'>
                         {filteredDishes?.length > 0 ? (
                             filteredDishes
                                 .map(dish => (
@@ -391,9 +386,9 @@ function OrderUser() {
             )}
 
             {/* Codacity Footer - Appears only at the bottom */}
-            <div className='my-3 px-4 flex items-center justify-center'>
+            <div className='my-3 px-4 flex items-center justify-center gap-1'>
                 <img src={CodacityLogo} alt="Codacity Logo" className='h-7 w-10' />
-                <h2 className='text-xs font-montserrat-700 text-gray pb-1'>Powered by Codacity Solutions</h2>
+                <h2 className='text-xs font-montserrat-700 text-black pb-1'>Powered by Codacity Solutions</h2>
             </div>
         </div>
     );

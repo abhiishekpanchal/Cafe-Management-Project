@@ -33,7 +33,7 @@ function OrderItemCard({ dish, onAddToOrder }) {
   const toggleDescription = () => setIsExpanded(!isExpanded);
 
   return (
-    <div className='relative flex justify-between items-center w-[92vw] px-2 py-3 my-1.5 rounded-2xl border-2 border-gray shadow-lg'>
+    <div className='relative flex justify-between items-center w-[90vw] px-2 py-3 my-1.5 rounded-2xl border-2 border-gray shadow-lg bg-user_comp'>
 
       {/* Dish name, price, and description */}
       <div className='flex flex-col justify-between gap-1 h-full w-[73%]'>
@@ -48,19 +48,23 @@ function OrderItemCard({ dish, onAddToOrder }) {
           <span
             className={`${isExpanded ? '' : 'truncate'} inline-block`}
             style={{
-              display: '-webkit-box',
-              WebkitLineClamp: isExpanded ? 'none' : 1,
-              WebkitBoxOrient: 'vertical',
+              display: isExpanded ? 'block' : 'flex',
               overflow: 'hidden',
               textOverflow: 'ellipsis',
+              ...(isExpanded
+                ? {}
+                : {
+                    whiteSpace: 'nowrap',
+                    maxWidth: '100%',
+                  }),
             }}
           >
             {dish.dishDescription}
           </span>
           {dish.dishDescription.length > 50 && (
             <button
-              onClick={toggleDescription}
-              className='text-blue text-xs'
+              onClick={toggleDescription} 
+              className='text-user_blue font-montserrat-300 text-xs'
             >
               {isExpanded ? 'Read less' : 'Read more'}...
             </button>
@@ -91,13 +95,13 @@ function OrderItemCard({ dish, onAddToOrder }) {
               </button>
             </div>
           ) : (
-            <div className='flex justify-between px-2 bg-blue mt-1 rounded-xl'>
+            <div className='flex justify-between px-2 bg-user_blue mt-1 rounded-xl'>
               <button onClick={decrementQuantity}>
-                <FaMinus className='text-white scale-75 pr-1' />
+                <FaMinus className='text-black scale-75 pr-1' />
               </button>
               <span className='text-center bg-white px-2'>{quantity}</span>
               <button onClick={incrementQuantity}>
-                <FaPlus className='text-white scale-75 pl-1' />
+                <FaPlus className='text-black scale-75 pl-1' />
               </button>
             </div>
           )}

@@ -2,8 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { FaArrowLeft, FaSearch } from 'react-icons/fa';
 import OrderItemCard from '../components/OrderItemCard.jsx';
+import CodacityLogo from '../assets/CodacityLogo.png';
 import DishPopup from '../components/DishPopup.jsx'; 
-import { useAuth } from '@/auth/AuthContext.jsx';
 
 function CategoryWiseDishes() {
     const { cafeId, tableId, category, customer } = useParams();
@@ -151,7 +151,7 @@ function CategoryWiseDishes() {
     };
 
     return (
-        <div className='flex flex-col'>
+        <div className='flex flex-col min-h-[100vh] bg-user_bg'>
             {/* Header */}
             <div className='flex gap-4 items-center px-2 py-2'>
                 <FaArrowLeft
@@ -162,11 +162,11 @@ function CategoryWiseDishes() {
             </div>
 
             {/* Filters */}
-            <div className='flex justify-between px-2 pb-4 gap-0.5 shadow-xl'>
+            <div className='flex justify-between px-2 pb-4 gap-0.5 shadow-xl bg-user_bg'>
                 <select
                     name='DishType'
                     id='dish-type'
-                    className='outline-none font-montserrat-400 text-sm border rounded-full p-1'
+                    className='outline-none font-montserrat-400 bg-user_comp text-sm border rounded-full p-1'
                     value={dishType}
                     onChange={handleDishTypeChange}
                 >
@@ -174,7 +174,7 @@ function CategoryWiseDishes() {
                     <option value='NON-VEG'>Non-Veg</option>
                     <option value='BOTH'>Both</option>
                 </select>
-                <div className='flex items-center border rounded-full px-2'>
+                <div className='flex items-center border rounded-full px-2 bg-user_comp'>
                     <input
                         type='search'
                         placeholder='Search in Menu'
@@ -217,15 +217,15 @@ function CategoryWiseDishes() {
             {/* STICKY CART BLOCK */}
             {orderList.length > 0 && (
                 <div
-                    className="fixed bottom-2 w-11/12 left-3 rounded-2xl bg-blue text-white z-20 transition-all duration-300"
+                    className="fixed bottom-2 w-11/12 left-3 rounded-2xl bg-user_blue text-white z-20 transition-all duration-300"
                     style={{ transform: `translateY(${orderList.length > 0 ? '0' : '100%'})` }}
                 >
                     <div className="flex justify-between items-center px-4 py-2">
-                        <div className="font-montserrat-400 text-md">
+                        <div className="font-montserrat-500 text-md">
                             {`${orderList.length} item(s) in cart`}
                         </div>
                         <button
-                            className="bg-white text-blue p-1 px-4 py-1 rounded-xl font-montserrat-600"
+                            className="bg-white text-black p-1 px-4 py-1 rounded-xl font-montserrat-500"
                             onClick={() => navigate(`/order/${cafeId}/${tableId}/${customer}/cart`)}
                         >
                             View Cart
@@ -233,6 +233,12 @@ function CategoryWiseDishes() {
                     </div>
                 </div>
             )}
+
+            {/* Codacity Footer - Appears only at the bottom */}
+            <div className='my-3 px-4 flex items-center justify-center gap-1'>
+                <img src={CodacityLogo} alt="Codacity Logo" className='h-7 w-10' />
+                <h2 className='text-xs font-montserrat-700 text-black pb-1'>Powered by Codacity Solutions</h2>
+            </div>
         </div>
     );
 }

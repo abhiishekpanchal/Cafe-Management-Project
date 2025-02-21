@@ -17,7 +17,7 @@ function CartItemCard({ item, variant, addons, onQuantityChange }) {
   };
 
   return (
-    <div className="flex justify-between items-center px-3 py-4 rounded-2xl shadow-[0_0_18px_rgba(0,0,0,0.15)]">
+    <div className="flex justify-between items-center px-3 py-4 rounded-2xl shadow-[0_0_18px_rgba(0,0,0,0.15)] bg-user_comp">
       <div className="flex flex-col items-start justify-start w-[60%]">
         <div className="flex items-center gap-1.5 font-montserrat-500 capitalize">
           <div>
@@ -45,7 +45,7 @@ function CartItemCard({ item, variant, addons, onQuantityChange }) {
         )}
       </div>
       <div className="flex text-sm items-center gap-3 w-[40%]">
-        <div className="flex items-center rounded-full text-white py-1 bg-blue">
+        <div className="flex items-center rounded-full text-black py-1 bg-user_blue">
           <button className="p-1 scale-[80%]" onClick={handleDecrement} disabled={quantity === 0}>
             <FaMinus />
           </button>

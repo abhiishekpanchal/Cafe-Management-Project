@@ -9,7 +9,7 @@ function CategoryCard({ onClick, dishCategory, categoryImage }) {
         backgroundSize: 'cover',
         backgroundPosition: 'center',
       }}
-      className='flex items-end justify-center overflow-hidden h-[145px] w-[145px] rounded-2xl border-2 flex-shrink-0 min-w-[145px]'
+      className='flex items-end justify-center overflow-hidden h-[145px] w-[145px] rounded-2xl flex-shrink-0 min-w-[145px]'
     >
       <div className='font-montserrat-500 text-white uppercase w-full truncate text-center bg-black bg-opacity-50'>
         {dishCategory}

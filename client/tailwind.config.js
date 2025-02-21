@@ -71,6 +71,8 @@ export default {
   		blue: '#0158A1',
   		light_blue: '#3295E8',
 		user_blue: '#B6CCFE',
+		user_bg: '#DFDFDF',
+		user_comp: '#FFFFFF',
   		gray: '#C6C6C6',
 		green: '#008000',
 		red: '#ff0800',

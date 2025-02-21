@@ -88,6 +88,8 @@ function UserPage() {
             <input
               type="number"
               placeholder='number'
+              pattern="\d{10}"
+              maxLength={10}
               value={phone}
               onChange={(e) => {
                 setPhone(e.target.value);
