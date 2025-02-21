@@ -180,7 +180,7 @@ function CategoryWiseDishes() {
                         placeholder='Search in Menu'
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className='outline-none font-montserrat-400 text-sm bg-none'
+                        className='outline-none font-montserrat-400 text-sm bg-user_comp'
                     />
                     <FaSearch className='h-4 w-4 opacity-60' />
                 </div>
@@ -221,7 +221,7 @@ function CategoryWiseDishes() {
                     style={{ transform: `translateY(${orderList.length > 0 ? '0' : '100%'})` }}
                 >
                     <div className="flex justify-between items-center px-4 py-2">
-                        <div className="font-montserrat-500 text-md">
+                        <div className="font-montserrat-500 text-black text-md">
                             {`${orderList.length} item(s) in cart`}
                         </div>
                         <button

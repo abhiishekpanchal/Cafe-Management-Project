@@ -102,7 +102,7 @@ function CartPage() {
 
   return (
     <div>
-      <div className='relative h-[100vh] bg-user_bg'>
+      <div className='relative bg-user_bg'>
         <div className='flex gap-5 shadow-xl items-center p-2 px-3 mb-5'>
           <div onClick={() => navigate(`/order/${cafeId}/${tableId}/${customer}`)} className='opacity-60 scale-90'><FaArrowLeft /></div>
           <div className="text-lg font-montserrat-600">Cart</div>
@@ -122,7 +122,7 @@ function CartPage() {
           </div>
         ) : (
           <>
-            <div className="flex flex-col font-montserrat-500 gap-2 px-3 h-[75vh] overflow-y-auto">
+            <div className="flex flex-col font-montserrat-500 gap-2 px-3 pb-28 h-[70vh] overflow-y-auto">
               {orderList.length === 0 ? (
                 <p>Your cart is empty</p>
               ) : (
@@ -140,7 +140,7 @@ function CartPage() {
                     <div className='rounded-xl text-sm shadow-[0_0_18px_rgba(0,0,0,0.15)] bg-user_comp'>
                       <input type="text" 
                         placeholder='Add cooking requests...' 
-                        className='py-2 px-1.5 outline-none w-full rounded-2xl' 
+                        className='py-2 px-1.5 outline-none w-full rounded-2xl bg-user_comp' 
                         value={cookingRequest} 
                         onChange={(e) => setCookingRequest(e.target.value)}/>
                     </div>

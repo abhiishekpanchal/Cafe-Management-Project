@@ -71,8 +71,8 @@ export default {
   		blue: '#0158A1',
   		light_blue: '#3295E8',
 		user_blue: '#B6CCFE',
-		user_bg: '#DFDFDF',
-		user_comp: '#FFFFFF',
+		user_bg: '#FFFFFF',
+		user_comp: '#F8FAFF',
   		gray: '#C6C6C6',
 		green: '#008000',
 		red: '#ff0800',
@@ -85,7 +85,8 @@ export default {
   		'montserrat-400': '400',
   		'montserrat-500': '500',
   		'montserrat-600': '600',
-  		'montserrat-700': '700'
+  		'montserrat-700': '700',
+  		'montserrat-900': '900'
   	}
   },
   plugins: [

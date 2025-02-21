@@ -17,7 +17,7 @@ function CartItemCard({ item, variant, addons, onQuantityChange }) {
   };
 
   return (
-    <div className="flex justify-between items-center px-3 py-4 rounded-2xl shadow-[0_0_18px_rgba(0,0,0,0.15)] bg-user_comp">
+    <div className="flex justify-between items-center px-3 py-4 rounded-2xl shadow-lg bg-user_comp">
       <div className="flex flex-col items-start justify-start w-[60%]">
         <div className="flex items-center gap-1.5 font-montserrat-500 capitalize">
           <div>

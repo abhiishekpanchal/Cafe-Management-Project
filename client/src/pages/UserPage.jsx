@@ -32,8 +32,8 @@ function UserPage() {
     fetchCafeDetails();
   }, [cafeId]);
 
-
-  const handleSubmit = async () => {
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     if (!name || !phone) {
       setError("Please fill in both fields");
       return;
@@ -69,25 +69,27 @@ function UserPage() {
       <div className='flex flex-col justify-start items-center gap-2'>
         <div className='h-[30%] w-[30%]'><img src={cafeLogo} alt="Cafe Logo" /></div>
         <div className='font-montserrat-600 text-xl'>WELCOME</div>
-        <div className='flex flex-col gap-4 items-center'>
+        <form onSubmit={handleSubmit} className='flex flex-col px-6 gap-4 items-center w-full'>
           <div className='flex items-center gap-2 p-1 border-2 border-gray rounded-xl w-[110%]'>
             <img src={UserLogo} alt="User Logo" className='h-7 w-7' />
             <input
               type="text"
               placeholder='name'
               value={name}
+              required
               onChange={(e) => {
                 setName(e.target.value);
                 setError('');
               }}
-              className='border-l-2 border-black pl-2 outline-none font-montserrat-400'
+              className='border-l-2 border-black pl-2 outline-none font-montserrat-400 w-full'
             />
           </div>
           <div className='flex items-center gap-2 p-1.5 border-2 border-gray rounded-xl w-[110%]'>
             <img src={PhoneLogo} alt="Phone Logo" className='h-6 w-6' />
             <input
-              type="number"
+              type="tel"
               placeholder='number'
+              required
               pattern="\d{10}"
               maxLength={10}
               value={phone}
@@ -95,23 +97,18 @@ function UserPage() {
                 setPhone(e.target.value);
                 setError('');
               }}
-              className='border-l-2 border-black pl-2 outline-none font-montserrat-400'
+              className='border-l-2 border-black pl-2 outline-none font-montserrat-400 w-full'
             />
           </div>
 
           {error && <div className='text-red text-xs font-montserrat-400 -my-2'>{error}</div> }
 
-          <button className='w-[110%] flex justify-end'>
-            <div>
-              <div
-                onClick={handleSubmit} 
-                className='bg-blue p-2.5 text-white rounded-lg cursor-pointer'
-              >
-                <FaArrowRight />
-              </div>
+          <button type="submit" className='w-[110%] flex justify-end'>
+            <div className='bg-blue p-2.5 text-white rounded-lg cursor-pointer'>
+              <FaArrowRight />
             </div>
           </button>
-        </div>
+        </form>
       </div>
     </div>
   );

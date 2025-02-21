@@ -64,7 +64,7 @@ function OrderItemCard({ dish, onAddToOrder }) {
           {dish.dishDescription.length > 50 && (
             <button
               onClick={toggleDescription} 
-              className='text-user_blue font-montserrat-300 text-xs'
+              className='text-black font-montserrat-300 text-xs'
             >
               {isExpanded ? 'Read less' : 'Read more'}...
             </button>

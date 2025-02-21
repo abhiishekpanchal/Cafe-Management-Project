@@ -212,7 +212,7 @@ function OrderUser() {
                     style={{ transform: `translateY(${orderList.length > 0 ? '0' : '100%'})` }}
                 >
                     <div className="flex justify-between items-center px-4 py-2">
-                        <div className="font-montserrat-500 text-md">
+                        <div className="font-montserrat-500 text-black text-md">
                             {`${orderList.length} item(s) in cart`}
                         </div>
                         <button
@@ -260,7 +260,7 @@ function OrderUser() {
             <div className='sticky top-0 bg-user_bg w-full flex flex-col gap-2 px-3 pt-3 pb-2 z-20'>
                 <div className='flex justify-between items-center w-full'>
                     <div className='flex flex-col'>
-                        <div className='uppercase font-montserrat-700 text-2xl'>{`${cafeName}`}</div>
+                        <div className='uppercase font-montserrat-900 text-2xl'>{`${cafeName}`}</div>
                     </div>
                     <div className='flex gap-2 justify-end'>
                         <button onClick={(e) => {navigate(`/order/${cafeId}/${tableId}/${customer}/cart`)}} className='rounded-full h-8 w-8 border-2 border-gray bg-user_comp shadow-xl'>
@@ -278,7 +278,7 @@ function OrderUser() {
                         placeholder='complain' 
                         value={complaint}
                         onChange={(e) => setComplaint(e.target.value)}
-                        className='w-[80%] text-sm px-1 ml-2 py-1 outline-none' 
+                        className='w-[80%] text-sm px-1 ml-2 py-1 outline-none bg-user_comp' 
                     />
                     <img 
                         src={SendLogo} 
@@ -350,7 +350,7 @@ function OrderUser() {
                     
                     <div className='border-2 border-gray bg-user_comp rounded-xl flex gap-3 items-center shadow-lg'>
                         <img src={SearchLogo} alt="" className='h-5 w-5 ml-1.5 -mr-1' />
-                        <input type="search" className='w-[80%] pr-2 py-1 outline-none' 
+                        <input type="search" className='w-[80%] pr-2 py-1 outline-none bg-user_comp' 
                             value={searchTerm}  onChange={(e) => setSearchTerm(e.target.value)} />
                     </div>
 
