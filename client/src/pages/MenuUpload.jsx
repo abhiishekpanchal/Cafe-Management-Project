@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import SignOutLogo from '../assets/signOutLogo.png';
 import AddRingLogo from '../assets/addRingLogo.png';
 import PizzaLogo from '../assets/pizzaLogo.png';
@@ -26,6 +26,7 @@ function MenuUpload() {
   const [cafeInstagram, setCafeInstagram] = useState('');
   const [cafeAddress, setCafeAddress] = useState('');
   const [cafeLogo, setCafeLogo] = useState('');
+  const [cafePin, setCafePin] = useState(false);
   const [complains, setComplains] = useState([]);
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(null);
@@ -49,7 +50,10 @@ function MenuUpload() {
   const [showDashboard, setShowDashboard] = useState('dashboard');
   const [earnings, setEarnings] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
-  const [urlCopied, setUrlCopied] = useState(false);
+  const [isSettingUpPin, setIsSettingUpPin] = useState(false);
+  const [pin, setPin] = useState(["", "", "", "", "", ""]);
+  const [pinError, setPinError] = useState('');
+  const pinRefs = useRef(Array(6).fill(null).map(() => React.createRef()));
   const orderPanelUrl = `/admin/${cafeId}`;
 
   useEffect(() => {
@@ -57,13 +61,6 @@ function MenuUpload() {
           navigate('/', { replace: true });
       }
   }, [token, load, navigate]);
-
-  const copyToClipboard = () => {
-    navigator.clipboard.writeText(window.location.origin + orderPanelUrl).then(() => {
-      setUrlCopied(true);
-      setTimeout(() => setUrlCopied(false), 3000); 
-    });
-  };
 
   const toggleDropdown = () => {
     setIsOpen(!isOpen);
@@ -102,6 +99,7 @@ function MenuUpload() {
         setEarnings(data.earnings);
         setCategories(data.categories);
         setAddons(data.addons);
+        if(data.pin) setCafePin(true);
       } else {
         setError(`Error: ${data.message || 'Unknown error occurred'}`);
         console.error('Error fetching data:', data);
@@ -246,6 +244,63 @@ function MenuUpload() {
     }
   };
 
+  const handlePinChange = (index, e) => {
+    const value = e.target.value;
+    if (!/^\d?$/.test(value)) return; 
+  
+    const newPin = [...pin];
+    newPin[index] = value;
+    setPin(newPin);
+  
+    if (value && index < 5) {
+      pinRefs.current[index + 1].current.focus();
+    }
+  };
+  
+  const handleKeyDown = (index, e) => {
+    if (e.key === "Backspace" && !pin[index] && index > 0) {
+      pinRefs.current[index - 1].current.focus();
+    }
+  };
+
+  const handleSavePin = async () => {
+    const pinValue = pin.join(""); 
+    if (pinValue.length !== 6) {
+        setPinError("PIN must be 6 digits long.");
+        return;
+    }
+
+    try {
+        const response = await fetch("/server/cafeDetails/setStaffPin", {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ cafeId, pin: pinValue }),
+        });
+
+        const data = await response.json();
+        if (response.ok) {
+            setPinError("PIN saved successfully");
+            setTimeout(() => {
+                setIsSettingUpPin(false);
+                setPin(["", "", "", "", "", ""]);
+                setPinError('');
+            }, 5000);
+
+        } else {
+          setPinError(data.message || "Failed to save PIN");
+          setPin(["", "", "", "", "", ""]);
+          setPinError('');
+        }
+    } catch (error) {
+        setPinError("Error saving PIN, Try again");
+        setPin(["", "", "", "", "", ""]);
+        setPinError('');
+    }
+
+  };
+
   const handleLogOut = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
@@ -288,21 +343,62 @@ function MenuUpload() {
 
           {/* Order Panel URL Card */}
           {showOrderPanelCard && (
-          <div className="fixed inset-0 bg-black bg-opacity-80 flex justify-center items-center z-50">
-            <div className="bg-white rounded-3xl px-6 py-8 w-[25vw] flex flex-col gap-3 items-center relative">
-              <button onClick={() => setShowOrderPanelCard(false)} className='absolute top-4 right-4'>
-                <img src={CrossLogo} alt="" className='h-5 w-5'/>
-              </button>
-              <div className='font-montserrat-700 text-lg mb-2'>ORDER PANEL</div>
-              <button onClick={copyToClipboard} 
-                className='py-1.5 px-2 border-2 border-gray rounded-xl my-1.5 w-full overflow-hidden text-ellipsis whitespace-nowrap max-w-[90%]'>
-                {window.location.origin + orderPanelUrl}
-              </button>
-              {urlCopied && <div className="text-green font-montserrat-500 text-sm">URL Copied!</div>}
-              <button onClick={() => navigate(orderPanelUrl)} className='py-1.5 bg-blue rounded-xl text-white font-montserrat-300 text-sm px-8'>GO TO ORDER PANEL</button>
+            <div className="fixed inset-0 bg-black bg-opacity-80 flex justify-center items-center z-50">
+              <div className="bg-white rounded-3xl px-6 py-8 w-[25vw] flex flex-col gap-3 items-center relative">
+                <button onClick={() => setShowOrderPanelCard(false)} className='absolute top-4 right-4'>
+                  <img src={CrossLogo} alt="" className='h-5 w-5' />
+                </button>
+
+                <div className='font-montserrat-700 text-lg mb-2'>ORDER PANEL</div>
+
+                {/* PIN Setup Logic */}
+                {isSettingUpPin ? (
+                  <>
+                    <div className="flex justify-center gap-2">
+                      {pin.map((digit, index) => (
+                        <input
+                          key={index}
+                          ref={pinRefs.current[index]}
+                          type="text"
+                          maxLength="1"
+                          value={digit}
+                          onChange={(e) => handlePinChange(index, e)}
+                          onKeyDown={(e) => handleKeyDown(index, e)}
+                          className="w-7 h-7 text-center text-sm border-2 border-gray-300 rounded-lg focus:border-blue outline-none"
+                        />
+                      ))}
+                    </div>
+                    <div className='flex gap-2'>
+                      <button onClick={handleSavePin} className='py-1.5 px-4 bg-blue rounded-xl text-white font-montserrat-400 text-xs'>
+                        Save
+                      </button>
+                      <button onClick={() => { setIsSettingUpPin(false); 
+                                               setPinError('');
+                                               setPin(["", "", "", "", "", ""])
+                                            }} 
+                        className='py-1.5 px-2.5 bg-white rounded-xl text-blue border-blue border-2 font-montserrat-400 text-xs'>
+                        Cancel
+                      </button>
+                    </div>
+                    {pinError && 
+                      <div className='text-xs mb-2 text-blue font-montserrat-500'>
+                        {pinError}
+                      </div>}
+                  </>
+                ) : (
+                  <button onClick={() => setIsSettingUpPin(true)} className='py-1.5 bg-blue rounded-xl text-white font-montserrat-300 text-sm px-8 w-[85%]'>
+                    SET UP STAFF PIN
+                  </button>
+                )}
+
+                <button onClick={() => window.open(orderPanelUrl, "_blank")} className='py-1.5 bg-blue rounded-xl text-white font-montserrat-300 text-sm px-8 w-[85%]'>
+                  GO TO ORDER PANEL
+                </button>
+
+              </div>
             </div>
-          </div>
           )}
+
 
           <div className='change-content w-full'>
             {showDashboard === 'dashboard' ? (

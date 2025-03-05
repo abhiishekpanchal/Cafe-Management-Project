@@ -55,6 +55,48 @@ export const cafeLogin = async (req, res) => {
     }
 };
 
+export const managerLogin = async (req, res) => {
+    const { email, pin } = req.body; 
+
+    try {
+        const cafe = await Cafe.findOne({ email });
+
+        if (!cafe) {
+            return res.status(401).json({ message: "Email not registered" });
+        }
+
+        const isPinValid = bcryptjs.compareSync(pin, cafe.pin);
+        if (!isPinValid) {
+            return res.status(401).json({ message: "Invalid PIN" });
+        }
+
+        const token = jwt.sign({ cafeId: cafe._id }, JWT_SECRET, { expiresIn: '24h' });
+
+        res.status(200).json({ token, cafeId: cafe._id });
+    } catch (error) {
+        return res.status(400).json({ message: error.message });
+    }
+};
+
+export const setStaffPin = async (req, res) => {
+    const { cafeId, pin } = req.body; 
+
+    try {
+        const cafe = await Cafe.findById(cafeId);
+        if (!cafe) {
+            return res.status(404).json({ message: "Cafe not found" });
+        }
+
+        const hashPin = bcryptjs.hashSync(pin, 10);
+        cafe.pin = hashPin;
+        await cafe.save();
+
+        res.status(200).json({ message: "Manager PIN set successfully" });
+    } catch (error) {
+        res.status(500).json({ message: "Server error", error: error.message });
+    }
+};
+
 export const updateCafeDetails = async (req, res) => {
     const { cafeId } = req.params;
     const { name, address, tables, email, phone, instagram } = req.body;

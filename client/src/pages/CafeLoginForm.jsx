@@ -87,6 +87,9 @@ function CafeLoginForm() {
                     <div>Don't have an account?</div>
                     <Link to="/register" className="text-blue font-montserrat-500">Sign-up</Link>
                 </div>
+                <div className='text-sm px-10 py-2 font-montsarret font-montserrat-300 italic'>
+                    <Link to="/manager" className="text-blue font-montserrat-500">Are you a manager?</Link>
+                </div>
             </div>
             <div className='w-1/2'>
                 <img src={Bg} alt="" className=''/>

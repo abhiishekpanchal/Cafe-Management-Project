@@ -27,6 +27,9 @@ const cafeSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    pin: {
+        type: String,
+    },
     categories: {
         type: Array,
         required: true,

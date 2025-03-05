@@ -1,11 +1,13 @@
 import express from 'express';
-import { addAddon, addCategory, cafeLogin, cafeRegister, deleteAddon, deleteCategory, fileComplaint, getCafeDetails, updateAddOnStatus, updateCafeDetails, updateEarnings, uploadBanner, uploadImages } from '../controllers/cafe.controller.js';
+import { addAddon, addCategory, cafeLogin, cafeRegister, deleteAddon, deleteCategory, fileComplaint, getCafeDetails, managerLogin, setStaffPin, updateAddOnStatus, updateCafeDetails, updateEarnings, uploadBanner, uploadImages } from '../controllers/cafe.controller.js';
 import { authenticateJWT } from '../middlewares/auth.middleware.js';
 
 const router = express.Router();
 
 router.post('/cafeRegister', cafeRegister);
 router.post('/cafeLogin', cafeLogin);
+router.post('/managerLogin', managerLogin);
+router.put('/setStaffPin', setStaffPin);
 router.put('/updateCafe/:cafeId', authenticateJWT, updateCafeDetails);
 router.get('/getCafeDetails/:cafeId', getCafeDetails);
 router.post('/postCategory/:cafeId',authenticateJWT, addCategory);

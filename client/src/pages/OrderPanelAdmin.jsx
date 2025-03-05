@@ -184,7 +184,6 @@ function OrderPanelAdmin() {
                 <div className='pt-6 pb-3 px-4 self-end flex justify-between items-center'>
                     <div className='flex items-center gap-4'>
                         <button onClick={openImagePopup} className='bg-blue text-white font-montsarret font-montserrat-400 text-lg rounded-full px-6 py-1'>Add Images</button>
-                        <button onClick={() => navigate(`/menu/${cafeId}`)} className='rounded-full border-2 p-1.5'><FaArrowLeft /></button>
                     </div>
                 </div>
 

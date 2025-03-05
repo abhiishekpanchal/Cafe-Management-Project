@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import CafeRegistrationForm from './pages/CafeRegistrationForm';
 import MenuUpload from './pages/MenuUpload';
 import CafeLoginForm from './pages/CafeLoginForm';
+import ManagerLoginForm from './pages/ManagerLoginForm';
 import OrderUser from './pages/OrderUser';
 import GetQR from './pages/GetQR';
 import OrderPanelAdmin from './pages/OrderPanelAdmin';
@@ -45,6 +46,9 @@ function App() {
 
         {/* USER INFORMATION (PUBLIC ROUTE) */}
         <Route path="userInfo/:cafeId/:tableId" element={<UserPage />} />
+
+        {/* ROOT ROUTE */}
+        <Route path="/manager" element={<ManagerLoginForm />} />
 
         {/* ADMIN ORDER PANEL (PROTECTED ROUTE) */}
         <Route
