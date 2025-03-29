@@ -200,10 +200,6 @@ function OrderUser() {
 
     return (
         <div className='relative bg-user_bg flex flex-col w-full min-h-[100vh]'>
-            {/* MENU BUTTON */}
-            <button onClick={(e) => setIsMenuOpen(!isMenuOpen)} className='fixed z-50 right-4 bottom-[5.8rem] rounded-full h-7 w-7 shadow-xl bg-user_blue'>
-                <img src={MenuLogo} alt="Menu Logo" className='scale-[65%]' />
-            </button>
 
             {/* STICKY CART BLOCK */}
             {orderList.length > 0 && (
@@ -297,7 +293,7 @@ function OrderUser() {
             </div>
 
             {/* MAIN SECTION */}
-            <div className='flex-grow overflow-y-auto mb-3'>
+            <div className='flex-grow overflow-y-auto mb-3 relative'>
                 <div className='flex justify-center items-center mb-3 rounded-2xl shadow-xl w-[90%] h-[140px] mx-auto'>
                     {banner?.url ? (
                         <img src={banner.url} alt="Cafe Banner" className='w-full h-full object-cover rounded-xl' />
@@ -346,6 +342,10 @@ function OrderUser() {
                 <div className='flex flex-col justify-evenly pb-2 w-[90%] mx-auto'>
                     <div className='flex justify-between items-center font-montsarret font-montserrat-700 uppercase pb-1 mb-1'>
                         <div>For You</div>
+                        {/* MENU BUTTON */}
+                        <button onClick={(e) => setIsMenuOpen(!isMenuOpen)} className='z-30 fixed bottom-[8.6rem] right-[0.85rem] rounded-full h-7 w-7 shadow-xl bg-user_blue'>
+                            <img src={MenuLogo} alt="Menu Logo" className='scale-[65%]' />
+                        </button>
                     </div>
                     
                     <div className='border-2 border-gray bg-user_comp rounded-xl flex gap-3 items-center shadow-lg'>

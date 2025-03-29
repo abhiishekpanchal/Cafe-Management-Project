@@ -57,7 +57,7 @@ export const cafeLogin = async (req, res) => {
 
 export const managerLogin = async (req, res) => {
     const { email, pin } = req.body; 
-
+    
     try {
         const cafe = await Cafe.findOne({ email });
 

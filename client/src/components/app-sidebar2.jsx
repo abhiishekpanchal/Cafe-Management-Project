@@ -20,7 +20,7 @@ import {
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "./ui/collapsible";
 
 export function AppSidebar2({ Categories, onCategoryChange, handleContentView }) {
-  const [showCategories, setShowCategories] = useState(false);
+  const [openSection, setOpenSection] = useState(null);
   const [categories, setCategories] = useState([...Categories]);
   const [selectedCategory, setSelectedCategory] = useState("");
   const [loading, setLoading] = useState(false);
@@ -49,9 +49,32 @@ export function AppSidebar2({ Categories, onCategoryChange, handleContentView })
               <SidebarMenuItem>
                 <SidebarMenuButton tooltip="Orders">
                   <div className='w-full flex gap-2 content-center text-lg items-center uppercase rounded-lg font-montserrat-600 border-2 border-blue'
-                  onClick={() => handleContentView('orders')}>
-                    <img src={DashBoardLogo} alt="" className='h-5 w-5 ml-2' />
+                    onClick={() => {
+                      handleContentView("orders");
+                      setOpenSection(openSection === "orders" ? null : "orders");
+                    }}>
+                      <img src={DashBoardLogo} alt="" className='h-5 w-5 ml-2' />
                     <h2>Orders</h2>
+                  </div>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        {/* Inventory Section */}
+        <SidebarGroup>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton tooltip="Inventory">
+                  <div className='w-full flex gap-2 content-center text-lg items-center uppercase rounded-lg font-montserrat-600 border-2 border-blue'
+                    onClick={() => {
+                      handleContentView("inventory");
+                      setOpenSection(openSection === "inventory" ? null : "inventory");
+                    }}>
+                      <img src={DashBoardLogo} alt="" className='h-5 w-5 ml-2' />
+                    <h2>Inventory</h2>
                   </div>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -66,12 +89,16 @@ export function AppSidebar2({ Categories, onCategoryChange, handleContentView })
 
             {/* Categories Section */}
             <SidebarMenu>
-              <Collapsible open={showCategories} onOpenChange={setShowCategories} className='-mt-2.5'>
+              <Collapsible open={openSection === "categories"} 
+                onOpenChange={(isOpen) => setOpenSection(isOpen ? "categories" : null)} className='-mt-2.5'>
                 <SidebarMenuItem>
                   <CollapsibleTrigger asChild>
                     <SidebarMenuButton tooltip="Categories" onClick={() => setShowCategories(!showCategories)}>
                       <div className="w-full flex gap-2 text-lg items-center uppercase rounded-lg font-montserrat-600 border-2 border-blue"
-                      onClick={() => handleContentView('category')}>
+                      onClick={() => {
+                        handleContentView("category");
+                        setOpenSection(openSection === "categories" ? null : "categories");
+                      }}>
                         <img src={CategoriesLogo} alt="" className='h-5 w-5 ml-2' />
                         <h2>Categories</h2>
                       </div>
@@ -122,7 +149,10 @@ export function AppSidebar2({ Categories, onCategoryChange, handleContentView })
                 <SidebarMenuItem>
                     <SidebarMenuButton tooltip="Add-Ons">
                       <div className="w-full flex gap-2 text-lg items-center uppercase rounded-lg font-montserrat-600 border-2 border-blue"
-                      onClick={() => handleContentView('addons')}>
+                        onClick={() => {
+                          handleContentView("addons");
+                          setOpenSection(openSection === "addons" ? null : "addons");
+                        }}>
                         <img src={AddOnLogo} alt="" className="h-5 w-5 ml-2" />
                         <h2>Add-Ons</h2>
                       </div>
