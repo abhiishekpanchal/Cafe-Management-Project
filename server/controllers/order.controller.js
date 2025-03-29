@@ -3,8 +3,6 @@ import Order from '../models/order.model.js';
 export const placeOrder = async (req, res) => {
   try {
     const { cafeId, tableId, customer, orderList, cookingRequest } = req.body;
-
-    // Process each item in the order list
     const updatedOrderList = orderList.map((item) => {
       const {
         dishName,
@@ -15,7 +13,6 @@ export const placeOrder = async (req, res) => {
         dishAddOns,
       } = item;
 
-      // Ensure dishPrice, variantPrice, and addOnPrice are numbers
       const variantPrice = dishVariants?.variantPrice || 0;
       const addonPrice = dishAddOns
         ? dishAddOns.reduce((sum, addon) => sum + (addon.addOnPrice || 0), 0)
@@ -31,36 +28,32 @@ export const placeOrder = async (req, res) => {
         dishVariants,
         dishAddOns,
         price: itemPrice,
-        status: 'pending', // Each new item starts with 'pending' status
+        status: 'pending',
       };
     });
 
-    // Check if there's an existing active order for this table and customer
-    // We're looking for orders where ANY item has status 'pending' or 'preparing'
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
     const existingOrder = await Order.findOne({
       cafeId,
       tableId,
       customer,
       'orderList.status': { $in: ['pending', 'preparing'] },
+      createdAt: { $gte: today },
     });
 
     if (existingOrder) {
-      // If order exists, append new items
-
-      // Calculate the price of new items
       const newItemsTotal = updatedOrderList.reduce(
         (acc, item) => acc + item.price,
         0
       );
 
-      // Update the existing order
       existingOrder.orderList = [
         ...existingOrder.orderList,
         ...updatedOrderList,
       ];
       existingOrder.totalPrice += newItemsTotal;
 
-      // If there's a new cooking request, append it to existing one
       if (cookingRequest) {
         existingOrder.cookingRequest = existingOrder.cookingRequest
           ? `${existingOrder.cookingRequest}. NEW REQUEST: ${cookingRequest}`
@@ -75,13 +68,11 @@ export const placeOrder = async (req, res) => {
         order: existingOrder,
       });
     } else {
-      // Total price of the order
       const totalPrice = updatedOrderList.reduce(
         (acc, item) => acc + item.price,
         0
       );
 
-      // Save the order as a new order
       const newOrder = new Order({
         cafeId,
         tableId,

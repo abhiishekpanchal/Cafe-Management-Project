@@ -24,7 +24,6 @@ function OrderList({ order, refetchOrders }) {
 
       if (!response.ok) throw new Error('Failed to update earnings');
 
-      // If marking the entire order as paid, also mark all items as paid
       if (status === 'paid') {
         const updatedOrders = orders.map((item) => ({
           ...item,
@@ -163,7 +162,7 @@ function OrderList({ order, refetchOrders }) {
   };
 
   return (
-    <div className="flex flex-col gap-1 bg-[#0158A11A] rounded-xl py-3.5 min-w-[45vw]">
+    <div className="flex flex-col gap-1 bg-[#0158A11A] rounded-xl py-3.5 min-w-[40vw] max-w-[50vw] flex-1">
       <div className="font-montserrat-600 px-3.5 text-lg capitalize">
         {order.customer}'s Order
       </div>
