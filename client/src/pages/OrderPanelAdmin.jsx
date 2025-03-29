@@ -7,6 +7,7 @@ import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { AppSidebar2 } from '@/components/app-sidebar2';
 import AddImages from '@/components/AddImages';
 import { useAuth } from '@/auth/AuthContext.jsx';
+import Inventory from '@/components/Inventory';
 
 function OrderPanelAdmin() {
     const { cafeId } = useParams(); 
@@ -239,7 +240,7 @@ function OrderPanelAdmin() {
                                         <div>No dishes available in this category.</div>
                                     )}
                                 </>
-                            ) : (
+                            ) :  selectedPanel === 'addons' ? (
                                 <>
                                     <div className='absolute left-[43%] top-[40%] text-6xl uppercase font-montsarret scale-[350%] font-montserrat-700 text-[#DFDFDF] opacity-20 -z-50'>
                                         {cafeName.split(' ').map((word, index) => (
@@ -269,6 +270,8 @@ function OrderPanelAdmin() {
                                         <div>No addons available.</div>
                                     )}
                                 </>
+                            ) : (
+                                <Inventory />
                             )}
                         </div>
                     </div>

@@ -4,6 +4,7 @@ import cafeRouter from "./routes/cafe.route.js";
 import menuRouter from "./routes/menu.router.js";
 import orderRouter from "./routes/order.route.js";
 import userRouter from "./routes/user.route.js";
+import inventoryRouter from "./routes/inventory.route.js";
 import cors from 'cors';
 import path from 'path';
 import bodyParser from 'body-parser';
@@ -37,6 +38,7 @@ app.use('/server/cafeDetails', cafeRouter);
 app.use('/server/menuDetails', menuRouter);
 app.use('/server/orderDetails', orderRouter);
 app.use('/server/userDetails', userRouter);
+app.use('/server/inventoryDetails', inventoryRouter);
 
 app.use(express.static(path.join(__dirname, '/client/dist')));
 

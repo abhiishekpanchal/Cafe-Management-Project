@@ -2,13 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import CartItemCard from '../components/CartItemCard';
 import { FaArrowLeft } from 'react-icons/fa';
+import VegLogo from '../assets/vegLogo.png';
+import NonVegLogo from '../assets/nonvegLogo.png';
+import DownArrow from '../assets/DownArrow.png';
 
 function CartPage() {
   const { cafeId, tableId, customer } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
   const initialOrderList = JSON.parse(localStorage.getItem(`orderList_${cafeId}_${tableId}`)) || location.state?.orderList || [];
-  
   const [orderList, setOrderList] = useState(initialOrderList);
   const [orderPlaced, setOrderPlaced] = useState(false);
   const [cookingRequest, setCookingRequest] = useState('');
@@ -60,6 +62,7 @@ function CartPage() {
           dishName: item.dishName,
           dishCategory: item.dishCategory,
           quantity: item.quantity,
+          dishType: item.dishType,
           dishPrice: item.dishPrice || 0, 
           dishVariants: item.variant
             ? { variantName: item.variant.variantName, variantPrice: item.variant.variantPrice || 0 }
@@ -71,8 +74,12 @@ function CartPage() {
               }))
             : [],
         })),
+        timestamp: Date.now(),
       };
   
+      // Save order history before clearing orderList
+      localStorage.setItem(`orderHistory_${cafeId}_${tableId}`, JSON.stringify(orderData));
+
       const response = await fetch(`/server/orderDetails/placeOrder/${cafeId}/${tableId}`, {
         method: "POST",
         headers: {
@@ -94,7 +101,20 @@ function CartPage() {
       console.error("Error placing order:", error);
     }
   };
-  
+
+  const getOrderHistory = () => {
+    const orderHistory = JSON.parse(localStorage.getItem(`orderHistory_${cafeId}_${tableId}`));
+    
+    if (orderHistory && Date.now() - orderHistory.timestamp < 10800000) { 
+      return orderHistory.orderList;
+    } else {
+      localStorage.removeItem(`orderHistory_${cafeId}_${tableId}`); 
+      return [];
+    }
+  };  
+
+  const orderHistory = getOrderHistory();
+  const [openOrderHistory, setOpenOrderHistory] = useState(false);
   
   const handleGoToHomePage = () => {
     navigate(`/order/${cafeId}/${tableId}/${customer}`);
@@ -108,7 +128,7 @@ function CartPage() {
           <div className="text-lg font-montserrat-600">Cart</div>
         </div>
 
-        {!orderPlaced && <div className='font-montserrat-600 px-3 mb-2.5'>Your Order</div>}
+        {!orderPlaced && <div className={`font-montserrat-600 px-3 mb-2.5 ${orderList.length === 0 ? 'opacity-0' : ''}`}>Your Order</div>}
         
         {orderPlaced ? (
           <div className="text-center text-green-600 font-semibold">
@@ -124,7 +144,51 @@ function CartPage() {
           <>
             <div className="flex flex-col font-montserrat-500 gap-2 px-3 pb-28 h-[70vh] overflow-y-auto">
               {orderList.length === 0 ? (
-                <p>Your cart is empty</p>
+                <div>
+                <p className='w-full px-auto text-center'>Your cart is empty <br /> Please go back and add something to see here.</p>
+                <div>
+                    {orderHistory.length !== 0 && (
+                      <div className='flex flex-col gap-1 mt-4'>
+                        <div className='flex justify-between items-center w-full'>
+                          <div className='text-sm font-montserrat-600'>Order History</div>
+                          <div onClick={() => setOpenOrderHistory(prev => !prev)}>
+                            <img src={DownArrow} alt="Down Arrow" className={`h-6 w-6 transition-transform duration-300 ${openOrderHistory ? 'rotate-180' : ''}`} />
+                          </div>
+                        </div>
+                        {openOrderHistory && (
+                        <div className='px-3 py-2 rounded-2xl shadow-[0_0_18px_rgba(0,0,0,0.15)] bg-user_comp'>
+                          {orderHistory.map((item, index) => (
+                            <div key={index} className='flex flex-col gap-0.5 pb-0.5'>
+                              <div className='flex justify-between w-full'>
+                                <div className='capitalize flex justify-between items-center gap-1'>
+                                  <div>{item.dishName}</div> 
+                                  <div className='text-xs'>{item.dishVariants.variantName ? ` (${item.dishVariants.variantName})` : ''}</div>
+                                  <div>{item.dishType === 'VEG' ? (
+                                                <img src={VegLogo} alt="" className="h-2.5 w-2.5" />
+                                              ) : (
+                                                <img src={NonVegLogo} alt="" className="h-2.5 w-2.5" />
+                                              )}
+                                  </div>
+                                </div>
+                                <div>{item.quantity}</div>
+                              </div>
+
+                              {/* Addons Section */}
+                              {item.dishAddOns && item.dishAddOns.length > 0 && (
+                                <div className='flex gap-1 flex-wrap'>
+                                  {item.dishAddOns.map((addon, idx) => (
+                                    <div key={idx} className='rounded-2xl text-xs border-2 px-1 capitalize w-[45%]'>{addon.addOnName}</div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                  </div>
               ) : (
                 <div className='flex flex-col'>
                   <div className='flex flex-col gap-1.5 mb-1 pt-1.5'>
@@ -136,7 +200,7 @@ function CartPage() {
                     ))}
                   </div>
                   <div className='mt-2'>
-                    <div className='font-montserrat-600 mb-1 text-sm'>Additional Details</div>
+                    <div className='font-montserrat-600 mb-1.5 text-sm'>Additional Details</div>
                     <div className='rounded-xl text-sm shadow-[0_0_18px_rgba(0,0,0,0.15)] bg-user_comp'>
                       <input type="text" 
                         placeholder='Add cooking requests...' 
@@ -145,12 +209,54 @@ function CartPage() {
                         onChange={(e) => setCookingRequest(e.target.value)}/>
                     </div>
                   </div>
+                  <div>
+                    {orderHistory.length !== 0 && (
+                      <div className='flex flex-col gap-1 mt-2'>
+                        <div className='flex justify-between items-center w-full'>
+                          <div className='text-sm font-montserrat-600'>Order History</div>
+                          <div onClick={() => setOpenOrderHistory(prev => !prev)}>
+                            <img src={DownArrow} alt="Down Arrow" className={`h-6 w-6 transition-transform duration-300 ${openOrderHistory ? 'rotate-180' : ''}`} />
+                          </div>
+                        </div>
+                        {openOrderHistory && (
+                        <div className='px-3 py-2 rounded-2xl shadow-[0_0_18px_rgba(0,0,0,0.15)] bg-user_comp'>
+                          {orderHistory.map((item, index) => (
+                            <div key={index} className='flex flex-col gap-0.5 pb-0.5'>
+                              <div className='flex justify-between w-full'>
+                                <div className='capitalize flex justify-between items-center gap-1'>
+                                  <div>{item.dishName}</div> 
+                                  <div className='text-xs'>{item.dishVariants.variantName ? ` (${item.dishVariants.variantName})` : ''}</div>
+                                  <div>{item.dishType === 'VEG' ? (
+                                                <img src={VegLogo} alt="" className="h-2.5 w-2.5" />
+                                              ) : (
+                                                <img src={NonVegLogo} alt="" className="h-2.5 w-2.5" />
+                                              )}
+                                  </div>
+                                </div>
+                                <div>{item.quantity}</div>
+                              </div>
+
+                              {/* Addons Section */}
+                              {item.dishAddOns && item.dishAddOns.length > 0 && (
+                                <div className='flex gap-1 flex-wrap'>
+                                  {item.dishAddOns.map((addon, idx) => (
+                                    <div key={idx} className='rounded-2xl text-xs border-2 px-1 capitalize w-[45%]'>{addon.addOnName}</div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
             </div>
 
             {orderList.length > 0 && (
-              <div className="absolute flex justify-between items-center bottom-0 z-50 pt-3 pb-6 w-full px-3 font-montserrat-500 shadow-[0_0_18px_rgba(0,0,0,0.3)] bg-user_comp">
+              <div className="absolute flex justify-between items-center z-50 pt-3 pb-6 w-full px-3 font-montserrat-500 shadow-[0_0_18px_rgba(0,0,0,0.3)] bg-user_comp">
                 <p>Total : ₹{finalAmount}</p>
                 <button 
                   onClick={handlePlaceOrder} 
