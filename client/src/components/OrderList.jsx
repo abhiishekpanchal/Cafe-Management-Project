@@ -1,12 +1,23 @@
 import { useAuth } from '@/auth/AuthContext';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { RiArrowDropDownLine } from 'react-icons/ri';
+import { FaTimes } from 'react-icons/fa';
 
 function OrderList({ order, refetchOrders }) {
   const [orders, setOrders] = useState([...order.orderList]);
   const { token, load } = useAuth();
   const [activeDropdown, setActiveDropdown] = useState(null);
   const [totalPrice, setTotalPrice] = useState(order.totalPrice);
+  const [showRemoveAddon, setShowRemoveAddon] = useState(null);
+  useEffect(() => {
+    setOrders([...order.orderList]);
+    setTotalPrice(order.totalPrice);
+  }, [order]);
+
+  useEffect(() => {
+    const newTotal = orders.reduce((sum, item) => sum + item.price, 0);
+    setTotalPrice(newTotal);
+  }, [orders]);
 
   const handleStatusUpdate = async (status) => {
     try {
@@ -74,17 +85,14 @@ function OrderList({ order, refetchOrders }) {
     if (newQuantity < 1) return;
 
     try {
-      // Calculate new price
       const item = orders[itemIndex];
       const unitPrice = item.price / item.quantity;
       const newTotalItemPrice = unitPrice * newQuantity;
-      const priceDifference = newTotalItemPrice - item.price;
 
       const updatedOrders = [...orders];
       updatedOrders[itemIndex].quantity = newQuantity;
       updatedOrders[itemIndex].price = newTotalItemPrice;
       setOrders(updatedOrders);
-      setTotalPrice((prevTotal) => prevTotal + priceDifference);
 
       const response = await fetch(`/server/orderDetails/updateItemQuantity`, {
         method: 'PUT',
@@ -96,6 +104,7 @@ function OrderList({ order, refetchOrders }) {
           orderId: order._id,
           itemIndex,
           newQuantity,
+          newPrice: newTotalItemPrice,
         }),
       });
 
@@ -104,12 +113,10 @@ function OrderList({ order, refetchOrders }) {
       } else {
         console.error('Failed to update item quantity');
         setOrders([...order.orderList]);
-        setTotalPrice(order.totalPrice);
       }
     } catch (error) {
       console.error('Error updating item quantity:', error);
       setOrders([...order.orderList]);
-      setTotalPrice(order.totalPrice);
     }
   };
 
@@ -117,10 +124,8 @@ function OrderList({ order, refetchOrders }) {
     e.stopPropagation();
 
     try {
-      const removedItem = orders[itemIndex];
       const updatedOrders = orders.filter((_, idx) => idx !== itemIndex);
       setOrders(updatedOrders);
-      setTotalPrice((prevTotal) => prevTotal - removedItem.price);
       setActiveDropdown(null);
 
       const response = await fetch(`/server/orderDetails/removeItem`, {
@@ -140,12 +145,46 @@ function OrderList({ order, refetchOrders }) {
       } else {
         console.error('Failed to remove item');
         setOrders([...order.orderList]);
-        setTotalPrice(order.totalPrice);
       }
     } catch (error) {
       console.error('Error removing item:', error);
       setOrders([...order.orderList]);
-      setTotalPrice(order.totalPrice);
+    }
+  };
+
+  const removeAddon = async (e, itemIndex, addonIndex) => {
+    e.stopPropagation();
+
+    try {
+      const updatedOrders = [...orders];
+      const item = updatedOrders[itemIndex];
+      const addonPrice = item.dishAddOns[addonIndex].addOnPrice;
+      item.dishAddOns.splice(addonIndex, 1);
+      item.price -= addonPrice * item.quantity;
+
+      setOrders(updatedOrders);
+      const response = await fetch(`/server/orderDetails/removeAddon`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          orderId: order._id,
+          itemIndex,
+          addonIndex,
+        }),
+      });
+
+      if (response.ok) {
+        refetchOrders();
+      } else {
+        console.error('Failed to remove addon');
+        setOrders([...order.orderList]);
+      }
+    } catch (error) {
+      console.error('Error removing addon:', error);
+      setOrders([...order.orderList]);
     }
   };
 
@@ -158,6 +197,14 @@ function OrderList({ order, refetchOrders }) {
       setActiveDropdown(null);
     } else {
       setActiveDropdown(index);
+    }
+  };
+
+  const toggleShowRemoveAddon = (itemIndex) => {
+    if (showRemoveAddon === itemIndex) {
+      setShowRemoveAddon(null);
+    } else {
+      setShowRemoveAddon(itemIndex);
     }
   };
 
@@ -196,13 +243,27 @@ function OrderList({ order, refetchOrders }) {
                       )}
                     </div>
                     {item.dishAddOns && item.dishAddOns.length > 0 && (
-                      <div className="flex flex-wrap gap-1 mt-1">
+                      <div
+                        className="flex flex-wrap gap-1 mt-1 relative"
+                        onClick={() =>
+                          item.status !== 'paid' && toggleShowRemoveAddon(index)
+                        }
+                      >
                         {item.dishAddOns.map((addon, idx) => (
                           <span
                             key={idx}
-                            className="text-xs border-2 border-blue bg-white rounded-full px-2 py-0.5"
+                            className="text-xs border-2 border-blue bg-white rounded-full px-2 py-0.5 flex items-center"
                           >
                             {addon.addOnName}
+                            {showRemoveAddon === index &&
+                              item.status !== 'paid' && (
+                                <button
+                                  onClick={(e) => removeAddon(e, index, idx)}
+                                  className="ml-1 text-red-500"
+                                >
+                                  <FaTimes size={10} />
+                                </button>
+                              )}
                           </span>
                         ))}
                       </div>

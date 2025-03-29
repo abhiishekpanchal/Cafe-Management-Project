@@ -134,20 +134,18 @@ export const deleteOrder = async (req, res) => {
   }
 };
 
-// Update order item status
-export const updateItemStatus = async (req, res) => {
+export const updateItemQuantity = async (req, res) => {
+  const { orderId, itemIndex, newQuantity, newPrice } = req.body;
+
+  if (!orderId || itemIndex === undefined || !newQuantity) {
+    return res
+      .status(400)
+      .json({ success: false, message: 'Missing required fields' });
+  }
+
   try {
-    const { orderId, itemIndex, newStatus } = req.body;
-
-    if (!['pending', 'preparing', 'cancelled', 'paid'].includes(newStatus)) {
-      return res.status(400).json({
-        success: false,
-        message:
-          "Invalid status. Must be 'pending', 'preparing', 'cancelled', or 'paid'",
-      });
-    }
-
     const order = await Order.findById(orderId);
+
     if (!order) {
       return res
         .status(404)
@@ -160,7 +158,55 @@ export const updateItemStatus = async (req, res) => {
         .json({ success: false, message: 'Invalid item index' });
     }
 
-    // Update item status
+    const oldPrice = order.orderList[itemIndex].price;
+
+    order.orderList[itemIndex].quantity = newQuantity;
+    order.orderList[itemIndex].price =
+      newPrice ||
+      (order.orderList[itemIndex].price / order.orderList[itemIndex].quantity) *
+        newQuantity;
+
+    order.totalPrice =
+      order.totalPrice - oldPrice + order.orderList[itemIndex].price;
+
+    await order.save();
+
+    return res.status(200).json({
+      success: true,
+      message: 'Item quantity updated',
+      order,
+    });
+  } catch (error) {
+    console.error('Error updating item quantity:', error);
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// Update order item status
+export const updateItemStatus = async (req, res) => {
+  const { orderId, itemIndex, newStatus } = req.body;
+
+  if (!orderId || itemIndex === undefined || !newStatus) {
+    return res
+      .status(400)
+      .json({ success: false, message: 'Missing required fields' });
+  }
+
+  try {
+    const order = await Order.findById(orderId);
+
+    if (!order) {
+      return res
+        .status(404)
+        .json({ success: false, message: 'Order not found' });
+    }
+
+    if (itemIndex < 0 || itemIndex >= order.orderList.length) {
+      return res
+        .status(400)
+        .json({ success: false, message: 'Invalid item index' });
+    }
+
     order.orderList[itemIndex].status = newStatus;
 
     await order.save();
@@ -172,18 +218,23 @@ export const updateItemStatus = async (req, res) => {
     });
   } catch (error) {
     console.error('Error updating item status:', error);
-    return res
-      .status(500)
-      .json({ success: false, message: 'Error updating item status' });
+    return res.status(500).json({ success: false, message: error.message });
   }
 };
 
 // Remove an item from order
 export const removeItem = async (req, res) => {
-  try {
-    const { orderId, itemIndex } = req.body;
+  const { orderId, itemIndex } = req.body;
 
+  if (!orderId || itemIndex === undefined) {
+    return res
+      .status(400)
+      .json({ success: false, message: 'Missing required fields' });
+  }
+
+  try {
     const order = await Order.findById(orderId);
+
     if (!order) {
       return res
         .status(404)
@@ -195,17 +246,9 @@ export const removeItem = async (req, res) => {
         .status(400)
         .json({ success: false, message: 'Invalid item index' });
     }
-
-    // Get the item price to subtract from total
-    const itemPrice = order.orderList[itemIndex].price;
-
-    // Remove the item
+    const removedItemPrice = order.orderList[itemIndex].price;
     order.orderList.splice(itemIndex, 1);
-
-    // Recalculate total price
-    order.totalPrice -= itemPrice;
-
-    // If no items left, delete the order
+    order.totalPrice -= removedItemPrice;
     if (order.orderList.length === 0) {
       await Order.findByIdAndDelete(orderId);
       return res.status(200).json({
@@ -218,14 +261,12 @@ export const removeItem = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      message: 'Item removed from order',
+      message: 'Item removed',
       order,
     });
   } catch (error) {
     console.error('Error removing item:', error);
-    return res
-      .status(500)
-      .json({ success: false, message: 'Error removing item' });
+    return res.status(500).json({ success: false, message: error.message });
   }
 };
 
@@ -254,17 +295,9 @@ export const removeAddon = async (req, res) => {
         .status(400)
         .json({ success: false, message: 'Invalid addon index' });
     }
-
-    // Get addon price
     const addonPrice = item.dishAddOns[addonIndex].addOnPrice;
-
-    // Remove addon from item
     const addon = item.dishAddOns.splice(addonIndex, 1)[0];
-
-    // Update item price (subtract addon price)
     item.price -= addonPrice * item.quantity;
-
-    // Update total price
     order.totalPrice -= addonPrice * item.quantity;
 
     await order.save();
