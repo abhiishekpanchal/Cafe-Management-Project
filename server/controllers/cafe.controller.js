@@ -286,7 +286,7 @@ export const updateAddOnStatus = async (req, res) => {
 
 export const updateEarnings = async (req, res) => {
     const { cafeId } = req.params;
-    const { orderId, status } = req.body;
+    const { orderId, status, method } = req.body;
 
     try {
         const cafe = await Cafe.findById(cafeId);
@@ -296,33 +296,41 @@ export const updateEarnings = async (req, res) => {
         if (!order) throw new Error("Order not found");
 
         const orderDate = new Date(order.createdAt);
-        const monthName = orderDate.toLocaleString('default', { month: 'long' });
+        const monthYear = orderDate.toLocaleString('default', { month: 'long' }) + " " + orderDate.getFullYear();
 
-        let monthEntry = cafe.earnings.find(entry => entry.month === monthName);
+        let monthEntry = cafe.earnings.find(entry => entry.monthYear === monthYear);
         
         if (!monthEntry) {
             monthEntry = {
-                month: monthName,
-                amount: status === "paid" ? order.totalPrice : 0,
-                paid: status === "paid" ? 1 : 0,
-                cancelled: status === "cancelled" ? 1 : 0
+                monthYear,
+                totalAmount: 0,
+                cash: 0,
+                upi: 0,
+                card: 0,
+                paid: 0,
+                cancelled: 0
             };
             cafe.earnings.push(monthEntry);
-        } else {
-            if (status === "paid") {
-                monthEntry.amount += order.totalPrice;
-                monthEntry.paid += 1;
-            } else if (status === "cancelled") {
-                monthEntry.cancelled += 1;
-            }
+        }
+
+        if (status === "paid" && method) {
+            monthEntry.totalAmount += order.totalPrice;
+            monthEntry.paid += 1;
+
+            if (method === "cash") monthEntry.cash += order.totalPrice;
+            if (method === "upi") monthEntry.upi += order.totalPrice;
+            if (method === "card") monthEntry.card += order.totalPrice;
+        } 
+        else if (status === "cancelled") {
+            monthEntry.cancelled += 1;
         }
 
         await cafe.save();
         await Order.findByIdAndDelete(orderId);
 
-        res.status(200).json(`Earnings updated for cafe ${cafeId} with status ${status}`);
+        res.status(200).json(`Earnings updated for ${monthYear} with status ${status}`);
     } catch (error) {
-        res.status(400).json({ 'error updating earnings': error.message });
+        res.status(400).json({ error: error.message });
     }
 };
 

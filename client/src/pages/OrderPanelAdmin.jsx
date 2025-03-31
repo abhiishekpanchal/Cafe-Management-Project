@@ -73,7 +73,7 @@ function OrderPanelAdmin() {
             if (res.ok) {
                 // Sort orders by createdAt or updatedAt in descending order (latest first)
                 const sortedOrders = data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-                setOrdersList(data);
+                setOrdersList(sortedOrders);
             } else {
                 setError(`Error: ${data.message}`);
             }
@@ -161,7 +161,6 @@ function OrderPanelAdmin() {
         updateAddonStatus(addonName, addonPrice, newStatus);
     };
 
-    const openImagePopup = () => setShowImagePopup(true);
     const closeImagePopup = () => setShowImagePopup(false);
 
     const handleContentView = (content) => {
@@ -169,24 +168,18 @@ function OrderPanelAdmin() {
       };
 
     return (
-        <div className='w-full flex overflow-hidden'>
+        <div className='w-full min-h-full flex overflow-hidden'>
             
             {/* SIDEBAR */}
             <SidebarProvider>
               <AppSidebar2 Categories={categories} Addons={addons} 
                 onCategoryChange={handleCategoryChange} CafeName={cafeName}
-                handleContentView={handleContentView} />
+                handleContentView={handleContentView} handleShowAddImages={setShowImagePopup} />
               <SidebarTrigger />
             </SidebarProvider>
 
             {/* CONTENT SECTION */}
-            <div className="flex flex-col justify-start items-start w-[2000vw] p-4 gap-3 overflow-hidden">
-            
-                <div className='pt-6 pb-3 px-4 self-end flex justify-between items-center'>
-                    <div className='flex items-center gap-4'>
-                        <button onClick={openImagePopup} className='bg-blue text-white font-montsarret font-montserrat-400 text-lg rounded-full px-6 py-1'>Add Images</button>
-                    </div>
-                </div>
+            <div className="flex flex-col justify-start items-start w-[2000vw] p-4 pt-7 gap-3 overflow-hidden">
 
                 {/* Pop-up overlay and content */}
                 {showImagePopup && (
@@ -197,7 +190,7 @@ function OrderPanelAdmin() {
 
                 <div className='flex overflow-hidden w-full'>
                     <div className='flex justify-start self-start w-full px-4 gap-3'>
-                        <div className="flex flex-wrap justify-center gap-4 sm:justify-start w-full items-start max-h-[78vh] overflow-y-auto pb-5">
+                        <div className="flex flex-wrap justify-center gap-4 sm:justify-start w-full items-start max-h-[90vh] overflow-y-auto pb-5">
                             {selectedPanel === 'orders' ? (
                                 <>
                                     <div className='absolute left-[43%] top-[40%] text-6xl uppercase font-montsarret scale-[350%] font-montserrat-700 text-[#DFDFDF] opacity-20 -z-50'>

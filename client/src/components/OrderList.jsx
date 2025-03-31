@@ -1,7 +1,10 @@
 import { useAuth } from '@/auth/AuthContext';
 import React, { useState, useEffect } from 'react';
 import { RiArrowDropDownLine } from 'react-icons/ri';
-import { FaTimes } from 'react-icons/fa';
+import { FaCheck, FaTimes } from 'react-icons/fa';
+import UPILogo from '../assets/UPI.png';
+import WalletLogo from '../assets/wallet.png';
+import CreditCardLogo from '../assets/credit-card.png';
 
 function OrderList({ order, refetchOrders }) {
   const [orders, setOrders] = useState([...order.orderList]);
@@ -20,30 +23,33 @@ function OrderList({ order, refetchOrders }) {
   }, [orders]);
 
   const handleStatusUpdate = async (status) => {
+  const [dropdownStatus, setDropdownStatus] = useState(null);
+  const [paymentMethod, setPaymentMethod] = useState(null);
+
+  const paymentMethods = [
+    { name: 'Cash', logo: WalletLogo },
+    { name: 'UPI', logo: UPILogo },
+    { name: 'Card', logo: CreditCardLogo }
+  ];
+
+  const handleStatusUpdate = async (status, method = null) => {
     try {
-      const response = await fetch(
-        `/server/cafeDetails/updateEarnings/${order.cafeId}`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ orderId: order._id, status }),
-        }
-      );
+      const response = await fetch(`/server/cafeDetails/updateEarnings/${order.cafeId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ orderId: order._id, status, method }),
+      });
 
       if (!response.ok) throw new Error('Failed to update earnings');
 
       if (status === 'paid') {
-        const updatedOrders = orders.map((item) => ({
-          ...item,
-          status: 'paid',
-        }));
-        setOrders(updatedOrders);
-        setActiveDropdown(null);
+        setOrders(orders.filter(item => item._id !== order._id));
       }
 
+      setDropdownStatus(null);
       refetchOrders();
     } catch (error) {
       console.error('Error updating order status:', error);
@@ -369,17 +375,51 @@ function OrderList({ order, refetchOrders }) {
           <div>{order.cookingRequest ? order.cookingRequest : 'No note'}</div>
         </div>
         <div className="flex justify-between">
-          <div
-            onClick={() => handleStatusUpdate('cancelled')}
-            className="font-montserrat-500 px-4 py-2 uppercase bg-[#FF000099] rounded-xl cursor-pointer"
-          >
-            Cancel
+          {/* Paid Button */}
+          <div onClick={() => setDropdownStatus(dropdownStatus === 'paid' ? null : 'paid')}
+              className="font-montserrat-500 px-4 py-2 uppercase bg-[#008D3899] rounded-xl cursor-pointer relative">
+            <div className='px-7'>Paid</div>
+            {dropdownStatus === 'paid' && (
+            <div className="absolute w-full -left-0 top-9 text-sm font-montserrat-400 capitalize bg-white shadow-md mt-1 rounded-2xl overflow-hidden">
+              {paymentMethods.map(({ name, logo }) => (
+                <>
+                  <div key={name} onClick={() => handleStatusUpdate('paid', name.toLowerCase())}
+                      className="px-6 py-1.5 cursor-pointer hover:bg-gray flex items-center gap-2">
+                    <img src={logo} alt={name} className="w-3 h-3" />
+                    <div>{name}</div>
+                  </div>
+                  <hr className="h-0.5 bg-user_blue"></hr>
+                </>
+              ))}
+              <div onClick={() => setDropdownStatus(null)}
+                  className="px-6 py-1.5 cursor-pointer hover:bg-gray text-center text-red flex items-center gap-2">
+                <FaTimes className='h-3 w-3'/>
+                <div>Cancel</div>
+              </div>
+            </div>
+          )}
           </div>
-          <div
-            onClick={() => handleStatusUpdate('paid')}
-            className="font-montserrat-500 px-4 py-2 uppercase bg-[#008D3899] rounded-xl cursor-pointer"
-          >
-            Paid
+
+
+          {/* Cancel Button */}
+          <div onClick={() => setDropdownStatus(dropdownStatus === 'cancel' ? null : 'cancel')}
+              className="font-montserrat-500 px-4 py-2 uppercase bg-[#FF000099] rounded-xl cursor-pointer relative">
+            <div className='px-4'>Cancel</div>
+            {dropdownStatus === 'cancel' && (
+            <div className="absolute w-full -left-0 top-9 text-sm font-montserrat-400 capitalize bg-white shadow-md mt-1 rounded-xl overflow-hidden">
+              <div onClick={() => handleStatusUpdate('cancelled')} 
+                  className="px-6 py-1.5 cursor-pointer hover:bg-gray flex items-center gap-2">
+                <FaCheck className='h-3 w-3 text-green'/>
+                <div>Confirm</div>
+              </div>
+              <hr className="h-0.5 bg-user_blue"></hr>
+              <div onClick={() => setDropdownStatus(null)}
+                  className="px-6 py-1.5 cursor-pointer hover:bg-gray text-red flex items-center gap-2">
+                <FaTimes className='h-3 w-3'/>
+                <div>Cancel</div>
+              </div>
+            </div>
+          )}
           </div>
         </div>
       </div>

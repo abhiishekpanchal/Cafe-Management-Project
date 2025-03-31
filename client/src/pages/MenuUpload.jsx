@@ -157,7 +157,7 @@ function MenuUpload() {
 
   useEffect(() => {
     if (!selectedCategory) {
-      setShowDishForm(false); // Close the add dish form if category is deleted
+      setShowDishForm(false); 
     }
   }, [selectedCategory]);
 

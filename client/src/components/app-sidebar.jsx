@@ -4,6 +4,7 @@ import AddOnLogo from '../assets/drink.png';
 import PizzaLogo from '../assets/pizzaLogo.png';
 import CurrencyLogo from '../assets/currencyLogo.png';
 import CodacityLogo from '../assets/CodacityLogo.png';
+import CustomerSupport from '../assets/CustomerSupport.png';
 import { useEffect, useState } from "react";
 import {
   Sidebar,
@@ -387,6 +388,20 @@ export function AppSidebar({ Categories, Addons, onCategoryChange, selectedCateg
       </SidebarContent>
       
       <SidebarFooter>
+          <SidebarGroup>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                <SidebarMenuItem className='-mt-2.5 h-10 w-10 rounded-lg border-2 border-blue'>
+                  <SidebarMenuButton>
+                    <a href="https://wa.me/919375571036?text=Hello! I need some assistance. Can you help?" target="_blank" rel="noopener noreferrer" className='flex justify-center items-center h-10 w-10 scale-150'>
+                        <img src={CustomerSupport} alt="" className='mt-1.5'/>
+                    </a>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+
           <SidebarGroup>
             <SidebarGroupContent>
               <SidebarMenu>

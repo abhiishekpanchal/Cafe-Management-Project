@@ -1,6 +1,9 @@
 import React from 'react';
 import PaidLogo from '../assets/vegLogo.png';
 import CancelledLogo from '../assets/nonvegLogo.png';
+import UPILogo from '../assets/UPI.png';
+import WalletLogo from '../assets/wallet.png';
+import CreditCardLogo from '../assets/credit-card.png';
 
 function MonthlyEarnings({ earnings, handleContentView }) {
   // Sorting earnings based on month in descending order
@@ -38,13 +41,24 @@ function MonthlyEarnings({ earnings, handleContentView }) {
                 key={index}
                 className='flex justify-around items-center rounded-2xl py-2.5 px-1 bg-[#0158A11A] border-2 border-blue'
               >
-                <div className='w-1/3 text-left ml-3 font-montserrat-700 text-lg'>
-                  {earning.month}
+                <div className='w-1/4 text-left ml-3 font-montserrat-500 text-md'>
+                  {earning.monthYear} | Rs. {earning.totalAmount}
                 </div>
-                <div className='w-1/3 text-center font-montserrat-500'>
-                  Rs. {earning.amount}
+                <div className='w-1/2 flex justify-evenly text-sm font-montserrat-400'>
+                  <div className='flex gap-2 items-center'>
+                    <img src={WalletLogo} alt="CashLogo" className='h-4 w-4'/>
+                    <div>Rs.{earning.cash}</div>
+                  </div>
+                  <div className='flex gap-2 items-center'>
+                    <img src={UPILogo} alt="UPILogo" className='h-4 w-4'/>
+                    <div>Rs.{earning.upi}</div>
+                  </div>
+                  <div className='flex gap-2 items-center'>
+                    <img src={CreditCardLogo} alt="CardLogo" className='h-4 w-4'/>
+                    <div>Rs.{earning.card}</div>
+                  </div>
                 </div>
-                <div className='flex gap-5 items-center justify-end mr-3 w-1/3 font-montserrat-500'>
+                <div className='flex gap-5 items-center justify-end mr-3 w-1/4 font-montserrat-500'>
                   <div className='flex gap-1 items-center'>
                     <img src={PaidLogo} alt="" className='h-4 w-4' />
                     <div>{earning.paid}</div>
