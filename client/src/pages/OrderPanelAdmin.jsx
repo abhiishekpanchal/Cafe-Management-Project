@@ -83,7 +83,7 @@ function OrderPanelAdmin() {
     };
     
     const refetchOrders = () => {
-        fetchOrders(); 9
+        fetchOrders(); 
     };
     
     useEffect(() => {

@@ -47,8 +47,9 @@ export default function OrderList({ order, refetchOrders }) {
         setOrders(orders.filter(item => item._id !== order._id));
       }
 
-      setDropdownStatus(null);
       refetchOrders();
+      setDropdownStatus(null);
+      
     } catch (error) {
       console.error('Error updating order status:', error);
     }

@@ -52,9 +52,10 @@ function Dashboard({ cafeName, cafePhone, cafeAddress, cafeTables, cafeInstagram
         });
         setComplains([...cafeComplains]);
 
-        const currentMonth = new Date().toLocaleString('default', { month: 'long' });
-        const earningsForCurrentMonth = cafeEarnings.find((earning) => earning.month === currentMonth);
-        setCurrentMonthEarnings(earningsForCurrentMonth ? earningsForCurrentMonth.amount : 0);
+        const currentDate = new Date();
+        const currentMonthYear = `${currentDate.toLocaleString('default', { month: 'long' })} ${currentDate.getFullYear()}`;
+        const earningsForCurrentMonth = cafeEarnings.find((earning) => earning.monthYear === currentMonthYear);
+        setCurrentMonthEarnings(earningsForCurrentMonth ? earningsForCurrentMonth.totalAmount : 0);
 
     }, [cafeName, cafePhone, cafeAddress, cafeTables, cafeInstagram, cafeLogo, cafeEmail, cafeComplains]);
 
