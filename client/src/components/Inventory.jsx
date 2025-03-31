@@ -80,7 +80,7 @@ export default function Inventory() {
   }, [inventoryData]);
 
   const addNewRow = () => {
-    setNewRows([...newRows, { id: Date.now(), item: '', qty: 1, unit: 'kg', amount: '', tax: '', total: '', date: new Date().toLocaleDateString(), by: '' }]);
+    setNewRows([...newRows, { id: Date.now(), item: '', qty: 1, unit: 'kg', amount: '', tax: '', total: '', date: new Date().toISOString().split('T')[0], by: '' }]);
   };
 
   const handleInputChange = (index, field, value) => {
@@ -218,7 +218,7 @@ export default function Inventory() {
                   Rs. {(parseFloat(row.amount) + (parseFloat(row.amount) * parseFloat(row.tax) / 100) || 0).toFixed(2)}
                 </td>
                 <td className="px-2 border-r border-gray text-center">
-                  <input type="date" value={row.date ? new Date(row.date).toISOString().split('T')[0] : ""} 
+                  <input type="date" value={row.date || ""} 
                   onChange={(e) => handleInputChange(index, "date", e.target.value)} className="px-2 py-1 w-28 text-center" />
                 </td>
                 <td className="px-2 text-center">
