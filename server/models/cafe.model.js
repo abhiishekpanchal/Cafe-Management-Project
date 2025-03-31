@@ -84,18 +84,13 @@ const cafeSchema = new mongoose.Schema({
         }
     }],
     earnings: [{
-        month: {
-            type: String,
-        },
-        amount: {
-            type: Number,
-        },
-        paid: {
-            type: Number,
-        },
-        cancelled: {
-            type: Number,
-        },
+        monthYear: { type: String }, 
+        totalAmount: { type: Number, default: 0 },
+        cash: { type: Number, default: 0 },
+        upi: { type: Number, default: 0 },
+        card: { type: Number, default: 0 },
+        paid: { type: Number, default: 0 },
+        cancelled: { type: Number, default: 0 },
     }],
     complains: [{
         complain: {

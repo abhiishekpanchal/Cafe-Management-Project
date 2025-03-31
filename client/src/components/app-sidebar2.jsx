@@ -2,6 +2,7 @@ import CategoriesLogo from '../assets/Widget_alt.png';
 import DashBoardLogo from '../assets/darhboard_alt.png';
 import AddOnLogo from '../assets/drink.png';
 import CodacityLogo from '../assets/CodacityLogo.png';
+import CustomerSupport from '../assets/CustomerSupport.png';
 import { useEffect, useState } from "react";
 import {
   Sidebar,
@@ -19,7 +20,7 @@ import {
 } from "@/components/ui/sidebar";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "./ui/collapsible";
 
-export function AppSidebar2({ Categories, onCategoryChange, handleContentView }) {
+export function AppSidebar2({ Categories, onCategoryChange, handleContentView, handleShowAddImages }) {
   const [openSection, setOpenSection] = useState(null);
   const [categories, setCategories] = useState([...Categories]);
   const [selectedCategory, setSelectedCategory] = useState("");
@@ -65,7 +66,7 @@ export function AppSidebar2({ Categories, onCategoryChange, handleContentView })
         {/* Inventory Section */}
         <SidebarGroup>
           <SidebarGroupContent>
-            <SidebarMenu>
+            <SidebarMenu className='-mt-3.5'>
               <SidebarMenuItem>
                 <SidebarMenuButton tooltip="Inventory">
                   <div className='w-full flex gap-2 content-center text-lg items-center uppercase rounded-lg font-montserrat-600 border-2 border-blue'
@@ -75,6 +76,23 @@ export function AppSidebar2({ Categories, onCategoryChange, handleContentView })
                     }}>
                       <img src={DashBoardLogo} alt="" className='h-5 w-5 ml-2' />
                     <h2>Inventory</h2>
+                  </div>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        {/* Add Images Section */}
+        <SidebarGroup>
+          <SidebarGroupContent>
+            <SidebarMenu className='-mt-3.5'>
+              <SidebarMenuItem>
+                <SidebarMenuButton tooltip="Images">
+                  <div className='w-full flex gap-2 text-lg items-center uppercase rounded-lg font-montserrat-600 border-2 border-blue'
+                  onClick={() => handleShowAddImages(true)}>
+                    <img src={DashBoardLogo} alt="" className='h-5 w-5 ml-2' />
+                    <h2>Add Images</h2>
                   </div>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -145,7 +163,7 @@ export function AppSidebar2({ Categories, onCategoryChange, handleContentView })
             </SidebarMenu>
 
             {/* Addons Section */}
-            <SidebarMenu className='-mt-2'>
+            <SidebarMenu className='-mt-2.5'>
                 <SidebarMenuItem>
                     <SidebarMenuButton tooltip="Add-Ons">
                       <div className="w-full flex gap-2 text-lg items-center uppercase rounded-lg font-montserrat-600 border-2 border-blue"
@@ -164,6 +182,20 @@ export function AppSidebar2({ Categories, onCategoryChange, handleContentView })
       </SidebarContent>
       
       <SidebarFooter>
+          <SidebarGroup>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                <SidebarMenuItem className='-mt-2.5 h-10 w-10 rounded-lg border-2 border-blue'>
+                  <SidebarMenuButton>
+                    <a href="https://wa.me/919375571036?text=Hello! I need some assistance. Can you help?" target="_blank" rel="noopener noreferrer" className='flex justify-center items-center h-10 w-10 scale-150'>
+                        <img src={CustomerSupport} alt="" className='mt-1.5'/>
+                    </a>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+
           <SidebarGroup>
             <SidebarGroupContent>
               <SidebarMenu>

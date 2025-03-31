@@ -1,7 +1,8 @@
 import { useAuth } from '@/auth/AuthContext';
 import React, { useState, useEffect } from 'react';
-import { FaMinusCircle, FaPlus } from "react-icons/fa";
+import { FaMinusCircle, FaPlus, FaArrowCircleDown } from "react-icons/fa";
 import { useParams } from 'react-router-dom';
+import * as XLSX from 'xlsx';
 
 const monthYear = new Date().toLocaleString('en-US', { month: 'long', year: 'numeric' });
 
@@ -30,6 +31,47 @@ export default function Inventory() {
         }
     } catch (err) {
         console.error("Failed to fetch inventory:", err);
+    }
+  };
+
+  const handleDownloadExcel = async (monthYear) => {
+    try {
+        const res = await fetch(`/server/inventoryDetails/getInventory/${cafeId}?month=${monthYear}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
+        });
+
+        const data = await res.json();
+        if (!res.ok || !data || data.length === 0) {
+            setError("No inventory data available for this month.");
+            return;
+        }
+
+        // Convert data into table format
+        const tableData = data.map((item, index) => ({
+            "S.No": index + 1,
+            "Item": item.item,
+            "Quantity": item.qty,
+            "Unit": item.unit,
+            "Amount (Without Tax)": item.amount,
+            "Tax %": item.tax,
+            "Total": item.total,
+            "Date": item.date,
+            "By": item.by
+        }));
+
+        // Create worksheet and workbook
+        const worksheet = XLSX.utils.json_to_sheet(tableData); 
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Inventory");
+
+        // Download Excel file
+        XLSX.writeFile(workbook, `Inventory_${monthYear}.xlsx`);
+    } catch (err) {
+        console.error("Failed to download inventory:", err);
     }
   };
 
@@ -99,17 +141,18 @@ export default function Inventory() {
     } catch (err) {
         setError('Failed to save inventory');
     }
-};
+  };
 
 
   return (
     <div className='relative'>
-      <div className="uppercase font-montserrat-600 text-xl mb-2">
-        Inventory - {monthYear}
+      <div className="uppercase font-montserrat-600 text-xl mb-2 flex gap-2 items-center">
+        <div>Inventory - {monthYear}</div>
+        <button onClick={() => handleDownloadExcel(monthYear)}><FaArrowCircleDown className='text-blue' /></button>
       </div>
 
       {/* Scrollable Table Container */}
-      <div className="w-full overflow-x-auto max-h-[63vh]">
+      <div className="w-full overflow-x-auto max-h-[78vh]">
         <table className="table-auto w-full border border-gray">
           {/* Table Head */}
           <thead className="bg-gray-100 border-b border-gray">
