@@ -105,15 +105,13 @@ export const getOrders = async (req, res) => {
   try {
     const orders = await Order.find({ cafeId });
 
-    if (orders.length === 0) {
-      return res.status(404).json({ message: 'No Orders as of now' });
-    }
-
-    res.status(200).json(orders);
+    res.status(200).json(orders.length > 0 ? orders : []);  
   } catch (error) {
     console.error('Error fetching orders:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
   }
 };
+
 
 export const deleteOrder = async (req, res) => {
   const { cafeId, tableId } = req.body;

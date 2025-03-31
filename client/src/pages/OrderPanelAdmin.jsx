@@ -70,17 +70,21 @@ function OrderPanelAdmin() {
                 },
             });
             const data = await res.json();
+    
             if (res.ok) {
-                // Sort orders by createdAt or updatedAt in descending order (latest first)
-                const sortedOrders = data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-                setOrdersList(sortedOrders);
+                if (Array.isArray(data) && data.length > 0) {
+                    const sortedOrders = data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+                    setOrdersList(sortedOrders);
+                } else {
+                    setOrdersList([]); 
+                }
             } else {
                 setError(`Error: ${data.message}`);
             }
         } catch (error) {
             setError('Failed to fetch orders');
         }
-    };
+    };    
     
     const refetchOrders = () => {
         fetchOrders(); 
