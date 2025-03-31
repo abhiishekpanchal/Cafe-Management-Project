@@ -6,12 +6,14 @@ import UPILogo from '../assets/UPI.png';
 import WalletLogo from '../assets/wallet.png';
 import CreditCardLogo from '../assets/credit-card.png';
 
-function OrderList({ order, refetchOrders }) {
+export default function OrderList({ order, refetchOrders }) {
   const [orders, setOrders] = useState([...order.orderList]);
   const { token, load } = useAuth();
   const [activeDropdown, setActiveDropdown] = useState(null);
   const [totalPrice, setTotalPrice] = useState(order.totalPrice);
   const [showRemoveAddon, setShowRemoveAddon] = useState(null);
+  const [dropdownStatus, setDropdownStatus] = useState(null);
+
   useEffect(() => {
     setOrders([...order.orderList]);
     setTotalPrice(order.totalPrice);
@@ -21,10 +23,6 @@ function OrderList({ order, refetchOrders }) {
     const newTotal = orders.reduce((sum, item) => sum + item.price, 0);
     setTotalPrice(newTotal);
   }, [orders]);
-
-  const handleStatusUpdate = async (status) => {
-  const [dropdownStatus, setDropdownStatus] = useState(null);
-  const [paymentMethod, setPaymentMethod] = useState(null);
 
   const paymentMethods = [
     { name: 'Cash', logo: WalletLogo },
@@ -426,5 +424,3 @@ function OrderList({ order, refetchOrders }) {
     </div>
   );
 }
-
-export default OrderList;
