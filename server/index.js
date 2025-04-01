@@ -5,6 +5,7 @@ import menuRouter from "./routes/menu.router.js";
 import orderRouter from "./routes/order.route.js";
 import userRouter from "./routes/user.route.js";
 import inventoryRouter from "./routes/inventory.route.js";
+import './services/inventoryReport.job.js'; 
 import cors from 'cors';
 import path from 'path';
 import bodyParser from 'body-parser';

@@ -6,11 +6,11 @@ import WalletLogo from '../assets/wallet.png';
 import CreditCardLogo from '../assets/credit-card.png';
 
 function MonthlyEarnings({ earnings, handleContentView }) {
-  // Sorting earnings based on month in descending order
+  // Sorting earnings based on monthYear in descending order
   const sortedEarnings = [...earnings].sort((a, b) => {
-    const dateA = new Date(`01 ${a.month}`); // Parsing month (e.g., "January 2024") to date
-    const dateB = new Date(`01 ${b.month}`);
-    return dateB - dateA; // Sort in descending order (latest first)
+    const dateA = new Date(a.monthYear); 
+    const dateB = new Date(b.monthYear);
+    return dateB - dateA; 
   });
 
   return (
