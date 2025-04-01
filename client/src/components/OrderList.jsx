@@ -285,9 +285,9 @@ export default function OrderList({ order, refetchOrders }) {
                         <div className='text-sm'>({item.dishVariants.variantName})</div>
                       )}
                       {dishTypes[item.dishName] === 'VEG' ? (
-                        <span className="ml-2 w-4 h-4 bg-green rounded-full"></span>
+                        <span className="ml-2 w-3 h-3 bg-green rounded-full"></span>
                       ) : (
-                        <span className="ml-2 w-4 h-4 bg-red rounded-full"></span>
+                        <span className="ml-2 w-3 h-3 bg-red rounded-full"></span>
                       )}
                     </div>
                     {item.dishAddOns && item.dishAddOns.length > 0 && (
