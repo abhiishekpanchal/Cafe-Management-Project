@@ -168,3 +168,23 @@ export const updateDish = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+export const getDishType = async (req, res) => {
+  const { cafeId, dishName } = req.params;
+  
+  try {
+    const dish = await Menu.findOne({
+      cafeId,
+      dishName: { $regex: new RegExp(`^${dishName}$`, 'i') }
+    }).select('dishType');
+    
+    if (!dish) {
+      return res.status(404).json({ message: 'Dish not found' });
+    }
+    
+    return res.status(200).json({ dishType: dish.dishType });
+  } catch (error) {
+    console.error('Error fetching dish type:', error);
+    return res.status(500).json({ message: 'Error fetching dish type', error });
+  }
+};

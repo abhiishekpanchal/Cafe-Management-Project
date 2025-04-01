@@ -13,7 +13,7 @@ export default function OrderList({ order, refetchOrders }) {
   const [totalPrice, setTotalPrice] = useState(order.totalPrice);
   const [showRemoveAddon, setShowRemoveAddon] = useState(null);
   const [dropdownStatus, setDropdownStatus] = useState(null);
-
+  const [dishTypes, setDishTypes] = useState({});
   useEffect(() => {
     setOrders([...order.orderList]);
     setTotalPrice(order.totalPrice);
@@ -23,6 +23,42 @@ export default function OrderList({ order, refetchOrders }) {
     const newTotal = orders.reduce((sum, item) => sum + item.price, 0);
     setTotalPrice(newTotal);
   }, [orders]);
+
+  useEffect(() => {
+    const fetchDishTypes = async () => {
+      const types = {};
+    
+      const promises = orders.map(async (item) => {
+        if (types[item.dishName]) return;
+        
+        try {
+          const response = await fetch(
+            `/server/menuDetails/getDishType/${order.cafeId}/${encodeURIComponent(item.dishName)}`,
+            {
+              method: 'GET',
+              headers: {
+                'Authorization': `Bearer ${token}`,
+              }
+            }
+          );
+          
+          if (response.ok) {
+            const data = await response.json();
+            types[item.dishName] = data.dishType;
+          }
+        } catch (error) {
+          console.error(`Error fetching dish type for ${item.dishName}:`, error);
+        }
+      });
+      
+      await Promise.all(promises);
+      setDishTypes(types);
+    };
+    
+    if (orders.length > 0) {
+      fetchDishTypes();
+    }
+  }, [orders, order.cafeId, token]);
 
   const paymentMethods = [
     { name: 'Cash', logo: WalletLogo },
@@ -193,6 +229,8 @@ export default function OrderList({ order, refetchOrders }) {
     }
   };
 
+  
+
   const toggleDropdown = (index) => {
     if (orders[index].status === 'paid') {
       return;
@@ -243,8 +281,13 @@ export default function OrderList({ order, refetchOrders }) {
                   <td className="px-3 py-3">
                     <div className="font-semibold flex items-center">
                       {item.dishName}
-                      {item.dishType === 'NON-VEG' && (
-                        <span className="ml-2 w-4 h-4 bg-red-600 rounded-full"></span>
+                      {item.dishVariants && item.dishVariants.variantName && (
+                        <div className='text-sm'>({item.dishVariants.variantName})</div>
+                      )}
+                      {dishTypes[item.dishName] === 'VEG' ? (
+                        <span className="ml-2 w-4 h-4 bg-green rounded-full"></span>
+                      ) : (
+                        <span className="ml-2 w-4 h-4 bg-red rounded-full"></span>
                       )}
                     </div>
                     {item.dishAddOns && item.dishAddOns.length > 0 && (

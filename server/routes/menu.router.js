@@ -6,6 +6,7 @@ import {
   updateDishStatus,
   getDishStatus,
   updateDish,
+  getDishType
 } from '../controllers/menu.controller.js';
 import { authenticateJWT } from '../middlewares/auth.middleware.js';
 
@@ -21,4 +22,5 @@ router.get(
 );
 router.post('/updateDishStatus/:cafeId', authenticateJWT, updateDishStatus);
 router.put('/updateDish/:cafeId', authenticateJWT, updateDish);
+router.get('/getDishType/:cafeId/:dishName', getDishType);
 export default router;
