@@ -1,4 +1,5 @@
 import Order from '../models/order.model.js';
+import {updateToCafe} from '../index.js';
 
 export const placeOrder = async (req, res) => {
   try {
@@ -62,6 +63,11 @@ export const placeOrder = async (req, res) => {
 
       await existingOrder.save();
 
+      updateToCafe(cafeId, {
+        type: 'orderUpdated',
+        order: savedOrder
+      });
+
       return res.status(200).json({
         success: true,
         message: 'Added to existing order',
@@ -83,6 +89,11 @@ export const placeOrder = async (req, res) => {
       });
 
       await newOrder.save();
+
+      updateToCafe(cafeId, {
+        type: 'newOrder',
+        order: savedOrder
+      });
 
       return res.status(201).json({
         success: true,
@@ -125,6 +136,10 @@ export const deleteOrder = async (req, res) => {
     if (!orderToDelete) {
       return res.status(404).json({ message: 'table not found' });
     }
+    updateToCafe(cafeId, {
+      type: 'orderDeleted',
+      orderId: orderToDelete._id
+    });
 
     res.status(200).json({ message: 'Order deleted successfully' });
   } catch (error) {
@@ -168,6 +183,10 @@ export const updateItemQuantity = async (req, res) => {
       order.totalPrice - oldPrice + order.orderList[itemIndex].price;
 
     await order.save();
+    updateToCafe(order.cafeId, {
+      type: 'orderUpdated',
+      order
+    });
 
     return res.status(200).json({
       success: true,
@@ -208,6 +227,10 @@ export const updateItemStatus = async (req, res) => {
     order.orderList[itemIndex].status = newStatus;
 
     await order.save();
+    updateToCafe(order.cafeId, {
+      type: 'orderUpdated',
+      order
+    });
 
     return res.status(200).json({
       success: true,
@@ -249,6 +272,12 @@ export const removeItem = async (req, res) => {
     order.totalPrice -= removedItemPrice;
     if (order.orderList.length === 0) {
       await Order.findByIdAndDelete(orderId);
+
+      updateToCafe(cafeId, {
+        type: 'orderDeleted',
+        orderId: order._id
+      });
+
       return res.status(200).json({
         success: true,
         message: 'Order removed as it had no items left',
@@ -256,6 +285,11 @@ export const removeItem = async (req, res) => {
     }
 
     await order.save();
+
+    updateToCafe(cafeId, {
+      type: 'orderUpdated',
+      order
+    });
 
     return res.status(200).json({
       success: true,
