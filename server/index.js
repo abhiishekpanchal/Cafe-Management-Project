@@ -36,11 +36,11 @@ app.use(fileUpload({
     tempFileDir: '/tmp/', 
 }));
 
-const server = http.createServer(app);
-const wss = new WebSocketServer({ server });
+const wss = new WebSocketServer({ port: 8080 });
 
-wss.on("connection", (wss,req) => {
-    console.log('user connected');
+// WebSocket connection handler
+wss.on("connection", (ws, req) => {
+    console.log('User connected to WebSocket');
     
     const {query} = url.parse(req.url, true);
     const cafeId = query.cafeId;
@@ -51,8 +51,6 @@ wss.on("connection", (wss,req) => {
         }
         cafeConnections.get(cafeId).add(ws);
         
-        console.log(`Client joined cafe room: ${cafeId}`);
-        
         ws.send(JSON.stringify({
             type: 'connection',
             message: `Connected to cafe ${cafeId}`
@@ -62,43 +60,62 @@ wss.on("connection", (wss,req) => {
     ws.on('message', (message) => {
         try {
             const parsedMessage = JSON.parse(message);
-            console.log('Received message:', parsedMessage);
+            
+            if (parsedMessage.type === 'fetchOrders' && parsedMessage.cafeId) {
+                updateToCafe(parsedMessage.cafeId, {
+                    type: 'fetchOrders'
+                });
+            }
             
         } catch (error) {
-            console.error('Error parsing message:', error);
+            console.error('Error parsing WebSocket message:', error);
         }
     });
 
     ws.on('close', () => {
-        console.log('Client disconnected');
-        
         if (cafeId && cafeConnections.has(cafeId)) {
             cafeConnections.get(cafeId).delete(ws);
             
             if (cafeConnections.get(cafeId).size === 0) {
+                //remove empyt cafe
                 cafeConnections.delete(cafeId);
-            }
+            } 
         }
     });
 
     ws.on('error', (error) => {
         console.error('WebSocket error:', error);
     });
-})
+    
+    // ping interval to keep connection alive
+    const pingInterval = setInterval(() => {
+        if (ws.readyState === ws.OPEN) {
+            ws.send(JSON.stringify({ type: 'ping' }));
+        } else {
+            clearInterval(pingInterval);
+        }
+    }, 30000); 
+    
+    ws.on('close', () => {
+        clearInterval(pingInterval);
+    });
+});
 
-export const updateToCafe = (cafeId, data) => {
+const updateToCafe = (cafeId, data) => {
     if (!cafeConnections.has(cafeId)) {
         return;
     }
     
     const connections = cafeConnections.get(cafeId);
+    let sentCount = 0;
+    
     connections.forEach((client) => {
         if (client.readyState === client.OPEN) {
             client.send(JSON.stringify(data));
+            sentCount++;
         }
     });
 };
-
 
 app.use('/server/cafeDetails', cafeRouter);
 app.use('/server/menuDetails', menuRouter);
@@ -112,6 +129,7 @@ app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, 'client', 'dist', 'index.html'));
 })
 
-server.listen(3000, () => {
+app.listen(3000, () => {
     console.log("Server is running on port 3000");
 })
+console.log("WebSocket server is running on port 8080");

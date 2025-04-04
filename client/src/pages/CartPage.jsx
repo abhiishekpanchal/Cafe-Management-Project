@@ -14,10 +14,52 @@ function CartPage() {
   const [orderList, setOrderList] = useState(initialOrderList);
   const [orderPlaced, setOrderPlaced] = useState(false);
   const [cookingRequest, setCookingRequest] = useState('');
+  const [error, setError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [websocket, setWebsocket] = useState(null);
+
+  // Initialize WebSocket connection
+  useEffect(() => {
+    if (cafeId) {
+    const wsUrl = `ws://192.168.1.2:8080?cafeId=${cafeId}`;
+    
+    console.log('Connecting to WebSocket:', wsUrl);
+    const ws = new WebSocket(wsUrl);
+      
+      ws.onopen = () => {
+        console.log('WebSocket connected for customer');
+      };
+      
+      ws.onerror = (error) => {
+        console.error('WebSocket error:', error);
+      };
+      
+      ws.onmessage = (event) => {
+        try {
+          const message = JSON.parse(event.data);
+          // Handle any server messages if needed
+          if (message.type === 'ping') {
+            ws.send(JSON.stringify({ type: 'pong' }));
+          }
+        } catch (error) {
+          console.error('Error parsing WebSocket message:', error);
+        }
+      };
+      
+      setWebsocket(ws);
+      
+      // Clean up on unmount
+      return () => {
+        if (ws && ws.readyState === WebSocket.OPEN) {
+          ws.close();
+        }
+      };
+    }
+  }, [cafeId]);
 
   useEffect(() => {
     localStorage.setItem(`orderList_${cafeId}_${tableId}`, JSON.stringify(orderList));
-  }, [orderList]);
+  }, [orderList, cafeId, tableId]);
 
   const finalAmount = orderList.reduce((acc, item) => {
       return acc + (item.dishPrice * item.quantity);
@@ -26,14 +68,12 @@ function CartPage() {
   const handleQuantityChange = (dishId, variant, addons, newQuantity) => {
     setOrderList(prevOrderList => {
       if (newQuantity === 0) {
-        // Filter out the specific dish based on all identifying parameters
         return prevOrderList.filter(item => 
           !(item._id === dishId && 
             JSON.stringify(item.variant) === JSON.stringify(variant) && 
             JSON.stringify(item.addons) === JSON.stringify(addons))
         );
       } else {
-        // Update the specific dish (variant and addons included) by matching all parameters
         return prevOrderList.map(item =>
           item._id === dishId &&
           JSON.stringify(item.variant) === JSON.stringify(variant) &&
@@ -45,6 +85,22 @@ function CartPage() {
     });
   };
   
+  // Notify admin panel to fetch orders
+  const notifyOrderPlaced = () => {
+    if (websocket && websocket.readyState === WebSocket.OPEN && cafeId) {
+      try {
+        websocket.send(JSON.stringify({
+          type: 'fetchOrders',
+          cafeId: cafeId
+        }));
+        console.log('Sent order notification via WebSocket');
+      } catch (error) {
+        console.error('Error sending WebSocket message:', error);
+      }
+    } else {
+      console.warn('WebSocket not available for order notification');
+    }
+  };
 
   const handlePlaceOrder = async () => {
     try {
@@ -52,6 +108,9 @@ function CartPage() {
         setError("Your cart is empty.");
         return;
       }
+      
+      setIsSubmitting(true);
+      setError('');
   
       const orderData = {
         cafeId,
@@ -77,7 +136,6 @@ function CartPage() {
         timestamp: Date.now(),
       };
   
-      // Save order history before clearing orderList
       localStorage.setItem(`orderHistory_${cafeId}_${tableId}`, JSON.stringify(orderData));
 
       const response = await fetch(`/server/orderDetails/placeOrder/${cafeId}/${tableId}`, {
@@ -93,12 +151,18 @@ function CartPage() {
       if (result.success) {
         localStorage.removeItem(`orderList_${cafeId}_${tableId}`);
         setOrderList([]);
+        notifyOrderPlaced();
+        
         setOrderPlaced(true);
+        setIsSubmitting(false);
       } else {
-        console.log(result.message || "Error placing order. Please try again later.");
+        setError(result.message || "Error placing order. Please try again later.");
+        setIsSubmitting(false);
       }
     } catch (error) {
       console.error("Error placing order:", error);
+      setError("Network error. Please try again later.");
+      setIsSubmitting(false);
     }
   };
 
@@ -130,8 +194,11 @@ function CartPage() {
 
         {!orderPlaced && <div className={`font-montserrat-600 px-3 mb-2.5 ${orderList.length === 0 ? 'opacity-0' : ''}`}>Your Order</div>}
         
+        {error && <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded mx-3 mb-3">{error}</div>}
+        
         {orderPlaced ? (
-          <div className="text-center text-green-600 font-semibold">
+          <div className="text-center text-green-600 font-semibold py-4">
+            <div className="text-5xl mb-3">✓</div>
             <p>Order placed successfully!</p>
             <button
               onClick={handleGoToHomePage}
@@ -256,13 +323,19 @@ function CartPage() {
             </div>
 
             {orderList.length > 0 && (
-              <div className="absolute flex justify-between items-center z-50 pt-3 pb-6 w-full px-3 font-montserrat-500 shadow-[0_0_18px_rgba(0,0,0,0.3)] bg-user_comp">
+              <div className="absolute flex justify-between items-center z-50 pt-3 pb-6 w-full px-3 font-montserrat-500 shadow-[0_0_18px_rgba(0,0,0,0.3)] bg-user_comp bottom-0">
                 <p>Total : ₹{finalAmount}</p>
                 <button 
-                  onClick={handlePlaceOrder} 
-                  className="uppercase bg-user_blue text-black rounded-xl py-1 px-3 hover:bg-opacity-90"
+                  onClick={handlePlaceOrder}
+                  disabled={isSubmitting}
+                  className={`uppercase ${isSubmitting ? 'bg-gray-400' : 'bg-user_blue'} text-black rounded-xl py-1 px-3 hover:bg-opacity-90 flex items-center`}
                 >
-                  Confirm Order
+                  {isSubmitting ? (
+                    <>
+                      <span className="mr-2">Processing</span>
+                      <div className="w-4 h-4 border-2 border-gray-800 border-t-transparent rounded-full animate-spin"></div>
+                    </>
+                  ) : 'Confirm Order'}
                 </button>
               </div>
             )}

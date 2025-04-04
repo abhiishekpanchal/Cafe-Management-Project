@@ -8,6 +8,8 @@ import { AppSidebar2 } from '@/components/app-sidebar2';
 import AddImages from '@/components/AddImages';
 import { useAuth } from '@/auth/AuthContext.jsx';
 import Inventory from '@/components/Inventory';
+import useSound from 'use-sound'; 
+import notificationSound from '@/assets/notificationSound.mp3'; 
 
 function OrderPanelAdmin() {
     const { cafeId } = useParams(); 
@@ -23,9 +25,14 @@ function OrderPanelAdmin() {
     const [error, setError] = useState(null);
     const [selectedPanel, setSelectedPanel] = useState('orders');
     const [showImagePopup, setShowImagePopup] = useState(false);
+    const [websocket, setWebsocket] = useState(null);
+    const [websocketConnected, setWebsocketConnected] = useState(false);
+    const [newOrderNotification, setNewOrderNotification] = useState(false);
+    const [notificationMessage, setNotificationMessage] = useState('');
+    
+    const [playNotificationSound] = useSound(notificationSound, { volume: 0.5 });
 
     const navigate = useNavigate();
-
     useEffect(() => {
         if (!load && !token) {
             navigate('/', { replace: true });
@@ -33,13 +40,71 @@ function OrderPanelAdmin() {
     }, [token, load, navigate]);
 
     useEffect(() => {
+        if (cafeId) {
+            const wsUrl = `ws://192.168.1.2:8080?cafeId=${cafeId}`;
+    
+            console.log('Connecting to WebSocket:', wsUrl);
+            const ws = new WebSocket(wsUrl);
+            
+            ws.onopen = () => {
+                console.log('WebSocket connected for admin panel');
+                setWebsocketConnected(true);
+            };
+            
+            ws.onmessage = (event) => {
+                try {
+                    const message = JSON.parse(event.data);
+                    console.log('WebSocket message received:', message);
+                    
+                    if (message.type === 'ping') {
+                        ws.send(JSON.stringify({ type: 'pong' }));
+                    }
+                    else if (message.type === 'fetchOrders') {
+                        console.log('Fetching orders due to WebSocket message');
+                        fetchOrders().then(newOrders => {
+                            if (newOrders && newOrders.length > 0) {
+                                const tableId = newOrders[0].tableId;
+                                setNotificationMessage(`New order from Table No. ${tableId}`);
+                                setNewOrderNotification(true);
+                                playNotificationSound();
+                                setTimeout(() => setNewOrderNotification(false), 5000);
+                            }
+                        });
+                    }
+                } catch (error) {
+                    console.error('Error parsing WebSocket message:', error);
+                }
+            };
+            
+            ws.onerror = (error) => {
+                console.error('WebSocket error:', error);
+                setWebsocketConnected(false);
+            };
+            
+            ws.onclose = () => {
+                console.log('WebSocket disconnected');
+                setWebsocketConnected(false);
+            };
+            
+            setWebsocket(ws);
+            return () => {
+                if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) {
+                    ws.close();
+                }
+            };
+        }
+    }, [cafeId, playNotificationSound]);
+
+    useEffect(() => {
         const intervalId = setInterval(() => {
-            fetchOrders(); 
-        }, 60000);
+            if (!websocketConnected) {
+                console.log('Polling for orders (WebSocket unavailable)');
+                fetchOrders(); 
+            }
+        }, 60000); 
     
         return () => clearInterval(intervalId);
-    }, [cafeId]);
-       
+    }, [cafeId, websocketConnected]);
 
     useEffect(() => {
         const fetchCategories = async () => {
@@ -62,8 +127,10 @@ function OrderPanelAdmin() {
         fetchCategories();
     }, [cafeId]);
 
+    // Fetch orders function
     const fetchOrders = async () => {
         try {
+            console.log('Fetching orders...');
             const res = await fetch(`/server/orderDetails/getOrders/${cafeId}`, {
                 headers: {
                     'Authorization': `Bearer ${token}`
@@ -75,14 +142,18 @@ function OrderPanelAdmin() {
                 if (Array.isArray(data) && data.length > 0) {
                     const sortedOrders = data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
                     setOrdersList(sortedOrders);
+                    return sortedOrders; 
                 } else {
                     setOrdersList([]); 
+                    return [];
                 }
             } else {
                 setError(`Error: ${data.message}`);
+                return null;
             }
         } catch (error) {
             setError('Failed to fetch orders');
+            return null;
         }
     };    
     
@@ -98,6 +169,7 @@ function OrderPanelAdmin() {
         setSelectedCategory(category);
     };
 
+    // Fetch dishes
     const fetchCategoryDishes = async () => {
         try {
             const res = await fetch(`/server/menuDetails/getMenu/${cafeId}`);
@@ -125,9 +197,8 @@ function OrderPanelAdmin() {
         }
     }, [selectedCategory, dishes]);
 
-
+    // Addon status management
     const updateAddonStatus = async (addonName, addonPrice, newStatus) => {
-        const token = token;
         if (!token) {
             console.error('No token found');
             return;
@@ -169,10 +240,25 @@ function OrderPanelAdmin() {
 
     const handleContentView = (content) => {
         setSelectedPanel(content);
-      };
+    };
 
     return (
         <div className='w-full min-h-full flex overflow-hidden'>
+            {/* WebSocket Status Indicator */}
+            {!websocketConnected && (
+                <div className="fixed bottom-4 left-4 bg-yellow-500 text-white px-4 py-2 rounded-lg shadow-lg z-50">
+                    <span className="mr-2">●</span>
+                    Live updates unavailable
+                </div>
+            )}
+            
+            {/* New Order Notification */}
+            {newOrderNotification && (
+                <div className="fixed top-4 right-4 bg-[#3295E866] text-white px-4 py-2 rounded-lg shadow-lg z-50 animate-bounce">
+                    <span className="mr-2">🔔</span>
+                    {notificationMessage}
+                </div>
+            )}
             
             {/* SIDEBAR */}
             <SidebarProvider>
