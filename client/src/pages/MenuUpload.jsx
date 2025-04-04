@@ -430,7 +430,7 @@ function MenuUpload() {
                     ))}
               </div>
 
-              <div className="flex flex-wrap w-full gap-4 justify-center sm:justify-start h-[78vh] overflow-y-auto pb-5">
+              <div className="flex flex-wrap w-full gap-4 justify-center sm:justify-start max-h-[78vh] overflow-y-auto pb-5">
                 {/* If no category is selected, show the message */}
                 {!selectedCategory ? (
                   <div className="text-lg text-center mx-auto mt-5">
