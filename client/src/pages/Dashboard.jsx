@@ -63,11 +63,16 @@ function Dashboard({ cafeName, cafePhone, cafeAddress, cafeTables, cafeInstagram
     useEffect(() => {
         const fetchUsers = async () => {
             try {
-                const response = await fetch(`/server/userDetails/getAllUsers/${cafeId}`, {
+                const response = await fetch(
+                  `${
+                    import.meta.env.VITE_APP_URL
+                  }/server/userDetails/getAllUsers/${cafeId}`,
+                  {
                     headers: {
-                        'Authorization': `Bearer ${token}`,
+                      Authorization: `Bearer ${token}`,
                     },
-                });
+                  }
+                );
                 if (!response.ok) {
                     throw new Error('Failed to fetch users');
                 }
@@ -111,13 +116,18 @@ function Dashboard({ cafeName, cafePhone, cafeAddress, cafeTables, cafeInstagram
             form.append('email', formData.email);
             if (formData.logo) form.append('logoImg', formData.logo);
 
-            const response = await fetch(`/server/cafeDetails/updateCafe/${cafeId}`, {
-                method: 'PUT',
+            const response = await fetch(
+              `${
+                import.meta.env.VITE_APP_URL
+              }/server/cafeDetails/updateCafe/${cafeId}`,
+              {
+                method: "PUT",
                 headers: {
-                    Authorization: `Bearer ${token}`,
+                  Authorization: `Bearer ${token}`,
                 },
                 body: form,
-            });
+              }
+            );
 
             if (!response.ok) {
                 throw new Error('Failed to update cafe details');

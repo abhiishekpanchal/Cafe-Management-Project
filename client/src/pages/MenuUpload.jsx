@@ -77,12 +77,17 @@ function MenuUpload() {
     }
   
     try {
-      const res = await fetch(`/server/cafeDetails/getCafeDetails/${cafeId}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+      const res = await fetch(
+        `${
+          import.meta.env.VITE_APP_URL
+        }/server/cafeDetails/getCafeDetails/${cafeId}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
   
       const data = await res.json();
   
@@ -124,7 +129,11 @@ function MenuUpload() {
 
   const fetchCategoryDishes = async (category) => {
       try {
-          const res = await fetch(`/server/menuDetails/getMenu/${cafeId}`);
+          const res = await fetch(
+            `${
+              import.meta.env.VITE_APP_URL
+            }/server/menuDetails/getMenu/${cafeId}`
+          );
           const data = await res.json();
 
           if (res.ok) {
@@ -180,28 +189,33 @@ function MenuUpload() {
     e.preventDefault();
     if (selectedCategory) {
       try {
-        const res = await fetch(`/server/menuDetails/addDish/${cafeId}`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            dishName,
-            dishDescription,
-            dishPrice,
-            dishCategory: selectedCategory,
-            dishType,
-            variants: variants.map(variant => ({
-              variantName: variant.name,
-              variantPrice: variant.price
-            })),
-            addons: selectedAddons.map(addon => ({
-              addOnName: addon.addon_name,
-              addOnPrice: addon.addon_price,
-            }))
-          }),
-        });
+        const res = await fetch(
+          `${
+            import.meta.env.VITE_APP_URL
+          }/server/menuDetails/addDish/${cafeId}`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+              dishName,
+              dishDescription,
+              dishPrice,
+              dishCategory: selectedCategory,
+              dishType,
+              variants: variants.map((variant) => ({
+                variantName: variant.name,
+                variantPrice: variant.price,
+              })),
+              addons: selectedAddons.map((addon) => ({
+                addOnName: addon.addon_name,
+                addOnPrice: addon.addon_price,
+              })),
+            }),
+          }
+        );
 
         const data = await res.json();
         if (res.ok) {
@@ -271,13 +285,16 @@ function MenuUpload() {
     }
 
     try {
-        const response = await fetch("/server/cafeDetails/setStaffPin", {
+        const response = await fetch(
+          "${import.meta.env.VITE_APP_URL}/server/cafeDetails/setStaffPin",
+          {
             method: "PUT",
             headers: {
-                "Content-Type": "application/json",
+              "Content-Type": "application/json",
             },
             body: JSON.stringify({ cafeId, pin: pinValue }),
-        });
+          }
+        );
 
         const data = await response.json();
         if (response.ok) {

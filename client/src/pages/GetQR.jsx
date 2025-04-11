@@ -21,7 +21,11 @@ function GetQR() {
 
     const fetchCafeDetails = async () => {
         try {
-            const res = await fetch(`/server/cafeDetails/getCafeDetails/${cafeId}`);
+            const res = await fetch(
+              `${
+                import.meta.env.VITE_APP_URL
+              }/server/cafeDetails/getCafeDetails/${cafeId}`
+            );
             const data = await res.json();
             if (res.ok) {
                 setCafeName(data.name);

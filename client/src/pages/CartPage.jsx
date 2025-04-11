@@ -80,13 +80,18 @@ function CartPage() {
       // Save order history before clearing orderList
       localStorage.setItem(`orderHistory_${cafeId}_${tableId}`, JSON.stringify(orderData));
 
-      const response = await fetch(`/server/orderDetails/placeOrder/${cafeId}/${tableId}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(orderData),
-      });
+      const response = await fetch(
+        `${
+          import.meta.env.VITE_APP_URL
+        }/server/orderDetails/placeOrder/${cafeId}/${tableId}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(orderData),
+        }
+      );
   
       const result = await response.json();
   

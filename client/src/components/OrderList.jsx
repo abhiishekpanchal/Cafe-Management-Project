@@ -75,12 +75,14 @@ export default function OrderList({ order, refetchOrders }) {
         
         try {
           const response = await fetch(
-            `/server/menuDetails/getDishType/${order.cafeId}/${encodeURIComponent(item.dishName)}`,
+            `${import.meta.env.VITE_APP_URL}/server/menuDetails/getDishType/${
+              order.cafeId
+            }/${encodeURIComponent(item.dishName)}`,
             {
-              method: 'GET',
+              method: "GET",
               headers: {
-                'Authorization': `Bearer ${token}`,
-              }
+                Authorization: `Bearer ${token}`,
+              },
             }
           );
           
@@ -195,7 +197,9 @@ export default function OrderList({ order, refetchOrders }) {
   const handleStatusUpdate = async (status, method = null) => {
     try {
       const response = await fetch(
-        `/server/cafeDetails/updateEarnings/${order.cafeId}`,
+        `${import.meta.env.VITE_APP_URL}/server/cafeDetails/updateEarnings/${
+          order.cafeId
+        }`,
         {
           method: "POST",
           headers: {
@@ -263,19 +267,24 @@ export default function OrderList({ order, refetchOrders }) {
       updatedOrders[itemIndex].price = newTotalItemPrice;
       setOrders(updatedOrders);
 
-      const response = await fetch(`/server/orderDetails/updateItemQuantity`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          orderId: order._id,
-          itemIndex,
-          newQuantity,
-          newPrice: newTotalItemPrice,
-        }),
-      });
+      const response = await fetch(
+        `${
+          import.meta.env.VITE_APP_URL
+        }/server/orderDetails/updateItemQuantity`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            orderId: order._id,
+            itemIndex,
+            newQuantity,
+            newPrice: newTotalItemPrice,
+          }),
+        }
+      );
 
       if (response.ok) {
         refetchOrders();
@@ -297,17 +306,20 @@ export default function OrderList({ order, refetchOrders }) {
       setOrders(updatedOrders);
       setActiveDropdown(null);
 
-      const response = await fetch(`/server/orderDetails/removeItem`, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          orderId: order._id,
-          itemIndex,
-        }),
-      });
+      const response = await fetch(
+        `${import.meta.env.VITE_APP_URL}/server/orderDetails/removeItem`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            orderId: order._id,
+            itemIndex,
+          }),
+        }
+      );
 
       if (response.ok) {
         refetchOrders();
@@ -332,18 +344,21 @@ export default function OrderList({ order, refetchOrders }) {
       item.price -= addonPrice * item.quantity;
 
       setOrders(updatedOrders);
-      const response = await fetch(`/server/orderDetails/removeAddon`, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          orderId: order._id,
-          itemIndex,
-          addonIndex,
-        }),
-      });
+      const response = await fetch(
+        `${import.meta.env.VITE_APP_URL}/server/orderDetails/removeAddon`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            orderId: order._id,
+            itemIndex,
+            addonIndex,
+          }),
+        }
+      );
 
       if (response.ok) {
         refetchOrders();

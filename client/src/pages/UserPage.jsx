@@ -17,7 +17,11 @@ function UserPage() {
   useEffect(() => {
     const fetchCafeDetails = async () => {
       try {
-        const res = await fetch(`/server/cafeDetails/getCafeDetails/${cafeId}`);
+        const res = await fetch(
+          `${
+            import.meta.env.VITE_APP_URL
+          }/server/cafeDetails/getCafeDetails/${cafeId}`
+        );
         const data = await res.json();
         if (res.ok) {
           setCafeLogo(data.logoImg.url);
@@ -40,17 +44,22 @@ function UserPage() {
     }
 
     try {
-      const res = await fetch(`/server/userDetails/postUserDetails/${cafeId}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          name,
-          phone,
-        }),
-      });
+      const res = await fetch(
+        `${
+          import.meta.env.VITE_APP_URL
+        }/server/userDetails/postUserDetails/${cafeId}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            name,
+            phone,
+          }),
+        }
+      );
 
       const data = await res.json();
 

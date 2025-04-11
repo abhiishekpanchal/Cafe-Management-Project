@@ -15,13 +15,18 @@ export default function Inventory() {
 
   const fetchInventory = async () => {
     try {
-        const res = await fetch(`/server/inventoryDetails/getInventory/${cafeId}?month=${monthYear}`, {
-            method: 'GET',
+        const res = await fetch(
+          `${
+            import.meta.env.VITE_APP_URL
+          }/server/inventoryDetails/getInventory/${cafeId}?month=${monthYear}`,
+          {
+            method: "GET",
             headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`,
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
             },
-        });
+          }
+        );
 
         const data = await res.json();
         if (res.ok) {
@@ -36,13 +41,18 @@ export default function Inventory() {
 
   const handleDownloadExcel = async (monthYear) => {
     try {
-        const res = await fetch(`/server/inventoryDetails/getInventory/${cafeId}?month=${monthYear}`, {
-            method: 'GET',
+        const res = await fetch(
+          `${
+            import.meta.env.VITE_APP_URL
+          }/server/inventoryDetails/getInventory/${cafeId}?month=${monthYear}`,
+          {
+            method: "GET",
             headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`,
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
             },
-        });
+          }
+        );
 
         const data = await res.json();
         if (!res.ok || !data || data.length === 0) {
@@ -100,13 +110,18 @@ export default function Inventory() {
 
   const handleDelete = async (itemId) => {
     try {
-      const res = await fetch(`/server/inventoryDetails/deleteInventory/${cafeId}?month=${monthYear}&itemId=${itemId}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
+      const res = await fetch(
+        `${
+          import.meta.env.VITE_APP_URL
+        }/server/inventoryDetails/deleteInventory/${cafeId}?month=${monthYear}&itemId=${itemId}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
       
       if (res.ok) {
         fetchInventory();
@@ -122,14 +137,19 @@ export default function Inventory() {
     if (newRows.length === 0) return;
 
     try {
-        const res = await fetch(`/server/inventoryDetails/inventorySave/${cafeId}`, {  
-            method: 'POST',
+        const res = await fetch(
+          `${
+            import.meta.env.VITE_APP_URL
+          }/server/inventoryDetails/inventorySave/${cafeId}`,
+          {
+            method: "POST",
             headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json',
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
             },
             body: JSON.stringify({ month: monthYear, newRows }),
-        });
+          }
+        );
 
         const data = await res.json();
         if (res.ok) {

@@ -44,7 +44,11 @@ function OrderPanelAdmin() {
     useEffect(() => {
         const fetchCategories = async () => {
             try {
-                const res = await fetch(`/server/cafeDetails/getCafeDetails/${cafeId}`);
+                const res = await fetch(
+                  `${
+                    import.meta.env.VITE_APP_URL
+                  }/server/cafeDetails/getCafeDetails/${cafeId}`
+                );
                 const data = await res.json();
                 if (res.ok) {
                     setCafeName(data.name);
@@ -64,11 +68,16 @@ function OrderPanelAdmin() {
 
     const fetchOrders = async () => {
         try {
-            const res = await fetch(`/server/orderDetails/getOrders/${cafeId}`, {
+            const res = await fetch(
+              `${
+                import.meta.env.VITE_APP_URL
+              }/server/orderDetails/getOrders/${cafeId}`,
+              {
                 headers: {
-                    'Authorization': `Bearer ${token}`
+                  Authorization: `Bearer ${token}`,
                 },
-            });
+              }
+            );
             const data = await res.json();
     
             if (res.ok) {
@@ -100,7 +109,11 @@ function OrderPanelAdmin() {
 
     const fetchCategoryDishes = async () => {
         try {
-            const res = await fetch(`/server/menuDetails/getMenu/${cafeId}`);
+            const res = await fetch(
+              `${
+                import.meta.env.VITE_APP_URL
+              }/server/menuDetails/getMenu/${cafeId}`
+            );
             const data = await res.json();
             if (res.ok) {
                 setDishes(data.dishes);
@@ -134,14 +147,23 @@ function OrderPanelAdmin() {
         }
 
         try {
-            const response = await fetch(`/server/cafeDetails/updateAddonStatus/${cafeId}`, {
-                method: 'PUT',
+            const response = await fetch(
+              `${
+                import.meta.env.VITE_APP_URL
+              }/server/cafeDetails/updateAddonStatus/${cafeId}`,
+              {
+                method: "PUT",
                 headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`,
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${token}`,
                 },
-                body: JSON.stringify({ addon_name: addonName, addon_price: addonPrice, addon_status: newStatus })
-            });
+                body: JSON.stringify({
+                  addon_name: addonName,
+                  addon_price: addonPrice,
+                  addon_status: newStatus,
+                }),
+              }
+            );
 
             if (response.ok) {
                 console.log('Addon status updated successfully');

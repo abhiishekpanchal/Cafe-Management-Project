@@ -91,17 +91,20 @@ function CafeRegistrationForm() {
     }
 
     try {
-      const res = await fetch("/server/cafeDetails/cafeRegister", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          ...formData,
-          tables: parseInt(formData.tables),
-          phone: parseInt(formData.phone),
-        }),
-      });
+      const res = await fetch(
+        "${import.meta.env.VITE_APP_URL}/server/cafeDetails/cafeRegister",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            ...formData,
+            tables: parseInt(formData.tables),
+            phone: parseInt(formData.phone),
+          }),
+        }
+      );
       const data = await res.json();
       if (res.ok) {
         localStorage.setItem("token", data.token);

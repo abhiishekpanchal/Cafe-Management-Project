@@ -23,11 +23,16 @@ function AdminItemCard({ dishName, dishPrice, dishType, dishCategory }) {
         const encodedDishName = encodeURIComponent(dishName);
         const encodedDishCategory = encodeURIComponent(dishCategory);
   
-        const res = await fetch(`/server/menuDetails/getDishStatus/${cafeId}/${encodedDishName}/${encodedDishCategory}`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          },
-        });
+        const res = await fetch(
+          `${
+            import.meta.env.VITE_APP_URL
+          }/server/menuDetails/getDishStatus/${cafeId}/${encodedDishName}/${encodedDishCategory}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
   
         if (res.ok) {
           const { dishStatus } = await res.json(); 
@@ -54,14 +59,23 @@ function AdminItemCard({ dishName, dishPrice, dishType, dishCategory }) {
     }
   
     try {
-      const response = await fetch(`/server/menuDetails/updateDishStatus/${cafeId}`, {
-        method: 'POST', 
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({ dishName, dishCategory, dishStatus: newStatus })
-      });
+      const response = await fetch(
+        `${
+          import.meta.env.VITE_APP_URL
+        }/server/menuDetails/updateDishStatus/${cafeId}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            dishName,
+            dishCategory,
+            dishStatus: newStatus,
+          }),
+        }
+      );
   
       if (response.ok) {
         console.log('Dish status updated successfully');

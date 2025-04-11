@@ -29,7 +29,11 @@ function CategoryWiseDishes() {
     useEffect(() => {
             const fetchCafeAddOns = async () => {
                 try {
-                    const res = await fetch(`/server/cafeDetails/getCafeDetails/${cafeId}`);
+                    const res = await fetch(
+                      `${
+                        import.meta.env.VITE_APP_URL
+                      }/server/cafeDetails/getCafeDetails/${cafeId}`
+                    );
                     const data = await res.json();
                     if (res.ok) {
                         setAddons(data.addons);
@@ -48,7 +52,11 @@ function CategoryWiseDishes() {
     useEffect(() => {
         const fetchCategoryDishes = async () => {
             try {
-                const res = await fetch(`/server/menuDetails/getMenu/${cafeId}`);
+                const res = await fetch(
+                  `${
+                    import.meta.env.VITE_APP_URL
+                  }/server/menuDetails/getMenu/${cafeId}`
+                );
                 const data = await res.json();
                 if (res.ok) {
                     setDishes(data.dishes);

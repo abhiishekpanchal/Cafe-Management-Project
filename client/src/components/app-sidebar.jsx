@@ -64,14 +64,19 @@ export function AppSidebar({ Categories, Addons, onCategoryChange, selectedCateg
   const handleAddCategory = async () => {
     if (newCategory.trim()) {
       try {
-        const res = await fetch(`/server/cafeDetails/postCategory/${cafeId}`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`,
-          },
-          body: JSON.stringify({ category: newCategory }),
-        });
+        const res = await fetch(
+          `${
+            import.meta.env.VITE_APP_URL
+          }/server/cafeDetails/postCategory/${cafeId}`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({ category: newCategory }),
+          }
+        );
   
         const data = await res.json();
         if (res.ok) {
@@ -90,14 +95,19 @@ export function AppSidebar({ Categories, Addons, onCategoryChange, selectedCateg
 
   const handleDeleteCategory = async (category) => {
     try {
-      const res = await fetch(`/server/cafeDetails/deleteCategory/${cafeId}`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({ category }),
-      });
+      const res = await fetch(
+        `${
+          import.meta.env.VITE_APP_URL
+        }/server/cafeDetails/deleteCategory/${cafeId}`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ category }),
+        }
+      );
 
       const data = await res.json();
       if (res.ok) {
@@ -120,14 +130,22 @@ export function AppSidebar({ Categories, Addons, onCategoryChange, selectedCateg
   const handleAddAddon = async () => {
     if (addonName.trim()) {
       try {
-        const res = await fetch(`/server/cafeDetails/postAddon/${cafeId}`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`,
-          },
-          body: JSON.stringify({ addon_name: addonName, addon_price: addonPrice }),
-        });
+        const res = await fetch(
+          `${
+            import.meta.env.VITE_APP_URL
+          }/server/cafeDetails/postAddon/${cafeId}`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+              addon_name: addonName,
+              addon_price: addonPrice,
+            }),
+          }
+        );
         const data = await res.json();
         if (res.ok) {
           setAddons((prevAddons) => [...prevAddons, { addon_name: addonName, addon_price: addonPrice }]);
@@ -146,14 +164,19 @@ export function AppSidebar({ Categories, Addons, onCategoryChange, selectedCateg
 
   const handleDeleteAddon = async (addon_name) => {
     try {
-      const res = await fetch(`/server/cafeDetails/deleteAddon/${cafeId}`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({ addon_name }),
-      });
+      const res = await fetch(
+        `${
+          import.meta.env.VITE_APP_URL
+        }/server/cafeDetails/deleteAddon/${cafeId}`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ addon_name }),
+        }
+      );
 
       const data = await res.json();
       if (res.ok) {

@@ -47,7 +47,11 @@ function OrderUser() {
     useEffect(() => {
         const fetchCafeDetails = async () => {
             try {
-                const res = await fetch(`/server/cafeDetails/getCafeDetails/${cafeId}`);
+                const res = await fetch(
+                  `${
+                    import.meta.env.VITE_APP_URL
+                  }/server/cafeDetails/getCafeDetails/${cafeId}`
+                );
                 const data = await res.json();
                 if (res.ok) {
                     setCafeName(data.name);
@@ -71,7 +75,11 @@ function OrderUser() {
 
     const fetchCategoryDishes = async () => {
         try {
-            const res = await fetch(`/server/menuDetails/getMenu/${cafeId}`);
+            const res = await fetch(
+              `${
+                import.meta.env.VITE_APP_URL
+              }/server/menuDetails/getMenu/${cafeId}`
+            );
             const data = await res.json();
             if (res.ok) {
                 setDishes(data.dishes);
@@ -170,14 +178,19 @@ function OrderUser() {
         if (!complaint) return;
 
         try {
-            const res = await fetch(`/server/cafeDetails/postComplain/${cafeId}`, {
-                method: 'POST',
+            const res = await fetch(
+              `${
+                import.meta.env.VITE_APP_URL
+              }/server/cafeDetails/postComplain/${cafeId}`,
+              {
+                method: "POST",
                 headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
-                    'Content-Type': 'application/json'
+                  Authorization: `Bearer ${localStorage.getItem("token")}`,
+                  "Content-Type": "application/json",
                 },
-                body: JSON.stringify({ complaint })
-            });
+                body: JSON.stringify({ complaint }),
+              }
+            );
             const data = await res.json();
 
             if (res.ok) {

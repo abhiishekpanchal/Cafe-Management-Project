@@ -53,14 +53,17 @@ function CafeLoginForm() {
         }
 
         try {
-            const res = await fetch(`/server/cafeDetails/managerLogin`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+            const res = await fetch(
+              `${import.meta.env.VITE_APP_URL}/server/cafeDetails/managerLogin`,
+              {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    email: formData.email,
-                    pin: formData.pin.join(''), 
+                  email: formData.email,
+                  pin: formData.pin.join(""),
                 }),
-            });
+              }
+            );
 
             const data = await res.json();
 

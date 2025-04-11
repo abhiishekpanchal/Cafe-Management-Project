@@ -34,16 +34,19 @@ function CafeLoginForm() {
         }
     
         try {
-            const res = await fetch(`/server/cafeDetails/cafeLogin`, {
-                method: 'POST',
+            const res = await fetch(
+              `${import.meta.env.VITE_APP_URL}/server/cafeDetails/cafeLogin`,
+              {
+                method: "POST",
                 headers: {
-                    'Content-Type': 'application/json',
+                  "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
-                    email: formData.email,
-                    password: formData.password,
+                  email: formData.email,
+                  password: formData.password,
                 }),
-            });
+              }
+            );
     
             const data = await res.json();
     

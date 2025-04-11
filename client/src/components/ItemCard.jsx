@@ -20,8 +20,41 @@ function ItemCard({
   const { cafeId } = useParams()
   const { token } = useAuth()
 
-  const [activeDropdown, setActiveDropdown] = useState(null)
-  const [showUpdateForm, setShowUpdateForm] = useState(false)
+  const [activeDropdown, setActiveDropdown] = useState(null);
+  const [showUpdateForm, setShowUpdateForm] = useState(false);
+
+  // State for update form
+  const [updatedDishName, setUpdatedDishName] = useState(dishname);
+  const [updatedDishDescription, setUpdatedDishDescription] =
+    useState(dishdescription);
+  const [updatedDishPrice, setUpdatedDishPrice] = useState(dishprice);
+  const [updatedDishType, setUpdatedDishType] = useState(dishType);
+  const [variantsEnabled, setVariantsEnabled] = useState(
+    dishVariants && dishVariants.length > 0
+  );
+  const [updatedVariants, setUpdatedVariants] = useState(dishVariants || []);
+  const [variantName, setVariantName] = useState('');
+  const [variantPrice, setVariantPrice] = useState('');
+  const [isOpen, setIsOpen] = useState(false);
+  const [availableAddons, setAvailableAddons] = useState([]);
+  const [selectedAddons, setSelectedAddons] = useState(dishAddOns || []);
+
+  // Fetch all available addons when update form is opened
+  const fetchAddons = async () => {
+    try {
+      const res = await fetch(
+        `${
+          import.meta.env.VITE_APP_URL
+        }/server/cafeDetails/getCafeDetails/${cafeId}`
+      );
+      const data = await res.json();
+      if (res.ok && data.addons) {
+        setAvailableAddons(data.addons);
+      }
+    } catch (err) {
+      console.error('Error fetching addons:', err);
+    }
+  };
 
   const handleDropdownToggle = (dropdown) => {
     setActiveDropdown((prev) => (prev === dropdown ? null : dropdown))
@@ -34,14 +67,19 @@ function ItemCard({
     }
 
     try {
-      const response = await fetch(`/server/menuDetails/deleteDish/${cafeId}`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ dishname, dishCategory }),
-      })
+      const response = await fetch(
+        `${
+          import.meta.env.VITE_APP_URL
+        }/server/menuDetails/deleteDish/${cafeId}`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ dishname, dishCategory }),
+        }
+      );
 
       if (response.ok) {
         console.log('Dish deleted:', dishname)
@@ -55,7 +93,77 @@ function ItemCard({
     } catch (error) {
       console.error('Error deleting dish:', error)
     }
-  }
+  };
+
+  const handleUpdateDish = async (e) => {
+    e.preventDefault();
+
+    if (!token) {
+      console.error('No token found');
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `${
+          import.meta.env.VITE_APP_URL
+        }/server/menuDetails/updateDish/${cafeId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            originalDishName: dishname,
+            dishCategory,
+            updatedDish: {
+              dishName: updatedDishName,
+              dishDescription: updatedDishDescription,
+              dishPrice: updatedDishPrice,
+              dishType: updatedDishType,
+              variants: updatedVariants.map((variant) => ({
+                variantName: variant.name || variant.variantName,
+                variantPrice: variant.price || variant.variantPrice,
+              })),
+              addons: selectedAddons.map((addon) => ({
+                addOnName: addon.addon_name || addon.addOnName,
+                addOnPrice: addon.addon_price || addon.addOnPrice,
+              })),
+            },
+          }),
+        }
+      );
+
+      if (response.ok) {
+        console.log('Dish updated:', updatedDishName);
+        setShowUpdateForm(false);
+        onDelete(dishCategory); // Refresh the dish list
+      } else {
+        console.error(
+          'Failed to update dish, server responded with:',
+          response.status
+        );
+      }
+    } catch (error) {
+      console.error('Error updating dish:', error);
+    }
+  };
+
+  const addVariant = () => {
+    if (variantName && variantPrice) {
+      setUpdatedVariants([
+        ...updatedVariants,
+        { name: variantName, price: variantPrice },
+      ]);
+      setVariantName('');
+      setVariantPrice('');
+    }
+  };
+
+  const toggleDropdown = () => {
+    setIsOpen(!isOpen);
+  };
 
   const openUpdateForm = () => {
     setShowUpdateForm(true)

@@ -49,10 +49,15 @@ function AddImages({ categories, handleAddImagesPopup, cafeId }) {
     formData.append('imageFile', imageFile);
 
     try {
-      const response = await fetch(`/server/cafeDetails/uploadImages/${cafeId}`, {
-        method: 'POST',
-        body: formData,
-      });
+      const response = await fetch(
+        `${
+          import.meta.env.VITE_APP_URL
+        }/server/cafeDetails/uploadImages/${cafeId}`,
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
 
       if (response.ok) {
         setImageMessage({ type: 'success', text: "Image uploaded successfully." });
@@ -78,10 +83,15 @@ function AddImages({ categories, handleAddImagesPopup, cafeId }) {
     formData.append('bannerFile', bannerFile);
 
     try {
-      const response = await fetch(`/server/cafeDetails/uploadBanner/${cafeId}`, {
-        method: 'POST',
-        body: formData,
-      });
+      const response = await fetch(
+        `${
+          import.meta.env.VITE_APP_URL
+        }/server/cafeDetails/uploadBanner/${cafeId}`,
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
 
       if (response.ok) {
         setBannerMessage({ type: 'success', text: "Banner uploaded successfully." });
