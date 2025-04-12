@@ -249,6 +249,7 @@ export const removeItem = async (req, res) => {
     order.totalPrice -= removedItemPrice;
     if (order.orderList.length === 0) {
       await Order.findByIdAndDelete(orderId);
+
       return res.status(200).json({
         success: true,
         message: 'Order removed as it had no items left',

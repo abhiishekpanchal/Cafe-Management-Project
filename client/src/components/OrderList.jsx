@@ -90,6 +90,8 @@ export default function OrderList({ order, refetchOrders }) {
             const data = await response.json();
             types[item.dishName] = data.dishType;
           }
+          console.log(response);
+          
         } catch (error) {
           console.error(`Error fetching dish type for ${item.dishName}:`, error);
         }

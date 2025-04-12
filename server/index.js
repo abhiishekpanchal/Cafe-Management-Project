@@ -14,39 +14,40 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 mongoose
-    .connect(process.env.MONGO_DB_URL)
-    .then(() => {
-        console.log("Connected to MongoDB");
-    })
-    .catch((error) => {
-        console.log("Error connecting to MongoDB", error);
-    })
+  .connect(process.env.MONGO_DB_URL)
+  .then(() => {
+    console.log('Connected to MongoDB')
+  })
+  .catch((error) => {
+    console.log('Error connecting to MongoDB', error)
+  })
 
-    const __dirname = path.resolve();
+const __dirname = path.resolve()
 
-const app = express();
-app.use(express.json({limit: '10mb'}));
-app.use(express.urlencoded({extended: true, limit: '10mb'}));
-app.use(cors({ origin: '*' }));
-app.use(bodyParser.json());
-app.use(fileUpload({
-    useTempFiles: true, 
-    tempFileDir: '/tmp/', 
-}));
+const app = express()
+app.use(express.json({ limit: '10mb' }))
+app.use(express.urlencoded({ extended: true, limit: '10mb' }))
+app.use(cors({ origin: '*' }))
+app.use(bodyParser.json())
+app.use(
+  fileUpload({
+    useTempFiles: true,
+    tempFileDir: '/tmp/',
+  })
+)
 
+app.use('/server/cafeDetails', cafeRouter)
+app.use('/server/menuDetails', menuRouter)
+app.use('/server/orderDetails', orderRouter)
+app.use('/server/userDetails', userRouter)
+app.use('/server/inventoryDetails', inventoryRouter)
 
-app.use('/server/cafeDetails', cafeRouter);
-app.use('/server/menuDetails', menuRouter);
-app.use('/server/orderDetails', orderRouter);
-app.use('/server/userDetails', userRouter);
-app.use('/server/inventoryDetails', inventoryRouter);
-
-app.use(express.static(path.join(__dirname, '/client/dist')));
+app.use(express.static(path.join(__dirname, '/client/dist')))
 
 app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'client', 'dist', 'index.html'));
+  res.sendFile(path.join(__dirname, 'client', 'dist', 'index.html'))
 })
 
 app.listen(3000, () => {
-    console.log("Server is running on port 3000");
+  console.log('Server is running on port 3000')
 })
