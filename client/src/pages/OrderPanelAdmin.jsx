@@ -30,7 +30,7 @@ function OrderPanelAdmin() {
   const [newOrderNotification, setNewOrderNotification] = useState(false)
   const [notificationMessage, setNotificationMessage] = useState('')
 
-  const [playNotificationSound] = useSound(notificationSound, { volume: 1 })
+  const [playNotificationSound] = useSound(notificationSound, { volume: 5 })
 
   const navigate = useNavigate()
   useEffect(() => {
