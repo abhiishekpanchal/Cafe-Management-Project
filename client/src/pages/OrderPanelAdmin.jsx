@@ -21,16 +21,16 @@ function OrderPanelAdmin() {
   const [dishes, setDishes] = useState([])
   const [filteredDishes, setFilteredDishes] = useState([])
   const [ordersList, setOrdersList] = useState([])
+  const [lastFetchedOrderId, setLastFetchedOrderId] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [selectedPanel, setSelectedPanel] = useState('orders')
   const [showImagePopup, setShowImagePopup] = useState(false)
-  const [websocket, setWebsocket] = useState(null)
-  const [websocketConnected, setWebsocketConnected] = useState(false)
   const [newOrderNotification, setNewOrderNotification] = useState(false)
   const [notificationMessage, setNotificationMessage] = useState('')
+  const [isPolling, setIsPolling] = useState(true)
 
-  const [playNotificationSound] = useSound(notificationSound, { volume: 5 })
+  const [playNotificationSound] = useSound(notificationSound, { volume: 0.7 })
 
   const navigate = useNavigate()
   useEffect(() => {
@@ -38,76 +38,6 @@ function OrderPanelAdmin() {
       navigate('/', { replace: true })
     }
   }, [token, load, navigate])
-
-  useEffect(() => {
-    if (cafeId) {
-      const wsUrl = `ws://192.168.1.2:8080?cafeId=${cafeId}`
-
-      console.log('Connecting to WebSocket:', wsUrl)
-      const ws = new WebSocket(wsUrl)
-
-      ws.onopen = () => {
-        console.log('WebSocket connected for admin panel')
-        setWebsocketConnected(true)
-      }
-
-      ws.onmessage = (event) => {
-        try {
-          const message = JSON.parse(event.data)
-          console.log('WebSocket message received:', message)
-
-          if (message.type === 'ping') {
-            ws.send(JSON.stringify({ type: 'pong' }))
-          } else if (message.type === 'fetchOrders') {
-            console.log('Fetching orders due to WebSocket message')
-            fetchOrders().then((newOrders) => {
-              if (newOrders && newOrders.length > 0) {
-                const tableId = newOrders[0].tableId
-                setNotificationMessage(`New order from Table No. ${tableId}`)
-                setNewOrderNotification(true)
-                playNotificationSound()
-                setTimeout(() => setNewOrderNotification(false), 5000)
-              }
-            })
-          }
-        } catch (error) {
-          console.error('Error parsing WebSocket message:', error)
-        }
-      }
-
-      ws.onerror = (error) => {
-        console.error('WebSocket error:', error)
-        setWebsocketConnected(false)
-      }
-
-      ws.onclose = () => {
-        console.log('WebSocket disconnected')
-        setWebsocketConnected(false)
-      }
-
-      setWebsocket(ws)
-      return () => {
-        if (
-          ws &&
-          (ws.readyState === WebSocket.OPEN ||
-            ws.readyState === WebSocket.CONNECTING)
-        ) {
-          ws.close()
-        }
-      }
-    }
-  }, [cafeId, playNotificationSound])
-
-  useEffect(() => {
-    const intervalId = setInterval(() => {
-      if (!websocketConnected) {
-        console.log('Polling for orders (WebSocket unavailable)')
-        fetchOrders()
-      }
-    }, 60000)
-
-    return () => clearInterval(intervalId)
-  }, [cafeId, websocketConnected])
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -135,6 +65,7 @@ function OrderPanelAdmin() {
   }, [cafeId])
 
   const fetchOrders = async () => {
+    console.log('Fetching orders...')
     try {
       const res = await fetch(
         `${
@@ -147,31 +78,84 @@ function OrderPanelAdmin() {
         }
       )
       const data = await res.json()
+      console.log('Fetched orders data:', data)
 
       if (res.ok) {
         if (Array.isArray(data) && data.length > 0) {
           const sortedOrders = data.sort(
             (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
           )
+
+          // Check for new orders
+          const newestOrderId = sortedOrders[0]?._id
+          console.log(
+            'Newest order ID:',
+            newestOrderId,
+            'Last fetched ID:',
+            lastFetchedOrderId
+          )
+
+          if (lastFetchedOrderId && newestOrderId !== lastFetchedOrderId) {
+            // We have a new order!
+            console.log('New order detected!')
+            const tableId = sortedOrders[0].tableId
+            setNotificationMessage(`New order from Table No. ${tableId}`)
+            setNewOrderNotification(true)
+
+            console.log('Playing notification sound')
+            playNotificationSound()
+            setTimeout(() => setNewOrderNotification(false), 5000)
+          }
+
+          // Update state with the new orders
           setOrdersList(sortedOrders)
+          setLastFetchedOrderId(newestOrderId)
+          return sortedOrders
         } else {
           setOrdersList([])
+          return []
         }
       } else {
         setError(`Error: ${data.message}`)
+        return null
       }
     } catch (error) {
+      console.error('Failed to fetch orders:', error)
       setError('Failed to fetch orders')
+      return null
     }
   }
+
+  // Initial fetch of orders
+  useEffect(() => {
+    if (cafeId && token) {
+      fetchOrders()
+    }
+  }, [cafeId, token])
+
+  // Set up polling for orders
+  useEffect(() => {
+    let intervalId
+
+    if (isPolling && cafeId && token) {
+      console.log('Setting up polling interval for orders')
+      intervalId = setInterval(() => {
+        console.log('Polling for orders...')
+        fetchOrders()
+      }, 10000) // Check every 10 seconds
+    }
+
+    return () => {
+      if (intervalId) {
+        console.log('Clearing polling interval')
+        clearInterval(intervalId)
+      }
+    }
+  }, [cafeId, token, isPolling])
 
   const refetchOrders = () => {
     fetchOrders()
   }
-
-  useEffect(() => {
-    fetchOrders()
-  }, [cafeId])
 
   const handleCategoryChange = (category) => {
     setSelectedCategory(category)
@@ -264,11 +248,11 @@ function OrderPanelAdmin() {
 
   return (
     <div className="w-full min-h-full flex overflow-hidden">
-      {/* WebSocket Status Indicator */}
-      {!websocketConnected && (
+      {/* Polling Status Indicator */}
+      {!isPolling && (
         <div className="fixed bottom-4 right-4 bg-blue text-white px-4 py-2 rounded-lg shadow-lg z-50">
           <span className="mr-2">●</span>
-          Live updates unavailable
+          Live updates paused
         </div>
       )}
 
