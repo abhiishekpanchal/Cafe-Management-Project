@@ -64,9 +64,7 @@ function Dashboard({ cafeName, cafePhone, cafeAddress, cafeTables, cafeInstagram
         const fetchUsers = async () => {
             try {
                 const response = await fetch(
-                  `${
-                    import.meta.env.VITE_APP_URL
-                  }/server/userDetails/getAllUsers/${cafeId}`,
+                  `/server/userDetails/getAllUsers/${cafeId}`,
                   {
                     headers: {
                       Authorization: `Bearer ${token}`,
@@ -117,9 +115,7 @@ function Dashboard({ cafeName, cafePhone, cafeAddress, cafeTables, cafeInstagram
             if (formData.logo) form.append('logoImg', formData.logo);
 
             const response = await fetch(
-              `${
-                import.meta.env.VITE_APP_URL
-              }/server/cafeDetails/updateCafe/${cafeId}`,
+              `/server/cafeDetails/updateCafe/${cafeId}`,
               {
                 method: "PUT",
                 headers: {

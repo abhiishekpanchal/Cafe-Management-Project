@@ -48,9 +48,7 @@ function OrderUser() {
         const fetchCafeDetails = async () => {
             try {
                 const res = await fetch(
-                  `${
-                    import.meta.env.VITE_APP_URL
-                  }/server/cafeDetails/getCafeDetails/${cafeId}`
+                  `/server/cafeDetails/getCafeDetails/${cafeId}`
                 );
                 const data = await res.json();
                 if (res.ok) {
@@ -76,9 +74,7 @@ function OrderUser() {
     const fetchCategoryDishes = async () => {
         try {
             const res = await fetch(
-              `${
-                import.meta.env.VITE_APP_URL
-              }/server/menuDetails/getMenu/${cafeId}`
+              `/server/menuDetails/getMenu/${cafeId}`
             );
             const data = await res.json();
             if (res.ok) {
@@ -179,9 +175,7 @@ function OrderUser() {
 
         try {
             const res = await fetch(
-              `${
-                import.meta.env.VITE_APP_URL
-              }/server/cafeDetails/postComplain/${cafeId}`,
+              `/server/cafeDetails/postComplain/${cafeId}`,
               {
                 method: "POST",
                 headers: {

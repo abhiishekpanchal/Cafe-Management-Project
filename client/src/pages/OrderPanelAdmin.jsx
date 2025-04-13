@@ -43,9 +43,7 @@ function OrderPanelAdmin() {
     const fetchCategories = async () => {
       try {
         const res = await fetch(
-          `${
-            import.meta.env.VITE_APP_URL
-          }/server/cafeDetails/getCafeDetails/${cafeId}`
+          `/server/cafeDetails/getCafeDetails/${cafeId}`
         )
         const data = await res.json()
         if (res.ok) {
@@ -68,9 +66,7 @@ function OrderPanelAdmin() {
     console.log('Fetching orders...')
     try {
       const res = await fetch(
-        `${
-          import.meta.env.VITE_APP_URL
-        }/server/orderDetails/getOrders/${cafeId}`,
+        `/server/orderDetails/getOrders/${cafeId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -164,7 +160,7 @@ function OrderPanelAdmin() {
   const fetchCategoryDishes = async () => {
     try {
       const res = await fetch(
-        `${import.meta.env.VITE_APP_URL}/server/menuDetails/getMenu/${cafeId}`
+        `/server/menuDetails/getMenu/${cafeId}`
       )
       const data = await res.json()
       if (res.ok) {
@@ -201,9 +197,7 @@ function OrderPanelAdmin() {
 
     try {
       const response = await fetch(
-        `${
-          import.meta.env.VITE_APP_URL
-        }/server/cafeDetails/updateAddonStatus/${cafeId}`,
+        `/server/cafeDetails/updateAddonStatus/${cafeId}`,
         {
           method: 'PUT',
           headers: {

@@ -50,9 +50,7 @@ function AddImages({ categories, handleAddImagesPopup, cafeId }) {
 
     try {
       const response = await fetch(
-        `${
-          import.meta.env.VITE_APP_URL
-        }/server/cafeDetails/uploadImages/${cafeId}`,
+        `/server/cafeDetails/uploadImages/${cafeId}`,
         {
           method: "POST",
           body: formData,
@@ -84,9 +82,7 @@ function AddImages({ categories, handleAddImagesPopup, cafeId }) {
 
     try {
       const response = await fetch(
-        `${
-          import.meta.env.VITE_APP_URL
-        }/server/cafeDetails/uploadBanner/${cafeId}`,
+        `/server/cafeDetails/uploadBanner/${cafeId}`,
         {
           method: "POST",
           body: formData,

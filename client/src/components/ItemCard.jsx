@@ -43,9 +43,7 @@ function ItemCard({
   const fetchAddons = async () => {
     try {
       const res = await fetch(
-        `${
-          import.meta.env.VITE_APP_URL
-        }/server/cafeDetails/getCafeDetails/${cafeId}`
+        `/server/cafeDetails/getCafeDetails/${cafeId}`
       );
       const data = await res.json();
       if (res.ok && data.addons) {
@@ -68,9 +66,7 @@ function ItemCard({
 
     try {
       const response = await fetch(
-        `${
-          import.meta.env.VITE_APP_URL
-        }/server/menuDetails/deleteDish/${cafeId}`,
+        `/server/menuDetails/deleteDish/${cafeId}`,
         {
           method: "DELETE",
           headers: {
@@ -105,9 +101,7 @@ function ItemCard({
 
     try {
       const response = await fetch(
-        `${
-          import.meta.env.VITE_APP_URL
-        }/server/menuDetails/updateDish/${cafeId}`,
+        `/server/menuDetails/updateDish/${cafeId}`,
         {
           method: "PUT",
           headers: {

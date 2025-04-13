@@ -75,7 +75,7 @@ export default function OrderList({ order, refetchOrders }) {
         
         try {
           const response = await fetch(
-            `${import.meta.env.VITE_APP_URL}/server/menuDetails/getDishType/${
+            `/server/menuDetails/getDishType/${
               order.cafeId
             }/${encodeURIComponent(item.dishName)}`,
             {
@@ -199,7 +199,7 @@ export default function OrderList({ order, refetchOrders }) {
   const handleStatusUpdate = async (status, method = null) => {
     try {
       const response = await fetch(
-        `${import.meta.env.VITE_APP_URL}/server/cafeDetails/updateEarnings/${
+        `/server/cafeDetails/updateEarnings/${
           order.cafeId
         }`,
         {
@@ -270,9 +270,7 @@ export default function OrderList({ order, refetchOrders }) {
       setOrders(updatedOrders);
 
       const response = await fetch(
-        `${
-          import.meta.env.VITE_APP_URL
-        }/server/orderDetails/updateItemQuantity`,
+        `/server/orderDetails/updateItemQuantity`,
         {
           method: "PUT",
           headers: {
@@ -309,7 +307,7 @@ export default function OrderList({ order, refetchOrders }) {
       setActiveDropdown(null);
 
       const response = await fetch(
-        `${import.meta.env.VITE_APP_URL}/server/orderDetails/removeItem`,
+        `/server/orderDetails/removeItem`,
         {
           method: "DELETE",
           headers: {
@@ -347,7 +345,7 @@ export default function OrderList({ order, refetchOrders }) {
 
       setOrders(updatedOrders);
       const response = await fetch(
-        `${import.meta.env.VITE_APP_URL}/server/orderDetails/removeAddon`,
+        `/server/orderDetails/removeAddon`,
         {
           method: "DELETE",
           headers: {

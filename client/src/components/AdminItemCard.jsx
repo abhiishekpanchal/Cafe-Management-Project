@@ -24,9 +24,7 @@ function AdminItemCard({ dishName, dishPrice, dishType, dishCategory }) {
         const encodedDishCategory = encodeURIComponent(dishCategory);
   
         const res = await fetch(
-          `${
-            import.meta.env.VITE_APP_URL
-          }/server/menuDetails/getDishStatus/${cafeId}/${encodedDishName}/${encodedDishCategory}`,
+          `/server/menuDetails/getDishStatus/${cafeId}/${encodedDishName}/${encodedDishCategory}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -60,9 +58,7 @@ function AdminItemCard({ dishName, dishPrice, dishType, dishCategory }) {
   
     try {
       const response = await fetch(
-        `${
-          import.meta.env.VITE_APP_URL
-        }/server/menuDetails/updateDishStatus/${cafeId}`,
+        `/server/menuDetails/updateDishStatus/${cafeId}`,
         {
           method: "POST",
           headers: {

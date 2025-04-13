@@ -110,9 +110,7 @@ function CartPage() {
       )
 
       const response = await fetch(
-        `${
-          import.meta.env.VITE_APP_URL
-        }/server/orderDetails/placeOrder/${cafeId}/${tableId}`,
+        `/server/orderDetails/placeOrder/${cafeId}/${tableId}`,
         {
           method: 'POST',
           headers: {

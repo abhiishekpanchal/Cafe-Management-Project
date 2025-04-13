@@ -65,9 +65,7 @@ export function AppSidebar({ Categories, Addons, onCategoryChange, selectedCateg
     if (newCategory.trim()) {
       try {
         const res = await fetch(
-          `${
-            import.meta.env.VITE_APP_URL
-          }/server/cafeDetails/postCategory/${cafeId}`,
+          `/server/cafeDetails/postCategory/${cafeId}`,
           {
             method: "POST",
             headers: {
@@ -96,9 +94,7 @@ export function AppSidebar({ Categories, Addons, onCategoryChange, selectedCateg
   const handleDeleteCategory = async (category) => {
     try {
       const res = await fetch(
-        `${
-          import.meta.env.VITE_APP_URL
-        }/server/cafeDetails/deleteCategory/${cafeId}`,
+        `/server/cafeDetails/deleteCategory/${cafeId}`,
         {
           method: "DELETE",
           headers: {
@@ -131,9 +127,7 @@ export function AppSidebar({ Categories, Addons, onCategoryChange, selectedCateg
     if (addonName.trim()) {
       try {
         const res = await fetch(
-          `${
-            import.meta.env.VITE_APP_URL
-          }/server/cafeDetails/postAddon/${cafeId}`,
+          `/server/cafeDetails/postAddon/${cafeId}`,
           {
             method: "POST",
             headers: {
@@ -165,9 +159,7 @@ export function AppSidebar({ Categories, Addons, onCategoryChange, selectedCateg
   const handleDeleteAddon = async (addon_name) => {
     try {
       const res = await fetch(
-        `${
-          import.meta.env.VITE_APP_URL
-        }/server/cafeDetails/deleteAddon/${cafeId}`,
+        `/server/cafeDetails/deleteAddon/${cafeId}`,
         {
           method: "DELETE",
           headers: {

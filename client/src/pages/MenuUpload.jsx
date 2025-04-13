@@ -78,9 +78,7 @@ function MenuUpload() {
   
     try {
       const res = await fetch(
-        `${
-          import.meta.env.VITE_APP_URL
-        }/server/cafeDetails/getCafeDetails/${cafeId}`,
+        `/server/cafeDetails/getCafeDetails/${cafeId}`,
         {
           method: "GET",
           headers: {
@@ -130,9 +128,7 @@ function MenuUpload() {
   const fetchCategoryDishes = async (category) => {
       try {
           const res = await fetch(
-            `${
-              import.meta.env.VITE_APP_URL
-            }/server/menuDetails/getMenu/${cafeId}`
+            `/server/menuDetails/getMenu/${cafeId}`
           );
           const data = await res.json();
 
@@ -190,9 +186,7 @@ function MenuUpload() {
     if (selectedCategory) {
       try {
         const res = await fetch(
-          `${
-            import.meta.env.VITE_APP_URL
-          }/server/menuDetails/addDish/${cafeId}`,
+          `/server/menuDetails/addDish/${cafeId}`,
           {
             method: "POST",
             headers: {
@@ -286,7 +280,7 @@ function MenuUpload() {
 
     try {
         const response = await fetch(
-          "${import.meta.env.VITE_APP_URL}/server/cafeDetails/setStaffPin",
+          "/server/cafeDetails/setStaffPin",
           {
             method: "PUT",
             headers: {

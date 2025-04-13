@@ -16,9 +16,7 @@ export default function Inventory() {
   const fetchInventory = async () => {
     try {
         const res = await fetch(
-          `${
-            import.meta.env.VITE_APP_URL
-          }/server/inventoryDetails/getInventory/${cafeId}?month=${monthYear}`,
+          `/server/inventoryDetails/getInventory/${cafeId}?month=${monthYear}`,
           {
             method: "GET",
             headers: {
@@ -42,9 +40,7 @@ export default function Inventory() {
   const handleDownloadExcel = async (monthYear) => {
     try {
         const res = await fetch(
-          `${
-            import.meta.env.VITE_APP_URL
-          }/server/inventoryDetails/getInventory/${cafeId}?month=${monthYear}`,
+          `/server/inventoryDetails/getInventory/${cafeId}?month=${monthYear}`,
           {
             method: "GET",
             headers: {
@@ -111,9 +107,7 @@ export default function Inventory() {
   const handleDelete = async (itemId) => {
     try {
       const res = await fetch(
-        `${
-          import.meta.env.VITE_APP_URL
-        }/server/inventoryDetails/deleteInventory/${cafeId}?month=${monthYear}&itemId=${itemId}`,
+        `/server/inventoryDetails/deleteInventory/${cafeId}?month=${monthYear}&itemId=${itemId}`,
         {
           method: "DELETE",
           headers: {
@@ -138,9 +132,7 @@ export default function Inventory() {
 
     try {
         const res = await fetch(
-          `${
-            import.meta.env.VITE_APP_URL
-          }/server/inventoryDetails/inventorySave/${cafeId}`,
+          `/server/inventoryDetails/inventorySave/${cafeId}`,
           {
             method: "POST",
             headers: {

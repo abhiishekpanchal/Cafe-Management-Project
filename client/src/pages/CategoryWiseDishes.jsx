@@ -30,9 +30,7 @@ function CategoryWiseDishes() {
             const fetchCafeAddOns = async () => {
                 try {
                     const res = await fetch(
-                      `${
-                        import.meta.env.VITE_APP_URL
-                      }/server/cafeDetails/getCafeDetails/${cafeId}`
+                      `/server/cafeDetails/getCafeDetails/${cafeId}`
                     );
                     const data = await res.json();
                     if (res.ok) {
@@ -53,9 +51,7 @@ function CategoryWiseDishes() {
         const fetchCategoryDishes = async () => {
             try {
                 const res = await fetch(
-                  `${
-                    import.meta.env.VITE_APP_URL
-                  }/server/menuDetails/getMenu/${cafeId}`
+                  `/server/menuDetails/getMenu/${cafeId}`
                 );
                 const data = await res.json();
                 if (res.ok) {

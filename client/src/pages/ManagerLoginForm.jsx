@@ -54,7 +54,7 @@ function CafeLoginForm() {
 
         try {
             const res = await fetch(
-              `${import.meta.env.VITE_APP_URL}/server/cafeDetails/managerLogin`,
+              `/server/cafeDetails/managerLogin`,
               {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },

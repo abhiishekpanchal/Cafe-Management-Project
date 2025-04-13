@@ -18,9 +18,7 @@ function UserPage() {
     const fetchCafeDetails = async () => {
       try {
         const res = await fetch(
-          `${
-            import.meta.env.VITE_APP_URL
-          }/server/cafeDetails/getCafeDetails/${cafeId}`
+          `/server/cafeDetails/getCafeDetails/${cafeId}`
         );
         const data = await res.json();
         if (res.ok) {
@@ -45,9 +43,7 @@ function UserPage() {
 
     try {
       const res = await fetch(
-        `${
-          import.meta.env.VITE_APP_URL
-        }/server/userDetails/postUserDetails/${cafeId}`,
+        `/server/userDetails/postUserDetails/${cafeId}`,
         {
           method: "POST",
           headers: {

@@ -92,7 +92,7 @@ function CafeRegistrationForm() {
 
     try {
       const res = await fetch(
-        "${import.meta.env.VITE_APP_URL}/server/cafeDetails/cafeRegister",
+        "/server/cafeDetails/cafeRegister",
         {
           method: "POST",
           headers: {
