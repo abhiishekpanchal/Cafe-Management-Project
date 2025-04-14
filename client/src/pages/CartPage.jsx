@@ -5,6 +5,7 @@ import { FaArrowLeft } from 'react-icons/fa'
 import VegLogo from '../assets/vegLogo.png'
 import NonVegLogo from '../assets/nonvegLogo.png'
 import DownArrow from '../assets/DownArrow.png'
+import socket from '../socket'
 
 function CartPage() {
   const { cafeId, tableId, customer } = useParams()
@@ -52,19 +53,6 @@ function CartPage() {
         )
       }
     })
-  }
-
-  // Store order in localStorage to be detected by admin panel
-  const storeNewOrderNotification = () => {
-    // Store a notification in localStorage that the admin panel can check for
-    localStorage.setItem(
-      `newOrder_${cafeId}`,
-      JSON.stringify({
-        timestamp: Date.now(),
-        tableId: tableId,
-      })
-    )
-    console.log('Stored new order notification in localStorage')
   }
 
   const handlePlaceOrder = async () => {
@@ -125,11 +113,15 @@ function CartPage() {
       if (result.success) {
         localStorage.removeItem(`orderList_${cafeId}_${tableId}`)
         setOrderList([])
-
-        // Store notification for admin panel to detect
-        storeNewOrderNotification()
-
         setOrderPlaced(true)
+
+        socket.emit('newOrder', {
+          tableId,
+          cafeId,
+          order: result.order,
+          orderId: result.order._id,
+        })
+
         setIsSubmitting(false)
       } else {
         setError(

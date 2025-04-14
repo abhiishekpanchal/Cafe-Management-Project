@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useCallback } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import AdminItemCard from '../components/AdminItemCard'
 import OrderList from '../components/OrderList'
@@ -10,6 +10,7 @@ import { useAuth } from '@/auth/AuthContext.jsx'
 import Inventory from '@/components/Inventory'
 import useSound from 'use-sound'
 import notificationSound from '@/assets/notificationSound.mp3'
+import socket from '../socket'
 
 function OrderPanelAdmin() {
   const { cafeId } = useParams()
@@ -21,18 +22,17 @@ function OrderPanelAdmin() {
   const [dishes, setDishes] = useState([])
   const [filteredDishes, setFilteredDishes] = useState([])
   const [ordersList, setOrdersList] = useState([])
-  const [lastFetchedOrderId, setLastFetchedOrderId] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [selectedPanel, setSelectedPanel] = useState('orders')
   const [showImagePopup, setShowImagePopup] = useState(false)
   const [newOrderNotification, setNewOrderNotification] = useState(false)
   const [notificationMessage, setNotificationMessage] = useState('')
-  const [isPolling, setIsPolling] = useState(true)
 
   const [playNotificationSound] = useSound(notificationSound, { volume: 0.7 })
 
   const navigate = useNavigate()
+
   useEffect(() => {
     if (!load && !token) {
       navigate('/', { replace: true })
@@ -40,11 +40,63 @@ function OrderPanelAdmin() {
   }, [token, load, navigate])
 
   useEffect(() => {
+    if (!cafeId) return
+
+    console.log(`Joining cafe room: cafe_${cafeId}`)
+
+    // Join the cafe room
+    socket.emit('joinCafeRoom', cafeId)
+
+    // Listen for new orders
+    socket.on('newOrder', (data) => {
+      console.log('New order received via socket:', data)
+      if (data.cafeId === cafeId) {
+        setNotificationMessage(`New order from Table No. ${data.tableId}`)
+        setNewOrderNotification(true)
+        playNotificationSound()
+        fetchOrders()
+
+        setTimeout(() => {
+          setNewOrderNotification(false)
+        }, 5000)
+      }
+    })
+
+    // Listen for order updates
+    socket.on('orderUpdated', (data) => {
+      console.log('Order updated via socket:', data)
+      if (data.cafeId === cafeId) {
+        setNotificationMessage(`New order from Table No. ${data.tableId}`)
+        setNewOrderNotification(true)
+        playNotificationSound()
+        fetchOrders()
+        setTimeout(() => {
+          setNewOrderNotification(false)
+        }, 5000)
+      }
+    })
+
+    // Listen for order deletions
+    socket.on('orderDeleted', (data) => {
+      console.log('Order deleted via socket:', data)
+      if (data.cafeId === cafeId) {
+        fetchOrders()
+      }
+    })
+
+    // Clean up on unmount
+    return () => {
+      socket.off('newOrder')
+      socket.off('orderUpdated')
+      socket.off('orderDeleted')
+      socket.emit('leaveCafeRoom', cafeId)
+    }
+  }, [cafeId, playNotificationSound])
+
+  useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const res = await fetch(
-          `/server/cafeDetails/getCafeDetails/${cafeId}`
-        )
+        const res = await fetch(`/server/cafeDetails/getCafeDetails/${cafeId}`)
         const data = await res.json()
         if (res.ok) {
           setCafeName(data.name)
@@ -65,14 +117,11 @@ function OrderPanelAdmin() {
   const fetchOrders = async () => {
     console.log('Fetching orders...')
     try {
-      const res = await fetch(
-        `/server/orderDetails/getOrders/${cafeId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      )
+      const res = await fetch(`/server/orderDetails/getOrders/${cafeId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
       const data = await res.json()
       console.log('Fetched orders data:', data)
 
@@ -82,30 +131,7 @@ function OrderPanelAdmin() {
             (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
           )
 
-          // Check for new orders
-          const newestOrderId = sortedOrders[0]?._id
-          console.log(
-            'Newest order ID:',
-            newestOrderId,
-            'Last fetched ID:',
-            lastFetchedOrderId
-          )
-
-          if (lastFetchedOrderId && newestOrderId !== lastFetchedOrderId) {
-            // We have a new order!
-            console.log('New order detected!')
-            const tableId = sortedOrders[0].tableId
-            setNotificationMessage(`New order from Table No. ${tableId}`)
-            setNewOrderNotification(true)
-
-            console.log('Playing notification sound')
-            playNotificationSound()
-            setTimeout(() => setNewOrderNotification(false), 5000)
-          }
-
-          // Update state with the new orders
           setOrdersList(sortedOrders)
-          setLastFetchedOrderId(newestOrderId)
           return sortedOrders
         } else {
           setOrdersList([])
@@ -129,26 +155,6 @@ function OrderPanelAdmin() {
     }
   }, [cafeId, token])
 
-  // Set up polling for orders
-  useEffect(() => {
-    let intervalId
-
-    if (isPolling && cafeId && token) {
-      console.log('Setting up polling interval for orders')
-      intervalId = setInterval(() => {
-        console.log('Polling for orders...')
-        fetchOrders()
-      }, 10000) // Check every 10 seconds
-    }
-
-    return () => {
-      if (intervalId) {
-        console.log('Clearing polling interval')
-        clearInterval(intervalId)
-      }
-    }
-  }, [cafeId, token, isPolling])
-
   const refetchOrders = () => {
     fetchOrders()
   }
@@ -159,9 +165,7 @@ function OrderPanelAdmin() {
 
   const fetchCategoryDishes = async () => {
     try {
-      const res = await fetch(
-        `/server/menuDetails/getMenu/${cafeId}`
-      )
+      const res = await fetch(`/server/menuDetails/getMenu/${cafeId}`)
       const data = await res.json()
       if (res.ok) {
         setDishes(data.dishes)
@@ -242,14 +246,6 @@ function OrderPanelAdmin() {
 
   return (
     <div className="w-full min-h-full flex overflow-hidden">
-      {/* Polling Status Indicator */}
-      {!isPolling && (
-        <div className="fixed bottom-4 right-4 bg-blue text-white px-4 py-2 rounded-lg shadow-lg z-50">
-          <span className="mr-2">●</span>
-          Live updates paused
-        </div>
-      )}
-
       {/* New Order Notification */}
       {newOrderNotification && (
         <div className="fixed top-4 right-4 bg-blue text-white px-4 py-2 rounded-lg shadow-lg z-50 animate-bounce">
