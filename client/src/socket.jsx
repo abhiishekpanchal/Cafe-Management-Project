@@ -1,10 +1,13 @@
 import { io } from 'socket.io-client'
 
+const isSecure = window.location.protocol === 'https:'
+const wsProtocol = isSecure ? 'wss://' : 'ws://'
+const httpProtocol = isSecure ? 'https://' : 'http://'
+
 const socket = io(window.location.origin, {
+  secure: isSecure,
+  rejectUnauthorized: false,
   transports: ['websocket', 'polling'],
-  reconnectionAttempts: 5,
-  reconnectionDelay: 1000,
-  timeout: 20000,
 })
 
 socket.on('connect', () => {

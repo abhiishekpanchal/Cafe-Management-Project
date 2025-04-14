@@ -33,6 +33,7 @@ const io = new Server(httpServer, {
     origin: '*',
     methods: ['GET', 'POST'],
   },
+  transports: ['websocket', 'polling'],
 })
 
 io.on('connection', (socket) => {
