@@ -39,16 +39,14 @@ const io = new Server(httpServer, {
 io.on('connection', (socket) => {
   console.log('New client connected:', socket.id)
 
-  // Join a cafe room
   socket.on('joinCafeRoom', (cafeId) => {
     socket.join(`cafe_${cafeId}`)
-    console.log(`Socket ${socket.id} joined room: cafe_${cafeId}`)
+    // console.log(`Socket ${socket.id} joined room: cafe_${cafeId}`)
   })
 
-  // Leave a cafe room
   socket.on('leaveCafeRoom', (cafeId) => {
     socket.leave(`cafe_${cafeId}`)
-    console.log(`Socket ${socket.id} left room: cafe_${cafeId}`)
+    // console.log(`Socket ${socket.id} left room: cafe_${cafeId}`)
   })
 
   socket.on('disconnect', () => {

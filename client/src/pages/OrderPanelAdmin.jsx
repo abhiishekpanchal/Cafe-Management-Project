@@ -53,7 +53,9 @@ function OrderPanelAdmin() {
       if (data.cafeId === cafeId) {
         setNotificationMessage(`New order from Table No. ${data.tableId}`)
         setNewOrderNotification(true)
+
         playNotificationSound()
+
         fetchOrders()
 
         setTimeout(() => {
@@ -66,13 +68,16 @@ function OrderPanelAdmin() {
     socket.on('orderUpdated', (data) => {
       console.log('Order updated via socket:', data)
       if (data.cafeId === cafeId) {
-        setNotificationMessage(`New order from Table No. ${data.tableId}`)
-        setNewOrderNotification(true)
-        playNotificationSound()
+        if (data.type === 'UPDATED') {
+          setNotificationMessage(`Order updated for Table No. ${data.tableId}`)
+          setNewOrderNotification(true)
+          playNotificationSound()
+
+          setTimeout(() => {
+            setNewOrderNotification(false)
+          }, 5000)
+        }
         fetchOrders()
-        setTimeout(() => {
-          setNewOrderNotification(false)
-        }, 5000)
       }
     })
 
