@@ -1,15 +1,15 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import CafeRegistrationForm from './pages/CafeRegistrationForm';
-import MenuUpload from './pages/MenuUpload';
-import CafeLoginForm from './pages/CafeLoginForm';
-import ManagerLoginForm from './pages/ManagerLoginForm';
-import OrderUser from './pages/OrderUser';
-import GetQR from './pages/GetQR';
-import OrderPanelAdmin from './pages/OrderPanelAdmin';
-import CartPage from './pages/CartPage';
-import CategoryWiseDishes from './pages/CategoryWiseDishes';
-import UserPage from './pages/UserPage';
-import ProtectedRoute from './auth/ProtectedRoute.jsx';
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import CafeRegistrationForm from './pages/CafeRegistrationForm'
+import MenuUpload from './pages/MenuUpload'
+import CafeLoginForm from './pages/CafeLoginForm'
+import ManagerLoginForm from './pages/ManagerLoginForm'
+import OrderUser from './pages/OrderUser'
+import GetQR from './pages/GetQR'
+import OrderPanelAdmin from './pages/OrderPanelAdmin'
+import CartPage from './pages/CartPage'
+import CategoryWiseDishes from './pages/CategoryWiseDishes'
+import UserPage from './pages/UserPage'
+import ProtectedRoute from './auth/ProtectedRoute.jsx'
 
 function App() {
   return (
@@ -20,16 +20,20 @@ function App() {
 
         {/* CAFE REGISTRATION & MENU MANAGEMENT */}
         <Route path="register" element={<CafeRegistrationForm />} />
-        
+
         {/* PROTECTED MENU ROUTES */}
         <Route path="menu/:cafeId">
-          <Route index element={
+          <Route
+            index
+            element={
               <ProtectedRoute>
                 <MenuUpload />
               </ProtectedRoute>
             }
           />
-          <Route path="getQR" element={
+          <Route
+            path="getQR"
+            element={
               <ProtectedRoute>
                 <GetQR />
               </ProtectedRoute>
@@ -61,7 +65,7 @@ function App() {
         />
       </Routes>
     </BrowserRouter>
-  );
+  )
 }
 
-export default App;
+export default App

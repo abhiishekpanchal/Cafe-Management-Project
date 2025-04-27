@@ -1,70 +1,70 @@
-import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import NameLogo from "../assets/cafeNameLogo.png";
-import TableLogo from "../assets/tableLogo.png";
-import EmailLogo from "../assets/emailLogo.png";
-import PhoneLogo from "../assets/callLogo.png";
-import AddressLogo from "../assets/addressLogo.png";
-import PasswordLogo from "../assets/passwordLogo.png";
-import RegistrationBg from "../assets/registrationBg.png";
-import UploadLogo from "../assets/uploadLogo.png";
-import InstagramLogo from "../assets/instagramLogo.png";
+import React, { useState, useTransition } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import NameLogo from '../assets/cafeNameLogo.png'
+import TableLogo from '../assets/tableLogo.png'
+import EmailLogo from '../assets/emailLogo.png'
+import PhoneLogo from '../assets/callLogo.png'
+import AddressLogo from '../assets/addressLogo.png'
+import PasswordLogo from '../assets/passwordLogo.png'
+import RegistrationBg from '../assets/registrationBg.png'
+import UploadLogo from '../assets/uploadLogo.png'
+import InstagramLogo from '../assets/instagramLogo.png'
 
 function CafeRegistrationForm() {
-  const navigate = useNavigate();
-  const [imgFile, setImgFile] = useState("");
-  const [errorMessage, setErrorMessage] = useState("");
-  const [fileName, setFileName] = useState("upload logo (.png, .jpg, .jpeg)");
+  const navigate = useNavigate()
+  const [isPending, startTransition] = useTransition()
+  const [imgFile, setImgFile] = useState('')
+  const [errorMessage, setErrorMessage] = useState('')
+  const [fileName, setFileName] = useState('upload logo (.png, .jpg, .jpeg)')
 
   const [formData, setFormData] = useState({
-    name: "",
-    address: "",
+    name: '',
+    address: '',
     tables: 0,
-    email: "",
-    phone: "",
-    password: "",
-    confirmPassword: "",
-    instagram: "",
-    logoImg: "",
-    gstNumber: "",
-  });
+    email: '',
+    phone: '',
+    password: '',
+    confirmPassword: '',
+    instagram: '',
+    logoImg: '',
+    gstNumber: '',
+  })
 
   const handleChange = (e) => {
     setFormData({
       ...formData,
       [e.target.id]: e.target.value,
-    });
-  };
+    })
+  }
 
   const setFileToBase = (file) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
+    const reader = new FileReader()
+    reader.readAsDataURL(file)
     reader.onloadend = () => {
-      setImgFile(reader.result);
+      setImgFile(reader.result)
       setFormData((prevFormData) => ({
         ...prevFormData,
         logoImg: reader.result,
-      }));
-    };
-  };
+      }))
+    }
+  }
 
   const handleImage = (e) => {
-    const file = e.target.files[0];
+    const file = e.target.files[0]
     if (file) {
-      setFileToBase(file);
-      setFileName(file.name);
+      setFileToBase(file)
+      setFileName(file.name)
     }
-  };
+  }
 
   const isValidGSTNumber = (gst) => {
-    const gstRegex =
-      /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/;
-    return gstRegex.test(gst);
-  };
+    const gstRegex = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/
+    return gstRegex.test(gst)
+  }
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setErrorMessage("");
+    e.preventDefault()
+    setErrorMessage('')
 
     if (
       !formData.name ||
@@ -76,56 +76,54 @@ function CafeRegistrationForm() {
       !formData.confirmPassword ||
       !formData.gstNumber
     ) {
-      setErrorMessage("Please fill all the fields");
-      return;
+      setErrorMessage('Please fill all the fields')
+      return
     }
 
     if (formData.password !== formData.confirmPassword) {
-      setErrorMessage("Passwords do not match");
-      return;
+      setErrorMessage('Passwords do not match')
+      return
     }
 
     if (!isValidGSTNumber(formData.gstNumber)) {
-      setErrorMessage("Please enter a valid GST number");
-      return;
+      setErrorMessage('Please enter a valid GST number')
+      return
     }
-
-    try {
-      const res = await fetch(
-        "/server/cafeDetails/cafeRegister",
-        {
-          method: "POST",
+    startTransition(async () => {
+      try {
+        const res = await fetch('/server/cafeDetails/cafeRegister', {
+          method: 'POST',
           headers: {
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
           },
           body: JSON.stringify({
             ...formData,
             tables: parseInt(formData.tables),
             phone: parseInt(formData.phone),
           }),
+        })
+        const data = await res.json()
+        if (res.ok) {
+          localStorage.setItem('token', data.token)
+          navigate(`/menu/${data.cafeId}`)
+        } else {
+          setErrorMessage('Either mail or phone number already exists')
         }
-      );
-      const data = await res.json();
-      if (res.ok) {
-        localStorage.setItem("token", data.token);
-        navigate(`/menu/${data.cafeId}`);
-      } else {
-        setErrorMessage("Either mail or phone number already exists");
+      } catch (error) {
+        setErrorMessage('Something went wrong. Please try again.')
+        console.error('Error:', error)
       }
-    } catch (error) {
-      setErrorMessage("Something went wrong. Please try again.");
-      console.error("Error:", error);
-    }
-  };
+    })
+  }
 
   return (
     <div className="relative w-full h-screen flex justify-center items-center">
       <div
         style={{
           backgroundImage: `url(${RegistrationBg})`,
-          backgroundRepeat: "no-repeat",
-          backgroundSize: "cover",
-          filter: "invert(40%)",
+          backgroundRepeat: 'no-repeat',
+          backgroundSize: 'cover',
+          filter: 'invert(40%)',
         }}
         className="w-[100vw] h-[100vh]"
       ></div>
@@ -152,6 +150,7 @@ function CafeRegistrationForm() {
                 placeholder="cafe name"
                 className="outline-none border-l-2 pl-2 border-black w-[80%]"
                 autoComplete="off"
+                disabled={isPending}
               />
             </div>
             <div className="flex gap-1 w-[43%] items-center border-2 border-[#C6C6C6] rounded-xl">
@@ -168,6 +167,7 @@ function CafeRegistrationForm() {
                 placeholder="number of tables"
                 className="outline-none border-l-2 pl-2 border-black w-[80%]"
                 autoComplete="off"
+                disabled={isPending}
               />
             </div>
           </div>
@@ -187,6 +187,7 @@ function CafeRegistrationForm() {
                 placeholder="email"
                 className="outline-none border-l-2 pl-2 border-black w-[80%]"
                 autoComplete="off"
+                disabled={isPending}
               />
             </div>
             <div className="flex gap-1 w-[43%] items-center border-2 border-[#C6C6C6] rounded-xl">
@@ -205,6 +206,7 @@ function CafeRegistrationForm() {
                 placeholder="contact number"
                 className="outline-none border-l-2 pl-2 border-black w-[80%]"
                 autoComplete="off"
+                disabled={isPending}
               />
             </div>
           </div>
@@ -223,6 +225,7 @@ function CafeRegistrationForm() {
               placeholder="cafe address"
               className="outline-none border-l-2 pl-2 border-black w-[80%]"
               autoComplete="off"
+              disabled={isPending}
             />
           </div>
 
@@ -248,7 +251,8 @@ function CafeRegistrationForm() {
               placeholder="GST number"
               className="outline-none border-l-2 pl-2 border-black w-[80%]"
               autoComplete="off"
-              style={{ textTransform: "uppercase" }}
+              style={{ textTransform: 'uppercase' }}
+              disabled={isPending}
             />
           </div>
 
@@ -267,6 +271,7 @@ function CafeRegistrationForm() {
                 placeholder="password"
                 className="outline-none border-l-2 pl-2 border-black w-[80%]"
                 autoComplete="off"
+                disabled={isPending}
               />
             </div>
             <div className="flex gap-1 w-[43%] items-center border-2 border-[#C6C6C6] rounded-xl">
@@ -283,6 +288,7 @@ function CafeRegistrationForm() {
                 placeholder="confirm password"
                 className="outline-none border-l-2 pl-2 border-black w-[80%]"
                 autoComplete="off"
+                disabled={isPending}
               />
             </div>
           </div>
@@ -302,6 +308,7 @@ function CafeRegistrationForm() {
                 placeholder="instagram handle"
                 className="outline-none border-l-2 pl-2 border-black w-[80%]"
                 autoComplete="off"
+                disabled={isPending}
               />
             </div>
             <div className="flex gap-1 w-[43%] items-center border-2 border-[#C6C6C6] rounded-xl cursor-pointer">
@@ -318,6 +325,7 @@ function CafeRegistrationForm() {
                 placeholder="logo"
                 className="outline-non hidden"
                 autoComplete="off"
+                disabled={isPending}
               />
               <label
                 htmlFor="cafeLogo"
@@ -335,8 +343,11 @@ function CafeRegistrationForm() {
           )}
 
           <div className="w-full flex justify-center">
-            <button className="border-2 border-blue rounded-xl w-[45%] text-xl p-1 shadow-[0_0_7.6px_0_#0158A133]">
-              Register
+            <button
+              disabled={isPending}
+              className="border-2 border-blue rounded-xl w-[45%] text-xl p-1 shadow-[0_0_7.6px_0_#0158A133]"
+            >
+              {isPending ? 'Registering...' : 'Register'}
             </button>
           </div>
         </form>
@@ -351,7 +362,7 @@ function CafeRegistrationForm() {
         </div>
       </div>
     </div>
-  );
+  )
 }
 
-export default CafeRegistrationForm;
+export default CafeRegistrationForm

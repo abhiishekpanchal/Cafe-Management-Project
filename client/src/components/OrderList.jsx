@@ -1,12 +1,12 @@
 import { useAuth } from '@/auth/AuthContext'
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useTransition } from 'react'
 import { RiArrowDropDownLine } from 'react-icons/ri'
 import { FaCheck, FaTimes, FaPrint } from 'react-icons/fa'
 import UPILogo from '../assets/UPI.png'
 import WalletLogo from '../assets/wallet.png'
 import CreditCardLogo from '../assets/credit-card.png'
 import { useReactToPrint } from 'react-to-print'
-
+import OrderListSkeleton from './skeleton/OrderListSkeleton'
 export default function OrderList({ order, refetchOrders }) {
   const [orders, setOrders] = useState([...order.orderList])
   const { token, load } = useAuth()
@@ -15,6 +15,7 @@ export default function OrderList({ order, refetchOrders }) {
   const [showRemoveAddon, setShowRemoveAddon] = useState(null)
   const [dropdownStatus, setDropdownStatus] = useState(null)
   const [dishTypes, setDishTypes] = useState({})
+  const [isPending, startTransition] = useTransition()
   // Refs for print components
   const kitchenTicketRef = useRef(null)
   const billRef = useRef(null)
@@ -68,35 +69,40 @@ export default function OrderList({ order, refetchOrders }) {
 
   useEffect(() => {
     const fetchDishTypes = async () => {
-      const types = {}
+      startTransition(async () => {
+        const types = {}
 
-      const promises = orders.map(async (item) => {
-        if (types[item.dishName]) return
+        const promises = orders.map(async (item) => {
+          if (types[item.dishName]) return
 
-        try {
-          const response = await fetch(
-            `/server/menuDetails/getDishType/${
-              order.cafeId
-            }/${encodeURIComponent(item.dishName)}`,
-            {
-              method: 'GET',
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
+          try {
+            const response = await fetch(
+              `/server/menuDetails/getDishType/${
+                order.cafeId
+              }/${encodeURIComponent(item.dishName)}`,
+              {
+                method: 'GET',
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                },
+              }
+            )
+
+            if (response.ok) {
+              const data = await response.json()
+              types[item.dishName] = data.dishType
             }
-          )
-
-          if (response.ok) {
-            const data = await response.json()
-            types[item.dishName] = data.dishType
+          } catch (error) {
+            console.error(
+              `Error fetching dish type for ${item.dishName}:`,
+              error
+            )
           }
-        } catch (error) {
-          console.error(`Error fetching dish type for ${item.dishName}:`, error)
-        }
-      })
+        })
 
-      await Promise.all(promises)
-      setDishTypes(types)
+        await Promise.all(promises)
+        setDishTypes(types)
+      })
     }
 
     if (orders.length > 0) {
@@ -379,6 +385,10 @@ export default function OrderList({ order, refetchOrders }) {
     }
   }
 
+  // if (isPending) {
+  //   return <OrderListSkeleton />
+  // }
+
   return (
     <div className="flex flex-col gap-1 bg-[#0158A11A] rounded-xl py-3.5 min-w-[40vw] max-w-[50vw] flex-1">
       <div className="flex justify-between items-center px-3.5">
@@ -427,142 +437,182 @@ export default function OrderList({ order, refetchOrders }) {
               </tr>
             </thead>
             <tbody>
-              {orders.map((item, index) => (
-                <tr
-                  key={index}
-                  className="border-b border-white border-opacity-20"
-                >
-                  <td className="px-3 py-3">
-                    <div className="font-semibold flex items-center">
-                      {item.dishName}
-                      {item.dishVariants && item.dishVariants.variantName && (
-                        <div className="text-sm">
-                          ({item.dishVariants.variantName})
-                        </div>
-                      )}
-                      {dishTypes[item.dishName] === 'VEG' ? (
-                        <span className="ml-2 w-3 h-3 bg-green rounded-full"></span>
-                      ) : (
-                        <span className="ml-2 w-3 h-3 bg-red rounded-full"></span>
-                      )}
-                    </div>
-                    {item.dishAddOns && item.dishAddOns.length > 0 && (
-                      <div
-                        className="flex flex-wrap gap-1 mt-1 relative"
-                        onClick={() =>
-                          item.status !== 'paid' && toggleShowRemoveAddon(index)
-                        }
+              {isPending
+                ? Array(2)
+                    .fill(0)
+                    .map((_, idx) => (
+                      <tr
+                        key={idx}
+                        className="border-b border-white border-opacity-20"
                       >
-                        {item.dishAddOns.map((addon, idx) => (
-                          <span
-                            key={idx}
-                            className="text-xs border-2 border-blue bg-white rounded-full px-2 py-0.5 flex items-center"
-                          >
-                            {addon.addOnName}
-                            {showRemoveAddon === index &&
-                              item.status !== 'paid' && (
-                                <button
-                                  onClick={(e) => removeAddon(e, index, idx)}
-                                  className="ml-1 text-red-500"
-                                >
-                                  <FaTimes size={10} />
-                                </button>
-                              )}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                  </td>
-                  <td className="text-center relative">
-                    <div
-                      className={`inline-flex items-center justify-center ${
-                        item.status !== 'paid' ? 'cursor-pointer' : ''
-                      }`}
-                      onClick={() => toggleDropdown(index)}
-                    >
-                      <span
-                        className={`px-1 py-1 rounded-md text-sm font-medium ${
-                          item.status === 'pending'
-                            ? 'text-yellow-400'
-                            : item.status === 'preparing'
-                            ? 'text-green'
-                            : 'text-white'
-                        }`}
-                      >
-                        {item.status === 'pending'
-                          ? 'New'
-                          : item.status === 'preparing'
-                          ? 'Preparing'
-                          : 'Paid'}
-                      </span>
-                      {item.status !== 'paid' && (
-                        <span>
-                          <RiArrowDropDownLine size={28} />
-                        </span>
-                      )}
-                    </div>
-                    {activeDropdown === index && item.status !== 'paid' && (
-                      <div className="absolute left-1/2 transform -translate-x-1/2 top-full mt-1 bg-white rounded-3xl shadow-lg z-10 w-52">
-                        {item.status === 'pending' && (
-                          <>
-                            <div
-                              className="px-4 py-3 font-medium text-green-600 border-b cursor-pointer hover:bg-gray-50 w-full text-green text-left"
-                              onClick={() =>
-                                updateItemStatus(index, 'preparing')
-                              }
-                            >
-                              Preparing
-                            </div>
-
-                            <hr className="h-0.5 bg-user_blue" />
-                          </>
-                        )}
-                        <div className="border-b w-full">
-                          <div className="px-4 py-3 flex items-center justify-between">
-                            <span>Qty :</span>
-                            <div className="flex items-center border rounded-full bg-blue text-white">
-                              <button
-                                onClick={(e) =>
-                                  updateItemQuantity(
-                                    e,
-                                    index,
-                                    item.quantity - 1
-                                  )
-                                }
-                                className="px-2 py-0.5 bg-gray-200 text-gray-700 rounded-l-md"
-                              >
-                                -
-                              </button>
-                              <span className="px-3">{item.quantity}</span>
-                              <button
-                                onClick={(e) =>
-                                  updateItemQuantity(
-                                    e,
-                                    index,
-                                    item.quantity + 1
-                                  )
-                                }
-                                className="px-2 py-0.5 bg-gray-200 text-gray-700 rounded-r-md"
-                              >
-                                +
-                              </button>
+                        <td className="px-3 py-3">
+                          <div>
+                            <Skeleton height={20} width="90%" />
+                            <div className="flex flex-wrap gap-1 mt-1">
+                              <Skeleton
+                                height={16}
+                                width={60}
+                                borderRadius={20}
+                              />
+                              <Skeleton
+                                height={16}
+                                width={70}
+                                borderRadius={20}
+                              />
                             </div>
                           </div>
+                        </td>
+                        <td className="text-center relative">
+                          <Skeleton height={24} width={80} borderRadius={6} />
+                        </td>
+                        <td className="text-center">
+                          <Skeleton height={20} width={20} />
+                        </td>
+                        <td className="text-right px-3">
+                          <Skeleton height={20} width={60} />
+                        </td>
+                      </tr>
+                    ))
+                : orders.map((item, index) => (
+                    <tr
+                      key={index}
+                      className="border-b border-white border-opacity-20"
+                    >
+                      <td className="px-3 py-3">
+                        <div className="font-semibold flex items-center">
+                          {item.dishName}
+                          {item.dishVariants &&
+                            item.dishVariants.variantName && (
+                              <div className="text-sm">
+                                ({item.dishVariants.variantName})
+                              </div>
+                            )}
+                          {dishTypes[item.dishName] === 'VEG' ? (
+                            <span className="ml-2 w-3 h-3 bg-green rounded-full"></span>
+                          ) : (
+                            <span className="ml-2 w-3 h-3 bg-red rounded-full"></span>
+                          )}
                         </div>
-                        <hr className="h-0.5 bg-user_blue" />
+                        {item.dishAddOns && item.dishAddOns.length > 0 && (
+                          <div
+                            className="flex flex-wrap gap-1 mt-1 relative"
+                            onClick={() =>
+                              item.status !== 'paid' &&
+                              toggleShowRemoveAddon(index)
+                            }
+                          >
+                            {item.dishAddOns.map((addon, idx) => (
+                              <span
+                                key={idx}
+                                className="text-xs border-2 border-blue bg-white rounded-full px-2 py-0.5 flex items-center"
+                              >
+                                {addon.addOnName}
+                                {showRemoveAddon === index &&
+                                  item.status !== 'paid' && (
+                                    <button
+                                      onClick={(e) =>
+                                        removeAddon(e, index, idx)
+                                      }
+                                      className="ml-1 text-red-500"
+                                    >
+                                      <FaTimes size={10} />
+                                    </button>
+                                  )}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </td>
+                      <td className="text-center relative">
                         <div
-                          className="px-4 py-3 text-red text-left font-medium text-red-600 cursor-pointer hover:bg-gray-50 w-full"
-                          onClick={(e) => removeItem(e, index)}
+                          className={`inline-flex items-center justify-center ${
+                            item.status !== 'paid' ? 'cursor-pointer' : ''
+                          }`}
+                          onClick={() => toggleDropdown(index)}
                         >
-                          Remove
+                          <span
+                            className={`px-1 py-1 rounded-md text-sm font-medium ${
+                              item.status === 'pending'
+                                ? 'text-yellow-400'
+                                : item.status === 'preparing'
+                                ? 'text-green'
+                                : 'text-white'
+                            }`}
+                          >
+                            {item.status === 'pending'
+                              ? 'New'
+                              : item.status === 'preparing'
+                              ? 'Preparing'
+                              : 'Paid'}
+                          </span>
+                          {item.status !== 'paid' && (
+                            <span>
+                              <RiArrowDropDownLine size={28} />
+                            </span>
+                          )}
                         </div>
-                      </div>
-                    )}
-                  </td>
-                  <td className="text-center">{item.quantity}</td>
-                  <td className="text-right px-3">Rs. {item.price}</td>
-                </tr>
-              ))}
+                        {activeDropdown === index && item.status !== 'paid' && (
+                          <div className="absolute left-1/2 transform -translate-x-1/2 top-full mt-1 bg-white rounded-3xl shadow-lg z-10 w-52">
+                            {item.status === 'pending' && (
+                              <>
+                                <div
+                                  className="px-4 py-3 font-medium text-green-600 border-b cursor-pointer hover:bg-gray-50 w-full text-green text-left"
+                                  onClick={() =>
+                                    updateItemStatus(index, 'preparing')
+                                  }
+                                >
+                                  Preparing
+                                </div>
+
+                                <hr className="h-0.5 bg-user_blue" />
+                              </>
+                            )}
+                            <div className="border-b w-full">
+                              <div className="px-4 py-3 flex items-center justify-between">
+                                <span>Qty :</span>
+                                <div className="flex items-center border rounded-full bg-blue text-white">
+                                  <button
+                                    onClick={(e) =>
+                                      updateItemQuantity(
+                                        e,
+                                        index,
+                                        item.quantity - 1
+                                      )
+                                    }
+                                    className="px-2 py-0.5 bg-gray-200 text-gray-700 rounded-l-md"
+                                  >
+                                    -
+                                  </button>
+                                  <span className="px-3">{item.quantity}</span>
+                                  <button
+                                    onClick={(e) =>
+                                      updateItemQuantity(
+                                        e,
+                                        index,
+                                        item.quantity + 1
+                                      )
+                                    }
+                                    className="px-2 py-0.5 bg-gray-200 text-gray-700 rounded-r-md"
+                                  >
+                                    +
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                            <hr className="h-0.5 bg-user_blue" />
+                            <div
+                              className="px-4 py-3 text-red text-left font-medium text-red-600 cursor-pointer hover:bg-gray-50 w-full"
+                              onClick={(e) => removeItem(e, index)}
+                            >
+                              Remove
+                            </div>
+                          </div>
+                        )}
+                      </td>
+                      <td className="text-center">{item.quantity}</td>
+                      <td className="text-right px-3">Rs. {item.price}</td>
+                    </tr>
+                  ))}
             </tbody>
           </table>
         </div>

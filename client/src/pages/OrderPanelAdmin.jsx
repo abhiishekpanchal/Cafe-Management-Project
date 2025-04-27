@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react'
+import React, { useEffect, useState, useCallback, useTransition } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import AdminItemCard from '../components/AdminItemCard'
 import OrderList from '../components/OrderList'
@@ -11,7 +11,7 @@ import Inventory from '@/components/Inventory'
 import useSound from 'use-sound'
 import notificationSound from '@/assets/notificationSound.mp3'
 import socket from '../socket'
-
+import OrderListSkeleton from '@/components/skeleton/OrderListSkeleton'
 function OrderPanelAdmin() {
   const { cafeId } = useParams()
   const { token, load } = useAuth()
@@ -28,7 +28,7 @@ function OrderPanelAdmin() {
   const [showImagePopup, setShowImagePopup] = useState(false)
   const [newOrderNotification, setNewOrderNotification] = useState(false)
   const [notificationMessage, setNotificationMessage] = useState('')
-
+  const [isPending, startTransition] = useTransition()
   const [playNotificationSound] = useSound(notificationSound, { volume: 0.7 })
 
   const navigate = useNavigate()
@@ -121,36 +121,38 @@ function OrderPanelAdmin() {
 
   const fetchOrders = async () => {
     console.log('Fetching orders...')
-    try {
-      const res = await fetch(`/server/orderDetails/getOrders/${cafeId}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
-      const data = await res.json()
-      console.log('Fetched orders data:', data)
+    startTransition(async () => {
+      try {
+        const res = await fetch(`/server/orderDetails/getOrders/${cafeId}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
+        const data = await res.json()
+        console.log('Fetched orders data:', data)
 
-      if (res.ok) {
-        if (Array.isArray(data) && data.length > 0) {
-          const sortedOrders = data.sort(
-            (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
-          )
+        if (res.ok) {
+          if (Array.isArray(data) && data.length > 0) {
+            const sortedOrders = data.sort(
+              (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+            )
 
-          setOrdersList(sortedOrders)
-          return sortedOrders
+            setOrdersList(sortedOrders)
+            return sortedOrders
+          } else {
+            setOrdersList([])
+            return []
+          }
         } else {
-          setOrdersList([])
-          return []
+          setError(`Error: ${data.message}`)
+          return null
         }
-      } else {
-        setError(`Error: ${data.message}`)
+      } catch (error) {
+        console.error('Failed to fetch orders:', error)
+        setError('Failed to fetch orders')
         return null
       }
-    } catch (error) {
-      console.error('Failed to fetch orders:', error)
-      setError('Failed to fetch orders')
-      return null
-    }
+    })
   }
 
   // Initial fetch of orders
@@ -295,7 +297,9 @@ function OrderPanelAdmin() {
                       <div key={index}>{word}</div>
                     ))}
                   </div>
-                  {ordersList.length > 0 ? (
+                  {isPending ? (
+                    <OrderListSkeleton />
+                  ) : ordersList.length > 0 ? (
                     ordersList.map((order, index) => (
                       <OrderList
                         key={index}
