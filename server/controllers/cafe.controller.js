@@ -568,3 +568,47 @@ export const fileComplaint = async (req, res) => {
     res.status(500).json({ message: "Server error, unable to file complaint" });
   }
 };
+
+export const getGstNumber = async (req, res) => {
+  try {
+    const { cafeId } = req.params;
+    
+    if (!cafeId) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Cafe ID is required' 
+      });
+    }
+    const cafe = await Cafe.findById(cafeId).select('gstNumber name');
+    
+    if (!cafe) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Cafe not found' 
+      });
+    }
+
+    if (!cafe.gstNumber) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'GST number not found for this cafe' 
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: {
+        gstNumber: cafe.gstNumber,
+        cafeName: cafe.name
+      }
+    });
+
+  } catch (error) {
+    console.error('Error fetching GST number:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Internal server error',
+      error: error.message 
+    });
+  }
+}

@@ -1,5 +1,5 @@
 import express from 'express';
-import { addAddon, addCategory, cafeLogin, cafeRegister, deleteAddon, deleteCategory, fileComplaint, getCafeDetails, managerLogin, setStaffPin, updateAddOnStatus, updateCafeDetails, updateEarnings, uploadBanner, uploadImages } from '../controllers/cafe.controller.js';
+import { addAddon, addCategory, cafeLogin, cafeRegister, deleteAddon, deleteCategory, fileComplaint, getCafeDetails, managerLogin, setStaffPin, updateAddOnStatus, updateCafeDetails, updateEarnings, uploadBanner, uploadImages, getGstNumber } from '../controllers/cafe.controller.js';
 import { authenticateJWT } from '../middlewares/auth.middleware.js';
 
 const router = express.Router();
@@ -19,5 +19,5 @@ router.put('/updateAddonStatus/:cafeId', authenticateJWT, updateAddOnStatus);
 router.post('/uploadImages/:cafeId', uploadImages);
 router.post('/uploadBanner/:cafeId', uploadBanner);
 router.post('/postComplain/:cafeId', fileComplaint);
-
+router.get('/getGSTNumber/:cafeId', getGstNumber)
 export default router;

@@ -49,9 +49,13 @@ const KitchenTicket = React.forwardRef(({ order, orders, dishTypes }, ref) => (
 ));
 KitchenTicket.displayName = "KitchenTicket";
 
-const Bill = React.forwardRef(({ order, orders, totalPrice }, ref) => (
+const Bill = React.forwardRef(({ order, orders, totalPrice, gstNumber, cafeName }, ref) => (
   <div ref={ref} className="p-4 font-sans w-full max-w-md mx-auto">
     <div className="text-center font-bold text-lg mb-2">BILL</div>
+    <div className="text-center mb-2">{cafeName}</div>
+    {gstNumber && (
+      <div className="text-center mb-2 text-sm">GST No: {gstNumber}</div>
+    )}
     <div className="text-center mb-4">Order #{order._id.slice(-6)}</div>
     <div className="text-center mb-2">Table: {order.tableId}</div>
     <div className="text-center mb-4">Customer: {order.customer}</div>
@@ -105,6 +109,8 @@ export default function OrderList({ order, refetchOrders }) {
   const [dishTypes, setDishTypes] = useState({});
   const [isPrintReady, setIsPrintReady] = useState(false);
   const [printError, setPrintError] = useState(null);
+  const [gstNumber, setGstNumber] = useState('');
+  const [cafeName, setCafeName] = useState('');
 
   const kitchenTicketRef = useRef(null);
   const billRef = useRef(null);
@@ -177,11 +183,38 @@ export default function OrderList({ order, refetchOrders }) {
     setIsPrinting(true);
   };
 
-  const triggerBillPrint = () => {
+  const fetchGSTNumber = async () => {
+    try {
+      const response = await fetch(
+        `/server/cafeDetails/getGSTNumber/${order.cafeId}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        setGstNumber(data.data.gstNumber);
+        setCafeName(data.data.cafeName);
+      } else {
+        console.warn("GST number not found:", data.message);
+      }
+    } catch (error) {
+      console.error("Error fetching GST number:", error);
+    } 
+  };
+
+  const triggerBillPrint = async () => {
     if (!order?._id || orders.length === 0) {
       setPrintError("Order data not ready for printing");
       return;
     }
+    await fetchGSTNumber();
     setPrintType("bill");
     setIsPrinting(true);
   };
@@ -486,6 +519,8 @@ export default function OrderList({ order, refetchOrders }) {
           order={order}
           orders={orders}
           totalPrice={totalPrice}
+          gstNumber={gstNumber}
+          cafeName={cafeName}
         />
       </div>
 
