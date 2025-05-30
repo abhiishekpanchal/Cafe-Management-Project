@@ -1,5 +1,5 @@
 import { useAuth } from "@/auth/AuthContext";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { RiArrowDropDownLine } from "react-icons/ri";
 import { FaCheck, FaTimes, FaPrint } from "react-icons/fa";
 import UPILogo from "../assets/UPI.png";
@@ -7,9 +7,8 @@ import WalletLogo from "../assets/wallet.png";
 import CreditCardLogo from "../assets/credit-card.png";
 import { useReactToPrint } from "react-to-print";
 
-// Kitchen Ticket Component (defined outside the main component)
 const KitchenTicket = React.forwardRef(({ order, orders, dishTypes }, ref) => (
-  <div ref={ref} className="p-4 font-sans">
+  <div ref={ref} className="p-4 font-sans w-full max-w-md mx-auto">
     <div className="text-center font-bold text-lg mb-2">KITCHEN TICKET</div>
     <div className="text-center mb-4">Order #{order._id.slice(-6)}</div>
     <div className="text-center mb-2">Table: {order.tableId}</div>
@@ -49,9 +48,9 @@ const KitchenTicket = React.forwardRef(({ order, orders, dishTypes }, ref) => (
   </div>
 ));
 KitchenTicket.displayName = "KitchenTicket";
-// Bill Component (defined outside the main component)
+
 const Bill = React.forwardRef(({ order, orders, totalPrice }, ref) => (
-  <div ref={ref} className="p-4 font-sans">
+  <div ref={ref} className="p-4 font-sans w-full max-w-md mx-auto">
     <div className="text-center font-bold text-lg mb-2">BILL</div>
     <div className="text-center mb-4">Order #{order._id.slice(-6)}</div>
     <div className="text-center mb-2">Table: {order.tableId}</div>
@@ -104,50 +103,93 @@ export default function OrderList({ order, refetchOrders }) {
   const [showRemoveAddon, setShowRemoveAddon] = useState(null);
   const [dropdownStatus, setDropdownStatus] = useState(null);
   const [dishTypes, setDishTypes] = useState({});
+  const [isPrintReady, setIsPrintReady] = useState(false);
+  const [printError, setPrintError] = useState(null);
 
-  // Refs for print components
   const kitchenTicketRef = useRef(null);
   const billRef = useRef(null);
 
-  const handlePrintKitchenTicket = useReactToPrint({
-    content: () => kitchenTicketRef.current,
-    pageStyle: `
-      @page { size: auto; margin: 5mm; }
-      @media print {
-        body { -webkit-print-color-adjust: exact; }
-        .no-print { display: none !important; }
-      }
-    `,
-    onBeforeGetContent: () => {
-      if (!kitchenTicketRef.current) {
-        console.error("Kitchen ticket ref not found");
-        return Promise.reject("Nothing to print");
-      }
-      return Promise.resolve();
-    },
-  });
+  // State to control print rendering
+  const [isPrinting, setIsPrinting] = useState(false);
+  const [printType, setPrintType] = useState(null);
 
-  const handlePrintBill = useReactToPrint({
-    content: () => billRef.current,
-    pageStyle: `
-      @page { size: auto; margin: 5mm; }
-      @media print {
-        body { -webkit-print-color-adjust: exact; }
-        .no-print { display: none !important; }
-      }
-    `,
-    onBeforeGetContent: () => {
-      if (!billRef.current) {
-        console.error("Bill ref not found");
-        return Promise.reject("Nothing to print");
-      }
-      return Promise.resolve();
-    },
-  });
+  // Print handlers
+  const handlePrint = useCallback(() => {
+    if (!printType) return;
+
+    setIsPrinting(false);
+    const content =
+      printType === "kitchen" ? kitchenTicketRef.current : billRef.current;
+
+    if (!content) {
+      setPrintError(`Failed to generate ${printType} ticket`);
+      return;
+    }
+
+    const iframe = document.createElement("iframe");
+    iframe.style.position = "absolute";
+    iframe.style.width = "0px";
+    iframe.style.height = "0px";
+    iframe.style.border = "none";
+
+    document.body.appendChild(iframe);
+    const printDocument = iframe.contentWindow.document;
+    printDocument.open();
+    printDocument.write(`
+      <html>
+        <head>
+          <title>${printType === "kitchen" ? "Kitchen Ticket" : "Bill"}</title>
+          <style>
+            @page { size: auto; margin: 5mm; }
+            body { font-family: sans-serif; }
+          </style>
+        </head>
+        <body>
+          ${content.innerHTML}
+        </body>
+      </html>
+    `);
+    printDocument.close();
+
+    iframe.contentWindow.focus();
+    iframe.contentWindow.print();
+
+    setTimeout(() => {
+      document.body.removeChild(iframe);
+      setPrintType(null);
+    }, 500);
+  }, [printType]);
+  useEffect(() => {
+    if (isPrinting && printType) {
+      handlePrint();
+    }
+  }, [isPrinting, printType, handlePrint]);
+
+  // ... your existing useEffect hooks ...
+
+  // Simplified print trigger functions
+  const triggerKitchenPrint = () => {
+    if (!order?._id || orders.length === 0) {
+      setPrintError("Order data not ready for printing");
+      return;
+    }
+    setPrintType("kitchen");
+    setIsPrinting(true);
+  };
+
+  const triggerBillPrint = () => {
+    if (!order?._id || orders.length === 0) {
+      setPrintError("Order data not ready for printing");
+      return;
+    }
+    setPrintType("bill");
+    setIsPrinting(true);
+  };
 
   useEffect(() => {
     setOrders([...order.orderList]);
     setTotalPrice(order.totalPrice);
+    setIsPrintReady(!!order._id && order.orderList.length > 0);
   }, [order]);
 
   useEffect(() => {
@@ -395,16 +437,26 @@ export default function OrderList({ order, refetchOrders }) {
         </div>
         <div className="flex gap-2">
           <button
-            onClick={handlePrintKitchenTicket}
-            className="bg-blue-500 text-white px-3 py-2 rounded-xl hover:bg-blue-600 flex items-center gap-2"
+            onClick={triggerKitchenPrint}
+            disabled={!isPrintReady}
+            className={`bg-blue-500 text-white px-3 py-2 rounded-xl flex items-center gap-2 ${
+              isPrintReady
+                ? "hover:bg-blue-600"
+                : "opacity-50 cursor-not-allowed"
+            }`}
           >
             <FaPrint size={16} />
             <span>Kitchen Ticket</span>
           </button>
 
           <button
-            onClick={handlePrintBill}
-            className="bg-green-500 text-white px-3 py-2 rounded-xl hover:bg-green-600 flex items-center gap-2"
+            onClick={triggerBillPrint}
+            disabled={!isPrintReady}
+            className={`bg-green-500 text-white px-3 py-2 rounded-xl flex items-center gap-2 ${
+              isPrintReady
+                ? "hover:bg-green-600"
+                : "opacity-50 cursor-not-allowed"
+            }`}
           >
             <FaPrint size={16} />
             <span>Print Bill</span>
@@ -412,8 +464,17 @@ export default function OrderList({ order, refetchOrders }) {
         </div>
       </div>
 
+      {printError && (
+        <div className="px-3.5 text-red-500 text-sm">{printError}</div>
+      )}
+
       {/* Hidden components for printing */}
-      <div style={{ display: "none" }}>
+      {printError && (
+        <div className="px-3.5 text-red-500 text-sm">{printError}</div>
+      )}
+
+      {/* Always render print components but keep them hidden */}
+      <div className="hidden">
         <KitchenTicket
           ref={kitchenTicketRef}
           order={order}
