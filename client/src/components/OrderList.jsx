@@ -472,7 +472,7 @@ export default function OrderList({ order, refetchOrders }) {
           <button
             onClick={triggerKitchenPrint}
             disabled={!isPrintReady}
-            className={`bg-blue-500 text-white px-3 py-2 rounded-xl flex items-center gap-2 ${
+            className={`bg-blue-500 text-black px-3 py-2 rounded-xl flex items-center gap-2 ${
               isPrintReady
                 ? "hover:bg-blue-600"
                 : "opacity-50 cursor-not-allowed"
@@ -485,7 +485,7 @@ export default function OrderList({ order, refetchOrders }) {
           <button
             onClick={triggerBillPrint}
             disabled={!isPrintReady}
-            className={`bg-green-500 text-white px-3 py-2 rounded-xl flex items-center gap-2 ${
+            className={`bg-green-500 text-black px-3 py-2 rounded-xl flex items-center gap-2 ${
               isPrintReady
                 ? "hover:bg-green-600"
                 : "opacity-50 cursor-not-allowed"

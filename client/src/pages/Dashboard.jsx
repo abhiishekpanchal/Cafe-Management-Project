@@ -176,7 +176,7 @@ function Dashboard({ cafeName, cafePhone, cafeAddress, cafeTables, cafeInstagram
                     <div className='flex justify-around h-full px-4'>
                         <div className='flex flex-col justify-start gap-2 w-[65%] mt-3 text-sm'>
                             {data.map((info, index) => (
-                                <div key={index} className='flex gap-6 w-full'>
+                                <div key={index} className='flex gap-2 w-full'>
                                     <div className='w-1/4'>{info.title}:</div>
                                     {editable ? (
                                         <input
@@ -186,7 +186,7 @@ function Dashboard({ cafeName, cafePhone, cafeAddress, cafeTables, cafeInstagram
                                             className='p-0.5 pl-1 -ml-2 mr-0.5 rounded-lg outline-none'
                                         />
                                     ) : (
-                                        <div>{info.val}</div>
+                                        <div className='w-3/4 text-left overflow-y-auto' style={{ scrollbarWidth: 'none' }}>{info.val}</div>
                                     )}
                                 </div>
                             ))}
@@ -230,17 +230,17 @@ function Dashboard({ cafeName, cafePhone, cafeAddress, cafeTables, cafeInstagram
                     <hr className='h-1 bg-white' />
                 </div>
                 <div className='flex justify-between px-4 font-montserrat-700 mb-1.5 w-full text-sm'>
-                    <div>Name</div>
-                    <div>Phone</div>
-                    <div>Visited at</div>
+                    <div className='w-1/3 text-left'>Name</div>
+                    <div className='w-1/3 text-center'>Phone</div>
+                    <div className='w-1/3 text-right'>Visited at</div>
                 </div>
                 <div className='flex flex-col gap-4 w-full h-[30vh] overflow-y-auto scrollbar-hide'>
                     {users.length > 0 ? (
                         users.map((user) => (
                                 <div key={user._id} className='flex justify-between px-4 text-xs'>
-                                    <div className='capitalize'>{user.name}</div>
-                                    <div>{user.phone}</div>
-                                    <div>{new Date(user.createdAt).toLocaleDateString()}</div>
+                                    <div className='capitalize w-1/3 text-left'>{user.name}</div>
+                                    <div className='w-1/3 text-center'>{user.phone}</div>
+                                    <div className='w-1/3 text-right'>{new Date(user.createdAt).toLocaleDateString()}</div>
                                 </div>
                         ))
                     ) : (
