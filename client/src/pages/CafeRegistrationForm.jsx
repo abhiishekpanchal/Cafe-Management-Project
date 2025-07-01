@@ -57,10 +57,10 @@ function CafeRegistrationForm() {
     }
   }
 
-  const isValidGSTNumber = (gst) => {
-    const gstRegex = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/
-    return gstRegex.test(gst)
-  }
+  // const isValidGSTNumber = (gst) => {
+  //   const gstRegex = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/
+  //   return gstRegex.test(gst)
+  // }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -73,8 +73,8 @@ function CafeRegistrationForm() {
       !formData.email ||
       !formData.phone ||
       !formData.password ||
-      !formData.confirmPassword ||
-      !formData.gstNumber
+      !formData.confirmPassword 
+      // !formData.gstNumber
     ) {
       setErrorMessage('Please fill all the fields')
       return
@@ -85,10 +85,10 @@ function CafeRegistrationForm() {
       return
     }
 
-    if (!isValidGSTNumber(formData.gstNumber)) {
-      setErrorMessage('Please enter a valid GST number')
-      return
-    }
+    // if (!isValidGSTNumber(formData.gstNumber)) {
+    //   setErrorMessage('Please enter a valid GST number')
+    //   return
+    // }
     startTransition(async () => {
       try {
         const res = await fetch('/server/cafeDetails/cafeRegister', {

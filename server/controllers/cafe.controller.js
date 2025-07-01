@@ -24,9 +24,11 @@ export const cafeRegister = async (req, res) => {
 
   try {
     // Check if GST number already exists
-    const existingGST = await Cafe.findOne({ gstNumber });
-    if (existingGST) {
-      return res.status(400).json({ message: "GST number already registered" });
+    if (gstNumber) {
+      const existingGST = await Cafe.findOne({ gstNumber });
+      if (existingGST) {
+        return res.status(400).json({ message: "GST number already registered" });
+      }
     }
 
     const logoResult = await cloudinary.uploader.upload(logoImg, {
@@ -43,7 +45,7 @@ export const cafeRegister = async (req, res) => {
       phone,
       password: hashPassword,
       instagram,
-      gstNumber: gstNumber.toUpperCase(), // Ensure GST is stored in uppercase
+      gstNumber: gstNumber ? gstNumber.toUpperCase() : undefined, // Ensure GST is stored in uppercase
       logoImg: {
         public_id: logoResult.public_id,
         url: logoResult.secure_url,

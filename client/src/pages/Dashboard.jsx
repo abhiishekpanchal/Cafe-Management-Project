@@ -71,10 +71,18 @@ function Dashboard({ cafeName, cafePhone, cafeAddress, cafeTables, cafeInstagram
                     },
                   }
                 );
-                if (!response.ok) {
-                    throw new Error('Failed to fetch users');
-                }
+
                 const data = await response.json();
+
+                if (response.status === 404) {
+                    setUsers([]);
+                    return;
+                }
+
+                if (!response.ok) {
+                    throw new Error(data.message || 'Failed to fetch users');
+                }
+
                 setUsers(data.users);
             } catch (error) {
                 console.error('Error fetching users:', error.message);

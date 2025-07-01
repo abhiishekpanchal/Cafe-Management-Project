@@ -109,7 +109,7 @@ const cafeSchema = new mongoose.Schema(
     ],
     gstNumber: {
       type: String,
-      required: true,
+      // required: true,
       unique: true,
       // validate: {
       //   validator: function (v) {
