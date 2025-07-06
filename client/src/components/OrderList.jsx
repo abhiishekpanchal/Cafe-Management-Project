@@ -609,7 +609,7 @@ export default function OrderList({ order, refetchOrders }) {
           <button
             onClick={triggerRemoteBillPrint}
             disabled={!isPrintReady}
-            className={`bg-green-500 text-black px-3 py-2 rounded-xl flex items-center gap-2 ${
+            className={`bg-green-500 text-red-500 px-3 py-2 rounded-xl flex items-center gap-2 ${
               isPrintReady
                 ? "hover:bg-green-600"
                 : "opacity-50 cursor-not-allowed"
