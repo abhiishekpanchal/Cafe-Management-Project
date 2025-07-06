@@ -14,6 +14,8 @@ import dotenv from 'dotenv'
 import { createServer } from 'http'
 import { Server } from 'socket.io'
 dotenv.config()
+import printJobRoutes from './routes/printJob.route.js'
+
 
 mongoose
   .connect(process.env.MONGO_DB_URL)
@@ -72,12 +74,14 @@ app.use('/server/menuDetails', menuRouter)
 app.use('/server/orderDetails', orderRouter)
 app.use('/server/userDetails', userRouter)
 app.use('/server/inventoryDetails', inventoryRouter)
+app.use('/server/printJob', printJobRoutes)
 
-app.use(express.static(path.join(__dirname, '../client/dist')))
 
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../client', 'dist', 'index.html'))
-})
+// app.use(express.static(path.join(__dirname, '../client/dist')))
+
+// app.get('*', (req, res) => {
+//   res.sendFile(path.join(__dirname, '../client', 'dist', 'index.html'))
+// })
 
 httpServer.listen(3000, () => {
   console.log('Server is running on port 3000')

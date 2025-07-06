@@ -1,4 +1,7 @@
 import Order from '../models/order.model.js'
+import PrintJob from '../models/printjob.model.js'
+import Cafe from '../models/cafe.model.js'
+import moment from 'moment'
 
 export const placeOrder = async (req, res) => {
   try {
@@ -64,10 +67,7 @@ export const placeOrder = async (req, res) => {
 
       savedOrder = await existingOrder.save()
 
-      // Get socket.io instance
       const io = req.app.get('socketio')
-
-      // Emit event to all clients in this cafe's room
       if (io) {
         io.to(`cafe_${cafeId}`).emit('orderUpdated', {
           type: 'UPDATED',
@@ -99,10 +99,44 @@ export const placeOrder = async (req, res) => {
 
       savedOrder = await newOrder.save()
 
-      // Get socket.io instance
-      const io = req.app.get('socketio')
+      const cafe = await Cafe.findById(cafeId)
+      const cafeEmail = cafe?.email || 'unknown@cafe.com'
 
-      // Emit event to all clients in this cafe's room
+      const generateBillText = (order) => {
+        const lines = []
+        lines.push('        RECEIPT')
+        lines.push('**************************')
+
+        for (const item of order.orderList) {
+          const name = item.dishName
+          const price = item.price.toFixed(2)
+          lines.push(`${name.padEnd(18)} ${price.padStart(6)}`)
+        }
+
+        lines.push('--------------------------')
+        lines.push('Total'.padEnd(18) + order.totalPrice.toFixed(2).padStart(6))
+        lines.push('')
+        lines.push('')
+        lines.push(
+          'Date/Time     ' + moment(order.createdAt).format('DD.MM.YYYY HH:mm')
+        )
+        lines.push('')
+        lines.push('**************************')
+        lines.push(' Thank you !')
+
+        return lines.join('\n')
+      }
+
+      const billText = generateBillText(savedOrder)
+
+      await PrintJob.create({
+        orderId: savedOrder._id,
+        email: cafeEmail,
+        content: billText,
+        status: 'pending',
+      })
+
+      const io = req.app.get('socketio')
       if (io) {
         io.to(`cafe_${cafeId}`).emit('newOrder', {
           order: savedOrder,
@@ -126,12 +160,70 @@ export const placeOrder = async (req, res) => {
   }
 }
 
+export const getPendingPrintJob = async (req, res) => {
+  const { email } = req.query
+
+  if (!email) {
+    return res.status(400).json({ error: 'Email is required' })
+  }
+
+  try {
+    const job = await PrintJob.findOne({ email, status: 'pending' }).sort({
+      createdAt: 1,
+    })
+
+    if (!job) {
+      return res.json({ job: null })
+    }
+
+    return res.json({
+      job: {
+        job_id: job._id,
+        content: job.content,
+        printerIp: job.printerIp || null,
+      },
+    })
+  } catch (error) {
+    console.error('Error fetching print job:', error)
+    return res.status(500).json({ error: 'Internal server error' })
+  }
+}
+
+export const markPrintJobStatus = async (req, res) => {
+  const { job_id, email, status } = req.body
+
+  if (!job_id || !email || !status) {
+    return res
+      .status(400)
+      .json({ error: 'job_id, email, and status are required' })
+  }
+
+  if (!['printed', 'failed'].includes(status)) {
+    return res.status(400).json({ error: 'Invalid status value' })
+  }
+
+  try {
+    const result = await PrintJob.findOneAndUpdate(
+      { _id: job_id, email },
+      { $set: { status } }
+    )
+
+    if (!result) {
+      return res.status(404).json({ error: 'Print job not found' })
+    }
+
+    return res.json({ message: 'Print job status updated successfully' })
+  } catch (error) {
+    console.error('Error updating print job:', error)
+    return res.status(500).json({ error: 'Internal server error' })
+  }
+}
+
 export const getOrders = async (req, res) => {
   const { cafeId } = req.params
 
   try {
     const orders = await Order.find({ cafeId })
-
     res.status(200).json(orders.length > 0 ? orders : [])
   } catch (error) {
     console.error('Error fetching orders:', error)
@@ -143,19 +235,12 @@ export const deleteOrder = async (req, res) => {
   const { cafeId, tableId } = req.body
 
   try {
-    const orderToDelete = await Order.findOneAndDelete({
-      cafeId,
-      tableId,
-    })
-
+    const orderToDelete = await Order.findOneAndDelete({ cafeId, tableId })
     if (!orderToDelete) {
       return res.status(404).json({ message: 'table not found' })
     }
 
-    // Get socket.io instance
     const io = req.app.get('socketio')
-
-    // Emit event to all clients in this cafe's room
     if (io) {
       io.to(`cafe_${cafeId}`).emit('orderDeleted', {
         tableId: tableId,
@@ -181,36 +266,25 @@ export const updateItemQuantity = async (req, res) => {
 
   try {
     const order = await Order.findById(orderId)
-
     if (!order) {
-      return res
-        .status(404)
-        .json({ success: false, message: 'Order not found' })
+      return res.status(404).json({ success: false, message: 'Order not found' })
     }
 
     if (itemIndex < 0 || itemIndex >= order.orderList.length) {
-      return res
-        .status(400)
-        .json({ success: false, message: 'Invalid item index' })
+      return res.status(400).json({ success: false, message: 'Invalid item index' })
     }
 
     const oldPrice = order.orderList[itemIndex].price
 
     order.orderList[itemIndex].quantity = newQuantity
     order.orderList[itemIndex].price =
-      newPrice ||
-      (order.orderList[itemIndex].price / order.orderList[itemIndex].quantity) *
-        newQuantity
+      newPrice || (oldPrice / order.orderList[itemIndex].quantity) * newQuantity
 
-    order.totalPrice =
-      order.totalPrice - oldPrice + order.orderList[itemIndex].price
+    order.totalPrice = order.totalPrice - oldPrice + order.orderList[itemIndex].price
 
     await order.save()
 
-    // Get socket.io instance
     const io = req.app.get('socketio')
-
-    // Emit event to all clients in this cafe's room
     if (io) {
       io.to(`cafe_${order.cafeId}`).emit('orderUpdated', {
         type: 'ITEM_QUANTITY',
@@ -231,7 +305,6 @@ export const updateItemQuantity = async (req, res) => {
   }
 }
 
-// Update order item status
 export const updateItemStatus = async (req, res) => {
   const { orderId, itemIndex, newStatus } = req.body
 
@@ -243,27 +316,18 @@ export const updateItemStatus = async (req, res) => {
 
   try {
     const order = await Order.findById(orderId)
-
     if (!order) {
-      return res
-        .status(404)
-        .json({ success: false, message: 'Order not found' })
+      return res.status(404).json({ success: false, message: 'Order not found' })
     }
 
     if (itemIndex < 0 || itemIndex >= order.orderList.length) {
-      return res
-        .status(400)
-        .json({ success: false, message: 'Invalid item index' })
+      return res.status(400).json({ success: false, message: 'Invalid item index' })
     }
 
     order.orderList[itemIndex].status = newStatus
-
     await order.save()
 
-    // Get socket.io instance
     const io = req.app.get('socketio')
-
-    // Emit event to all clients in this cafe's room
     if (io) {
       io.to(`cafe_${order.cafeId}`).emit('orderUpdated', {
         type: 'ITEM_STATUS',
@@ -284,7 +348,6 @@ export const updateItemStatus = async (req, res) => {
   }
 }
 
-// Remove an item from order
 export const removeItem = async (req, res) => {
   const { orderId, itemIndex } = req.body
 
@@ -296,29 +359,21 @@ export const removeItem = async (req, res) => {
 
   try {
     const order = await Order.findById(orderId)
-
     if (!order) {
-      return res
-        .status(404)
-        .json({ success: false, message: 'Order not found' })
+      return res.status(404).json({ success: false, message: 'Order not found' })
     }
 
     if (itemIndex < 0 || itemIndex >= order.orderList.length) {
-      return res
-        .status(400)
-        .json({ success: false, message: 'Invalid item index' })
+      return res.status(400).json({ success: false, message: 'Invalid item index' })
     }
+
     const removedItemPrice = order.orderList[itemIndex].price
     order.orderList.splice(itemIndex, 1)
     order.totalPrice -= removedItemPrice
 
-    // Get socket.io instance
     const io = req.app.get('socketio')
-
     if (order.orderList.length === 0) {
       await Order.findByIdAndDelete(orderId)
-
-      // Emit delete event
       if (io) {
         io.to(`cafe_${order.cafeId}`).emit('orderDeleted', {
           tableId: order.tableId,
@@ -326,7 +381,6 @@ export const removeItem = async (req, res) => {
           orderId: orderId,
         })
       }
-
       return res.status(200).json({
         success: true,
         message: 'Order removed as it had no items left',
@@ -334,8 +388,6 @@ export const removeItem = async (req, res) => {
     }
 
     await order.save()
-
-    // Emit update event
     if (io) {
       io.to(`cafe_${order.cafeId}`).emit('orderUpdated', {
         type: 'ITEM_REMOVED',
@@ -356,31 +408,25 @@ export const removeItem = async (req, res) => {
   }
 }
 
-// Remove addon from an item
 export const removeAddon = async (req, res) => {
   try {
     const { orderId, itemIndex, addonIndex } = req.body
 
     const order = await Order.findById(orderId)
     if (!order) {
-      return res
-        .status(404)
-        .json({ success: false, message: 'Order not found' })
+      return res.status(404).json({ success: false, message: 'Order not found' })
     }
 
     if (itemIndex < 0 || itemIndex >= order.orderList.length) {
-      return res
-        .status(400)
-        .json({ success: false, message: 'Invalid item index' })
+      return res.status(400).json({ success: false, message: 'Invalid item index' })
     }
 
     const item = order.orderList[itemIndex]
 
     if (addonIndex < 0 || addonIndex >= item.dishAddOns.length) {
-      return res
-        .status(400)
-        .json({ success: false, message: 'Invalid addon index' })
+      return res.status(400).json({ success: false, message: 'Invalid addon index' })
     }
+
     const addonPrice = item.dishAddOns[addonIndex].addOnPrice
     const addon = item.dishAddOns.splice(addonIndex, 1)[0]
     item.price -= addonPrice * item.quantity
@@ -388,10 +434,7 @@ export const removeAddon = async (req, res) => {
 
     await order.save()
 
-    // Get socket.io instance
     const io = req.app.get('socketio')
-
-    // Emit event to all clients in this cafe's room
     if (io) {
       io.to(`cafe_${order.cafeId}`).emit('orderUpdated', {
         type: 'ADDON_REMOVED',
@@ -408,8 +451,6 @@ export const removeAddon = async (req, res) => {
     })
   } catch (error) {
     console.error('Error removing addon:', error)
-    return res
-      .status(500)
-      .json({ success: false, message: 'Error removing addon' })
+    return res.status(500).json({ success: false, message: 'Error removing addon' })
   }
 }
