@@ -1,31 +1,29 @@
 import mongoose from 'mongoose';
 
-const printJobSchema = new mongoose.Schema(
-  {
-    orderId: {
-      type: mongoose.Schema.Types.ObjectId,
-      required: true,
-      ref: 'Order',
-    },
-    email: {
-      type: String,
-      required: true,
-    },
-    content: {
-      type: String,
-      required: true,
-    },
-    status: {
-      type: String,
-      enum: ['pending', 'printed', 'failed'],
-      default: 'pending',
-    },
-    printerIp: {
-      type: String,
-    },
+const printJobSchema = new mongoose.Schema({
+  orderId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Order',
   },
-  { timestamps: true }
-);
+  content: {
+    type: String,
+    required: true,
+  },
+  email: String, // used by printer helper app
+  type: {
+    type: String,
+    enum: ['bill', 'kitchen'],
+    default: 'bill',
+  },
+  status: {
+    type: String,
+    enum: ['pending', 'printed', 'error'],
+    default: 'pending',
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+});
 
-const PrintJob = mongoose.model('PrintJob', printJobSchema);
-export default PrintJob;
+export default mongoose.model('PrintJob', printJobSchema);

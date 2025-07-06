@@ -49,6 +49,110 @@ const KitchenTicket = React.forwardRef(({ order, orders, dishTypes }, ref) => (
 ));
 KitchenTicket.displayName = "KitchenTicket";
 
+const formatBillText = (order, orders, totalPrice, cafeName, gstNumber) => {
+  const lines = []
+  lines.push(`           ${cafeName || "Cafe"}\n`)
+  if (gstNumber) lines.push(`      GST: ${gstNumber}\n`)
+  lines.push('        *** BILL ***')
+  lines.push('------------------------------')
+
+  orders.forEach(item => {
+    lines.push(`${item.quantity}x ${item.dishName}`.padEnd(22) + `Rs.${item.price.toFixed(2)}`)
+  })
+
+  lines.push('------------------------------')
+  lines.push('Total'.padEnd(22) + `Rs.${totalPrice.toFixed(2)}`)
+  lines.push('')
+  lines.push(`Time: ${new Date().toLocaleString()}`)
+  lines.push('Thank you!')
+
+  return lines.join('\n')
+}
+
+const formatKitchenTicketText = (order, orders) => {
+  const lines = []
+  lines.push('     *** KITCHEN TICKET ***')
+  lines.push(`Table: ${order.tableId}`)
+  lines.push(`Customer: ${order.customer}`)
+  lines.push('------------------------------')
+
+  orders.forEach(item => {
+    lines.push(`${item.quantity}x ${item.dishName}`)
+    if (item.dishVariants?.variantName) {
+      lines.push(`  Variant: ${item.dishVariants.variantName}`)
+    }
+    if (item.dishAddOns?.length > 0) {
+      lines.push('  Add-ons:')
+      item.dishAddOns.forEach(a => {
+        lines.push(`    - ${a.addOnName}`)
+      })
+    }
+  })
+
+  lines.push('------------------------------')
+  lines.push(`Time: ${new Date().toLocaleString()}`)
+  lines.push('--- Send to Kitchen ---')
+  return lines.join('\n')
+}
+
+
+const triggerRemoteBillPrint = async () => {
+  const billText = formatBillText(order, orders, totalPrice, cafeName, gstNumber)
+
+  try {
+    const response = await fetch("https://buckit-online.onrender.com/server/printJobs/create-job", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        orderId: order._id,
+        content: billText,
+      }),
+    })
+
+    const result = await response.json()
+    if (response.ok && result.success) {
+      alert("🧾 Bill sent to printer.")
+    } else {
+      alert("❌ Failed to send bill.")
+    }
+  } catch (err) {
+    console.error("Print error:", err)
+    alert("❌ Could not print bill.")
+  }
+}
+
+const triggerRemoteKitchenPrint = async () => {
+  const kitchenText = formatKitchenTicketText(order, orders)
+
+  try {
+    const response = await fetch("https://buckit-online.onrender.com/server/printJobs/create-job", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        orderId: order._id,
+        content: kitchenText,
+      }),
+    })
+
+    const result = await response.json()
+    if (response.ok && result.success) {
+      alert("🍽️ Kitchen ticket sent to printer.")
+    } else {
+      alert("❌ Failed to send ticket.")
+    }
+  } catch (err) {
+    console.error("Kitchen print error:", err)
+    alert("❌ Could not print kitchen ticket.")
+  }
+}
+
+
 const Bill = React.forwardRef(({ order, orders, totalPrice, gstNumber, cafeName }, ref) => (
   <div ref={ref} className="p-4 font-sans w-full max-w-md mx-auto">
     <div className="text-center font-bold text-lg mb-2">BILL</div>
@@ -490,7 +594,7 @@ export default function OrderList({ order, refetchOrders }) {
         </div>
         <div className="flex gap-2">
           <button
-            onClick={triggerKitchenPrint}
+            onClick={triggerRemoteKitchenPrint}
             disabled={!isPrintReady}
             className={`bg-blue-500 text-black px-3 py-2 rounded-xl flex items-center gap-2 ${
               isPrintReady
@@ -503,7 +607,7 @@ export default function OrderList({ order, refetchOrders }) {
           </button>
 
           <button
-            onClick={triggerBillPrint}
+            onClick={triggerRemoteBillPrint}
             disabled={!isPrintReady}
             className={`bg-green-500 text-black px-3 py-2 rounded-xl flex items-center gap-2 ${
               isPrintReady

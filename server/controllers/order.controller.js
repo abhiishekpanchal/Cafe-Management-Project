@@ -160,6 +160,38 @@ export const placeOrder = async (req, res) => {
   }
 }
 
+export const createPrintJob = async (req, res) => {
+  try {
+    const { orderId, content, email, type = 'bill' } = req.body;
+
+    if (!orderId || !content) {
+      return res.status(400).json({ success: false, message: "Missing orderId or content." });
+    }
+
+    let cafeEmail = email;
+    if (!cafeEmail) {
+      const order = await Order.findById(orderId);
+      if (!order) return res.status(404).json({ success: false, message: "Order not found." });
+
+      const cafe = await Cafe.findById(order.cafeId);
+      cafeEmail = cafe?.email || 'unknown@cafe.com';
+    }
+
+    const newJob = await PrintJob.create({
+      orderId,
+      content,
+      email: cafeEmail,
+      type,
+      status: 'pending'
+    });
+
+    return res.status(201).json({ success: true, job: newJob });
+  } catch (error) {
+    console.error("❌ Error creating print job:", error);
+    return res.status(500).json({ success: false, message: "Internal server error." });
+  }
+};
+
 export const getPendingPrintJob = async (req, res) => {
   const { email } = req.query
 

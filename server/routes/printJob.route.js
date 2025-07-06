@@ -1,14 +1,9 @@
-import express from 'express'
-import { getPendingPrintJob, markPrintJobStatus } from '../controllers/order.controller.js'
+import express from 'express';
+import { createPrintJob, getPendingPrintJob, markPrintJobStatus } from '../controllers/order.controller.js';
 
-const router = express.Router()
-console.log('✅ Print job routes loaded')
+const router = express.Router();
+router.post('/create-job', createPrintJob);
+router.get('/get-print-job', getPendingPrintJob);
+router.post('/mark-job-printed', markPrintJobStatus);
 
-
-router.get('/get-print-job', (req, res) => {
-  console.log('🔥 Route hit with query:', req.query)
-  res.status(200).json({ message: 'Route is working' })
-})
-router.post('/mark-job-printed', markPrintJobStatus)
-
-export default router
+export default router;
