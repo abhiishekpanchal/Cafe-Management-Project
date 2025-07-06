@@ -298,14 +298,14 @@ export default function OrderList({ order, refetchOrders }) {
   // ... your existing useEffect hooks ...
 
   // Simplified print trigger functions
-  const triggerKitchenPrint = () => {
-    if (!order?._id || orders.length === 0) {
-      setPrintError("Order data not ready for printing");
-      return;
-    }
-    setPrintType("kitchen");
-    setIsPrinting(true);
-  };
+  // const triggerKitchenPrint = () => {
+  //   if (!order?._id || orders.length === 0) {
+  //     setPrintError("Order data not ready for printing");
+  //     return;
+  //   }
+  //   setPrintType("kitchen");
+  //   setIsPrinting(true);
+  // };
 
   const fetchGSTNumber = async () => {
     try {
@@ -333,15 +333,15 @@ export default function OrderList({ order, refetchOrders }) {
     } 
   };
 
-  const triggerBillPrint = async () => {
-    if (!order?._id || orders.length === 0) {
-      setPrintError("Order data not ready for printing");
-      return;
-    }
-    await fetchGSTNumber();
-    setPrintType("bill");
-    setIsPrinting(true);
-  };
+  // const triggerBillPrint = async () => {
+  //   if (!order?._id || orders.length === 0) {
+  //     setPrintError("Order data not ready for printing");
+  //     return;
+  //   }
+  //   await fetchGSTNumber();
+  //   setPrintType("bill");
+  //   setIsPrinting(true);
+  // };
 
   useEffect(() => {
     setOrders([...order.orderList]);
