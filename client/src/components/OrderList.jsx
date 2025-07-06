@@ -142,19 +142,39 @@ export default function OrderList({ order, refetchOrders }) {
     const printDocument = iframe.contentWindow.document;
     printDocument.open();
     printDocument.write(`
-      <html>
-        <head>
-          <title>${printType === "kitchen" ? "Kitchen Ticket" : "Bill"}</title>
-          <style>
-            @page { size: auto; margin: 5mm; }
-            body { font-family: sans-serif; }
-          </style>
-        </head>
-        <body>
-          ${content.innerHTML}
-        </body>
-      </html>
-    `);
+  <html>
+    <head>
+      <title>${printType === "kitchen" ? "Kitchen Ticket" : "Bill"}</title>
+      <style>
+        @page {
+          size: 58mm auto;
+          margin: 0;
+        }
+        body {
+          width: 58mm;
+          font-size: 10px;
+          font-family: monospace;
+          color: black;
+        }
+        table {
+          width: 100%;
+          border-collapse: collapse;
+        }
+        td, th {
+          padding: 0;
+          margin: 0;
+        }
+        * {
+          background: white !important;
+          color: black !important;
+        }
+      </style>
+    </head>
+    <body>
+      ${content.innerHTML}
+    </body>
+  </html>
+`);
     printDocument.close();
 
     iframe.contentWindow.focus();
