@@ -6,6 +6,7 @@ import UPILogo from "../assets/UPI.png";
 import WalletLogo from "../assets/wallet.png";
 import CreditCardLogo from "../assets/credit-card.png";
 import { useReactToPrint } from "react-to-print";
+import qz from 'qz-tray';
 
 const KitchenTicket = React.forwardRef(({ order, orders, dishTypes }, ref) => (
   <div ref={ref} className="p-4 font-sans w-full max-w-md mx-auto">
@@ -99,6 +100,18 @@ const Bill = React.forwardRef(({ order, orders, totalPrice, gstNumber, cafeName 
 ));
 Bill.displayName = "Bill";
 
+const connectToQZ = async () => {
+  if (!qz.websocket.isActive()) {
+    try {
+      await qz.websocket.connect();
+      console.log("Connected to QZ Tray");
+    } catch (err) {
+      console.error("Failed to connect to QZ Tray:", err);
+      throw err;
+    }
+  }
+};
+
 export default function OrderList({ order, refetchOrders }) {
   const [orders, setOrders] = useState([...order.orderList]);
   const { token, load } = useAuth();
@@ -115,61 +128,91 @@ export default function OrderList({ order, refetchOrders }) {
   const kitchenTicketRef = useRef(null);
   const billRef = useRef(null);
 
-  // State to control print rendering
-  const [isPrinting, setIsPrinting] = useState(false);
-  const [printType, setPrintType] = useState(null);
-
   // Print handlers
-  const handlePrint = useCallback(() => {
-    if (!printType) return;
+  // const handlePrint = useCallback(() => {
+  //   if (!printType) return;
 
-    setIsPrinting(false);
-    const content =
-      printType === "kitchen" ? kitchenTicketRef.current : billRef.current;
+  //   setIsPrinting(false);
+  //   const content =
+  //     printType === "kitchen" ? kitchenTicketRef.current : billRef.current;
 
-    if (!content) {
-      setPrintError(`Failed to generate ${printType} ticket`);
+  //   if (!content) {
+  //     setPrintError(`Failed to generate ${printType} ticket`);
+  //     return;
+  //   }
+
+  //   const iframe = document.createElement("iframe");
+  //   iframe.style.position = "absolute";
+  //   iframe.style.width = "0px";
+  //   iframe.style.height = "0px";
+  //   iframe.style.border = "none";
+
+  //   document.body.appendChild(iframe);
+  //   const printDocument = iframe.contentWindow.document;
+  //   printDocument.open();
+  //   printDocument.write(`
+  //     <html>
+  //       <head>
+  //         <title>${printType === "kitchen" ? "Kitchen Ticket" : "Bill"}</title>
+  //         <style>
+  //           @page { size: auto; margin: 5mm; }
+  //           body { font-family: sans-serif; }
+  //         </style>
+  //       </head>
+  //       <body>
+  //         ${content.innerHTML}
+  //       </body>
+  //     </html>
+  //   `);
+  //   printDocument.close();
+
+  //   iframe.contentWindow.focus();
+  //   iframe.contentWindow.print();
+
+  //   setTimeout(() => {
+  //     document.body.removeChild(iframe);
+  //     setPrintType(null);
+  //   }, 500);
+  // }, [printType]);
+
+  const content =
+  printType === "kitchen" ? kitchenTicketRef.current : billRef.current;
+
+  const printWithQZ = async (ref, title = "Print Job") => {
+    if (!ref?.current) {
+      console.error("No content to print");
+      setPrintError("No content to print");
       return;
     }
 
-    const iframe = document.createElement("iframe");
-    iframe.style.position = "absolute";
-    iframe.style.width = "0px";
-    iframe.style.height = "0px";
-    iframe.style.border = "none";
+    try {
+      await connectToQZ();
 
-    document.body.appendChild(iframe);
-    const printDocument = iframe.contentWindow.document;
-    printDocument.open();
-    printDocument.write(`
-      <html>
-        <head>
-          <title>${printType === "kitchen" ? "Kitchen Ticket" : "Bill"}</title>
-          <style>
-            @page { size: auto; margin: 5mm; }
-            body { font-family: sans-serif; }
-          </style>
-        </head>
-        <body>
-          ${content.innerHTML}
-        </body>
-      </html>
-    `);
-    printDocument.close();
+      const config = qz.configs.create("TVS RP3230");
 
-    iframe.contentWindow.focus();
-    iframe.contentWindow.print();
+      const htmlContent = `
+        <html>
+        <head><title>${title}</title></head>
+        <body>${ref.current.innerHTML}</body>
+        </html>
+      `;
 
-    setTimeout(() => {
-      document.body.removeChild(iframe);
-      setPrintType(null);
-    }, 500);
-  }, [printType]);
-  useEffect(() => {
-    if (isPrinting && printType) {
-      handlePrint();
+      const data = [{
+        type: 'html',
+        format: 'plain',
+        data: htmlContent
+      }];
+
+      await qz.print(config, data);
+      console.log("Print job sent via QZ Tray");
+
+      await qz.websocket.disconnect();
+
+    } catch (err) {
+      console.error("Print failed:", err);
+      setPrintError("Print failed: " + err.message);
     }
-  }, [isPrinting, printType, handlePrint]);
+  };
 
   // ... your existing useEffect hooks ...
 
@@ -179,8 +222,7 @@ export default function OrderList({ order, refetchOrders }) {
       setPrintError("Order data not ready for printing");
       return;
     }
-    setPrintType("kitchen");
-    setIsPrinting(true);
+    printWithQZ(kitchenTicketRef, "Kitchen Ticket");
   };
 
   const fetchGSTNumber = async () => {
@@ -215,8 +257,7 @@ export default function OrderList({ order, refetchOrders }) {
       return;
     }
     await fetchGSTNumber();
-    setPrintType("bill");
-    setIsPrinting(true);
+    printWithQZ(billRef, "Bill");
   };
 
   useEffect(() => {
