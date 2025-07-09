@@ -175,8 +175,8 @@ export default function OrderList({ order, refetchOrders }) {
   //   }, 500);
   // }, [printType]);
 
-  const content =
-  printType === "kitchen" ? kitchenTicketRef.current : billRef.current;
+  // const content =
+  // printType === "kitchen" ? kitchenTicketRef.current : billRef.current;
 
   const printWithQZ = async (ref, title = "Print Job") => {
     if (!ref?.current) {
@@ -539,12 +539,7 @@ export default function OrderList({ order, refetchOrders }) {
       </div>
 
       {printError && (
-        <div className="px-3.5 text-red-500 text-sm">{printError}</div>
-      )}
-
-      {/* Hidden components for printing */}
-      {printError && (
-        <div className="px-3.5 text-red-500 text-sm">{printError}</div>
+        <div className="px-3.5 text-red text-sm">{printError}</div>
       )}
 
       {/* Always render print components but keep them hidden */}
