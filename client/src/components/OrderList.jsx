@@ -185,10 +185,22 @@ export default function OrderList({ order, refetchOrders }) {
       return;
     }
 
+     const fetchPrinters = async () => {
+    try {
+      await qz.websocket.connect(); // Ensure QZ is connected
+      const printers = await qz.printers.find();
+      console.log("🖨️ Available Printers:", printers);
+    } catch (error) {
+      console.error("Error listing printers:", error);
+    }
+  };
+
+  fetchPrinters();
+
     try {
       await connectToQZ();
 
-      const config = qz.configs.create("TVS RP3230");
+      const config = qz.configs.create("TVS-E RP 3230 ABW");
 
       const htmlContent = `
         <html>
